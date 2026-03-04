@@ -1,5 +1,3 @@
-/// <reference types="vitest" />
-
 import { describe, expect, it, vi } from "vitest";
 import { DocumentStatus, Prisma } from "@prisma/client";
 import { convertQuoteToOrderWithTx } from "@/lib/sales/conversion";

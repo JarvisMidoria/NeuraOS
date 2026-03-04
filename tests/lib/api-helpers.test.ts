@@ -1,5 +1,3 @@
-/// <reference types="vitest" />
-
 import { describe, expect, it } from "vitest";
 import type { Session } from "next-auth";
 import { ApiError, ensurePermissions } from "@/lib/api-helpers";

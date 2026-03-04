@@ -1,5 +1,3 @@
-/// <reference types="vitest" />
-
 import { describe, expect, it } from "vitest";
 import { DocumentStatus, Prisma } from "@prisma/client";
 import { buildReceiptPlan } from "@/lib/purchases/receipt-plan";
@@ -104,12 +102,12 @@ describe("buildReceiptPlan", () => {
 
 describe("ensureOverReceiveOverridePermission", () => {
   it("rejects non-admin override attempts", () => {
-    const session = { user: { roles: ["Sales"] } } as any;
+    const session = { user: { roles: ["Sales"] } };
     expect(() => ensureOverReceiveOverridePermission(session, true)).toThrowError(ApiError);
   });
 
   it("allows admin overrides", () => {
-    const session = { user: { roles: ["Admin"] } } as any;
+    const session = { user: { roles: ["Admin"] } };
     expect(() => ensureOverReceiveOverridePermission(session, true)).not.toThrow();
   });
 });
