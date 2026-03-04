@@ -1,0 +1,14 @@
+node_modules
+.next
+out
+.env
+.env.local
+.env.production
+.env.development
+.vercel
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+.DS_Store
+coverage
