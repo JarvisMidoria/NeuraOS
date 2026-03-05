@@ -38,32 +38,32 @@ export function LoginForm() {
   return (
     <form onSubmit={handleSubmit} className="w-full space-y-4">
       {error ? (
-        <div className="rounded-md bg-red-50 px-4 py-2 text-sm text-red-600">
+        <div className="rounded-xl border border-red-500/30 bg-red-500/15 px-4 py-3 text-sm text-red-200">
           {error}
         </div>
       ) : null}
       <div className="space-y-2">
-        <label htmlFor="email" className="block text-sm font-medium text-zinc-700">
+        <label htmlFor="email" className="block text-sm font-medium text-zinc-300">
           Email
         </label>
         <input
           id="email"
           name="email"
           type="email"
-          className="w-full rounded-md border border-zinc-300 px-3 py-2 text-base focus:border-zinc-900 focus:outline-none"
+          className="w-full rounded-xl border border-white/15 bg-black/25 px-4 py-3 text-base text-zinc-100 placeholder:text-zinc-500 focus:border-[var(--accent)] focus:outline-none"
           placeholder="admin@acme.local"
           required
         />
       </div>
       <div className="space-y-2">
-        <label htmlFor="password" className="block text-sm font-medium text-zinc-700">
+        <label htmlFor="password" className="block text-sm font-medium text-zinc-300">
           Password
         </label>
         <input
           id="password"
           name="password"
           type="password"
-          className="w-full rounded-md border border-zinc-300 px-3 py-2 text-base focus:border-zinc-900 focus:outline-none"
+          className="w-full rounded-xl border border-white/15 bg-black/25 px-4 py-3 text-base text-zinc-100 placeholder:text-zinc-500 focus:border-[var(--accent)] focus:outline-none"
           placeholder="••••••••"
           required
         />
@@ -71,7 +71,7 @@ export function LoginForm() {
       <button
         type="submit"
         disabled={isSubmitting}
-        className="flex w-full items-center justify-center rounded-md bg-zinc-900 px-4 py-2 text-white transition hover:bg-zinc-800 disabled:opacity-70"
+        className="flex w-full items-center justify-center rounded-xl bg-[var(--accent)] px-4 py-3 text-sm font-medium text-white transition hover:brightness-110 disabled:opacity-70"
       >
         {isSubmitting ? "Signing in..." : "Sign in"}
       </button>
