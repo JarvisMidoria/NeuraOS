@@ -44,6 +44,72 @@ body {
   animation: fadeUp 420ms ease-out;
 }
 
+.admin-shell .bg-zinc-50,
+.admin-shell .from-zinc-50,
+.admin-shell .to-white {
+  background: transparent !important;
+}
+
+.admin-shell .bg-white {
+  background: rgba(16, 20, 30, 0.74) !important;
+}
+
+.admin-shell .border-zinc-100,
+.admin-shell .border-zinc-200,
+.admin-shell .border-zinc-300 {
+  border-color: rgba(255, 255, 255, 0.12) !important;
+}
+
+.admin-shell .text-zinc-900 {
+  color: #f3f5fb !important;
+}
+
+.admin-shell .text-zinc-700,
+.admin-shell .text-zinc-600,
+.admin-shell .text-zinc-500 {
+  color: #a0a7bb !important;
+}
+
+.admin-shell .bg-zinc-100 {
+  background: rgba(255, 255, 255, 0.08) !important;
+}
+
+.admin-shell .shadow-sm {
+  box-shadow: 0 20px 45px rgba(0, 0, 0, 0.32) !important;
+}
+
+.admin-shell .bg-zinc-900 {
+  background: var(--accent) !important;
+}
+
+.admin-shell input,
+.admin-shell select,
+.admin-shell textarea {
+  border-color: rgba(255, 255, 255, 0.16) !important;
+  background: rgba(5, 7, 11, 0.35) !important;
+  color: #eef2ff !important;
+}
+
+.admin-shell input::placeholder,
+.admin-shell textarea::placeholder {
+  color: #838aa0 !important;
+}
+
+.admin-shell input:focus,
+.admin-shell select:focus,
+.admin-shell textarea:focus {
+  border-color: var(--accent) !important;
+  outline: none !important;
+}
+
+.admin-shell table thead tr {
+  color: #8f96aa !important;
+}
+
+.admin-shell .text-red-600 {
+  color: #ff8b95 !important;
+}
+
 @keyframes fadeUp {
   from {
     opacity: 0;

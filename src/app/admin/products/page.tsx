@@ -25,8 +25,8 @@ export default async function ProductsPage() {
   return (
     <div className="space-y-6">
       <div>
-        <p className="text-sm uppercase tracking-wide text-zinc-500">Catalog</p>
-        <h1 className="text-3xl font-semibold text-zinc-900">Products</h1>
+        <p className="text-xs uppercase tracking-[0.2em] text-zinc-500">Catalog</p>
+        <h1 className="text-3xl font-semibold tracking-tight text-zinc-900">Products</h1>
         <p className="text-sm text-zinc-500">
           Manage product master data, categories, and custom attributes.
         </p>

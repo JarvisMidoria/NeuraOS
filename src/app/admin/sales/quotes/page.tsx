@@ -26,8 +26,8 @@ export default async function SalesQuotesPage() {
   return (
     <div className="space-y-6">
       <div>
-        <p className="text-sm uppercase tracking-wide text-zinc-500">Sales</p>
-        <h1 className="text-3xl font-semibold text-zinc-900">Quotes</h1>
+        <p className="text-xs uppercase tracking-[0.2em] text-zinc-500">Sales</p>
+        <h1 className="text-3xl font-semibold tracking-tight text-zinc-900">Quotes</h1>
         <p className="text-sm text-zinc-500">
           Draft quotes, apply taxes, and convert approved quotes into orders.
         </p>

@@ -47,10 +47,10 @@ export default async function AdminDashboard() {
   const recentLowStock = snapshot.lowStock.slice(0, 6);
 
   return (
-    <div className="flex min-h-screen flex-col gap-6 bg-zinc-50 px-6 py-12">
+    <div className="space-y-6">
       <div className="flex flex-col gap-2">
-        <p className="text-sm uppercase tracking-wide text-zinc-500">Dashboard</p>
-        <h1 className="text-3xl font-semibold text-zinc-900">Welcome back, {user.name ?? "Admin"}</h1>
+        <p className="text-xs uppercase tracking-[0.2em] text-zinc-500">Dashboard</p>
+        <h1 className="text-3xl font-semibold tracking-tight text-zinc-900">Welcome back, {user.name ?? "Admin"}</h1>
         <p className="text-sm text-zinc-500">Company: {user.companyId}</p>
       </div>
 

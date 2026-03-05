@@ -51,8 +51,8 @@ export default async function StockPage() {
   return (
     <div className="space-y-6">
       <div>
-        <p className="text-sm uppercase tracking-wide text-zinc-500">Inventory</p>
-        <h1 className="text-3xl font-semibold text-zinc-900">Stock Control</h1>
+        <p className="text-xs uppercase tracking-[0.2em] text-zinc-500">Inventory</p>
+        <h1 className="text-3xl font-semibold tracking-tight text-zinc-900">Stock Control</h1>
         <p className="text-sm text-zinc-500">
           Record stock movements, view balances by warehouse, and monitor low-stock alerts.
         </p>
