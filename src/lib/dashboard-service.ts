@@ -19,13 +19,13 @@ function calculateDelta(current: number, previous: number) {
   };
 }
 
-const FULFILLED_ORDER_STATUSES = [
+const FULFILLED_ORDER_STATUSES: DocumentStatus[] = [
   DocumentStatus.CONFIRMED,
   DocumentStatus.FULFILLED,
   DocumentStatus.CLOSED,
 ];
 
-const OPEN_PURCHASE_STATUSES = [
+const OPEN_PURCHASE_STATUSES: DocumentStatus[] = [
   DocumentStatus.DRAFT,
   DocumentStatus.SENT,
   DocumentStatus.APPROVED,
@@ -34,7 +34,7 @@ const OPEN_PURCHASE_STATUSES = [
   DocumentStatus.PARTIALLY_RECEIVED,
 ];
 
-const ACTIVE_QUOTE_STATUSES = [DocumentStatus.SENT, DocumentStatus.APPROVED];
+const ACTIVE_QUOTE_STATUSES: DocumentStatus[] = [DocumentStatus.SENT, DocumentStatus.APPROVED];
 
 export type DashboardSnapshot = {
   timestamp: string;
@@ -341,7 +341,7 @@ export async function getDashboardSnapshot(companyId: string): Promise<Dashboard
     .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
     .slice(0, 8);
 
-  const operationalTodo = [
+  const operationalTodo: DashboardSnapshot["operationalTodo"] = [
     {
       id: "quotes-expiring",
       label: "Quotes expiring in 7 days",

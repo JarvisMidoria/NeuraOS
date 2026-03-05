@@ -43,7 +43,7 @@ function toDecimal(value: number | string | Prisma.Decimal | undefined, field: s
   }
   try {
     return new Prisma.Decimal(value);
-  } catch (error) {
+  } catch {
     throw new Error(`${field} is not a valid number`);
   }
 }

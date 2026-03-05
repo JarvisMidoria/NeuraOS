@@ -50,7 +50,7 @@ const transitionMatrix: Record<DocumentStatus, DocumentStatus[]> = {
 };
 
 interface RouteContext {
-  params: { orderId: string };
+  params: Promise<{ orderId: string }>;
 }
 
 function serializeDecimal(value: Prisma.Decimal | null | undefined) {
@@ -123,26 +123,28 @@ function ensureTransition(current: DocumentStatus, next: DocumentStatus) {
   }
 }
 
-export async function GET(_req: NextRequest, { params }: RouteContext) {
+export async function GET(_req: NextRequest, context: RouteContext) {
   try {
     const session = await requireSession();
     ensurePermissions(session, ["MANAGE_PURCHASING"]);
+    const { orderId } = await context.params;
 
-    const order = await getOrderOrThrow(session.user.companyId, params.orderId);
+    const order = await getOrderOrThrow(session.user.companyId, orderId);
     return NextResponse.json({ data: serializeOrder(order) });
   } catch (error) {
     return handleApiError(error);
   }
 }
 
-export async function PATCH(req: NextRequest, { params }: RouteContext) {
+export async function PATCH(req: NextRequest, context: RouteContext) {
   try {
     const session = await requireSession();
     ensurePermissions(session, ["MANAGE_PURCHASING"]);
     const companyId = session.user.companyId;
+    const { orderId } = await context.params;
 
     const body = (await req.json()) as PurchaseOrderUpdatePayload;
-    const order = await getOrderOrThrow(companyId, params.orderId);
+    const order = await getOrderOrThrow(companyId, orderId);
 
     const wantsLineUpdate = Array.isArray(body.lines);
     const wantsStatusChange = body.status && body.status !== order.status;
@@ -272,13 +274,14 @@ export async function PATCH(req: NextRequest, { params }: RouteContext) {
   }
 }
 
-export async function DELETE(_req: NextRequest, { params }: RouteContext) {
+export async function DELETE(_req: NextRequest, context: RouteContext) {
   try {
     const session = await requireSession();
     ensurePermissions(session, ["MANAGE_PURCHASING"]);
     const companyId = session.user.companyId;
+    const { orderId } = await context.params;
 
-    const order = await getOrderOrThrow(companyId, params.orderId);
+    const order = await getOrderOrThrow(companyId, orderId);
     if (order.status !== DocumentStatus.DRAFT) {
       throw new ApiError(400, "Only draft orders can be deleted");
     }

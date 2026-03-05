@@ -34,6 +34,8 @@ const transitionMatrix: Record<DocumentStatus, DocumentStatus[]> = {
   [DocumentStatus.FULFILLED]: [],
   [DocumentStatus.CLOSED]: [],
   [DocumentStatus.CANCELLED]: [],
+  [DocumentStatus.PARTIALLY_RECEIVED]: [],
+  [DocumentStatus.RECEIVED]: [],
 };
 
 function serializeDecimal(value: Prisma.Decimal | null | undefined) {
@@ -84,7 +86,7 @@ function ensureTransition(current: DocumentStatus, next: DocumentStatus) {
 }
 
 interface RouteContext {
-  params: { orderId: string };
+  params: Promise<{ orderId: string }>;
 }
 
 type OrderStatusPayload = {
@@ -102,21 +104,23 @@ async function getOrderOrThrow(companyId: string, orderId: string) {
   return order;
 }
 
-export async function GET(_req: NextRequest, { params }: RouteContext) {
+export async function GET(_req: NextRequest, context: RouteContext) {
   try {
     const session = await requireSession();
     ensureRoles(session, ["Admin", "Sales"]);
-    const order = await getOrderOrThrow(session.user.companyId, params.orderId);
+    const { orderId } = await context.params;
+    const order = await getOrderOrThrow(session.user.companyId, orderId);
     return NextResponse.json({ data: serializeOrder(order) });
   } catch (error) {
     return handleApiError(error);
   }
 }
 
-export async function PATCH(req: NextRequest, { params }: RouteContext) {
+export async function PATCH(req: NextRequest, context: RouteContext) {
   try {
     const session = await requireSession();
     ensureRoles(session, ["Admin", "Sales"]);
+    const { orderId } = await context.params;
 
     const body = (await req.json()) as OrderStatusPayload;
     if (!body.status) {
@@ -124,7 +128,7 @@ export async function PATCH(req: NextRequest, { params }: RouteContext) {
     }
 
     const companyId = session.user.companyId;
-    const order = await getOrderOrThrow(companyId, params.orderId);
+    const order = await getOrderOrThrow(companyId, orderId);
 
     ensureTransition(order.status, body.status);
 

@@ -44,7 +44,7 @@ function toDecimal(value: number | string | Prisma.Decimal | undefined, field: s
 
   try {
     return new Prisma.Decimal(value);
-  } catch (error) {
+  } catch {
     throw new ApiError(400, `${field} is not a valid number`);
   }
 }
@@ -90,9 +90,10 @@ export function buildReceiptPlan(
       throw new ApiError(400, `lines[${index}].quantity must be greater than zero`);
     }
 
-    const unitPrice = input.unitPrice
-      ? toDecimal(input.unitPrice, `lines[${index}].unitPrice`)
-      : ctx.unitPrice;
+    const unitPrice =
+      input.unitPrice !== undefined && input.unitPrice !== null && input.unitPrice !== ""
+        ? toDecimal(input.unitPrice, `lines[${index}].unitPrice`)
+        : ctx.unitPrice;
 
     const receivedSoFar = cumulative.get(ctx.id) ?? ZERO;
     const ordered = ctx.orderedQuantity;

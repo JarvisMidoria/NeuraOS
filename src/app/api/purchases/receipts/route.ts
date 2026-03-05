@@ -150,11 +150,15 @@ export async function POST(req: NextRequest) {
       throw new ApiError(400, "Invalid warehouse");
     }
 
-    if ([DocumentStatus.CANCELLED, DocumentStatus.RECEIVED].includes(order.status)) {
+    if (order.status === DocumentStatus.CANCELLED || order.status === DocumentStatus.RECEIVED) {
       throw new ApiError(400, "Cannot receive goods for this purchase order");
     }
 
-    const allowedStatuses = [DocumentStatus.SENT, DocumentStatus.CONFIRMED, DocumentStatus.PARTIALLY_RECEIVED];
+    const allowedStatuses: DocumentStatus[] = [
+      DocumentStatus.SENT,
+      DocumentStatus.CONFIRMED,
+      DocumentStatus.PARTIALLY_RECEIVED,
+    ];
     if (!allowedStatuses.includes(order.status)) {
       throw new ApiError(400, "Purchase order must be SENT or CONFIRMED before receiving goods");
     }

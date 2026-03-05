@@ -10,18 +10,19 @@ import {
 import { convertQuoteToOrder } from "@/lib/sales/conversion";
 
 interface RouteContext {
-  params: { quoteId: string };
+  params: Promise<{ quoteId: string }>;
 }
 
-export async function POST(_req: NextRequest, { params }: RouteContext) {
+export async function POST(_req: NextRequest, context: RouteContext) {
   try {
     const session = await requireSession();
     ensureRoles(session, ["Admin", "Sales"]);
     ensurePermissions(session, ["MANAGE_SALES"]);
+    const { quoteId } = await context.params;
 
     const order = await convertQuoteToOrder(
       {
-        quoteId: params.quoteId,
+        quoteId,
         companyId: session.user.companyId,
         userId: session.user.id,
       },

@@ -30,6 +30,10 @@ type ProductUpdatePayload = {
   customFieldValues?: CustomFieldInput[];
 };
 
+interface RouteContext {
+  params: Promise<{ productId: string }>;
+}
+
 function serializeProduct(product: ProductWithRelations | null) {
   if (!product) return null;
   return {
@@ -56,13 +60,14 @@ function serializeProduct(product: ProductWithRelations | null) {
   };
 }
 
-export async function GET(_req: NextRequest, { params }: { params: { productId: string } }) {
+export async function GET(_req: NextRequest, context: RouteContext) {
   try {
     const session = await requireSession();
     ensureRoles(session, ["Admin", "Sales"]);
+    const { productId } = await context.params;
 
     const product = await prisma.product.findFirst({
-      where: { id: params.productId, companyId: session.user.companyId },
+      where: { id: productId, companyId: session.user.companyId },
       include: {
         category: true,
         customValues: { include: { definition: true } },
@@ -79,18 +84,17 @@ export async function GET(_req: NextRequest, { params }: { params: { productId: 
   }
 }
 
-export async function PATCH(req: NextRequest, { params }: { params: { productId: string } }) {
+export async function PATCH(req: NextRequest, context: RouteContext) {
   try {
     const session = await requireSession();
     ensureRoles(session, ["Admin"]);
+    const { productId } = await context.params;
 
     const body = (await req.json()) as ProductUpdatePayload;
     const companyId = session.user.companyId;
 
     const { product: updated, beforeSnapshot } = await prisma.$transaction(async (tx) => {
-      const existing = await tx.product.findFirst({
-        where: { id: params.productId, companyId },
-      });
+      const existing = await tx.product.findFirst({ where: { id: productId, companyId } });
 
       if (!existing) {
         throw new ApiError(404, "Product not found");
@@ -114,7 +118,7 @@ export async function PATCH(req: NextRequest, { params }: { params: { productId:
       }
       if (body.categoryId !== undefined) {
         if (body.categoryId === null || body.categoryId === "") {
-          data.categoryId = null;
+          data.category = { disconnect: true };
         } else {
           const category = await tx.productCategory.findFirst({
             where: { id: body.categoryId, companyId },
@@ -122,7 +126,7 @@ export async function PATCH(req: NextRequest, { params }: { params: { productId:
           if (!category) {
             throw new ApiError(400, "Invalid category");
           }
-          data.categoryId = body.categoryId;
+          data.category = { connect: { id: body.categoryId } };
         }
       }
 
@@ -203,14 +207,15 @@ export async function PATCH(req: NextRequest, { params }: { params: { productId:
   }
 }
 
-export async function DELETE(_req: NextRequest, { params }: { params: { productId: string } }) {
+export async function DELETE(_req: NextRequest, context: RouteContext) {
   try {
     const session = await requireSession();
     ensureRoles(session, ["Admin"]);
     const companyId = session.user.companyId;
+    const { productId } = await context.params;
 
     const product = await prisma.product.findFirst({
-      where: { id: params.productId, companyId },
+      where: { id: productId, companyId },
     });
 
     if (!product) {

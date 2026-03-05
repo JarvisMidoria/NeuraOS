@@ -39,6 +39,8 @@ const statusMatrix: Record<DocumentStatus, DocumentStatus[]> = {
   [DocumentStatus.FULFILLED]: [],
   [DocumentStatus.CLOSED]: [],
   [DocumentStatus.CANCELLED]: [],
+  [DocumentStatus.PARTIALLY_RECEIVED]: [],
+  [DocumentStatus.RECEIVED]: [],
 };
 
 function serializeDecimal(value: Prisma.Decimal | null | undefined) {
@@ -114,7 +116,7 @@ type QuoteUpdatePayload = {
 };
 
 interface RouteContext {
-  params: { quoteId: string };
+  params: Promise<{ quoteId: string }>;
 }
 
 async function getQuoteOrThrow(companyId: string, quoteId: string) {
@@ -128,25 +130,27 @@ async function getQuoteOrThrow(companyId: string, quoteId: string) {
   return quote;
 }
 
-export async function GET(_req: NextRequest, { params }: RouteContext) {
+export async function GET(_req: NextRequest, context: RouteContext) {
   try {
     const session = await requireSession();
     ensureRoles(session, ["Admin", "Sales"]);
-    const quote = await getQuoteOrThrow(session.user.companyId, params.quoteId);
+    const { quoteId } = await context.params;
+    const quote = await getQuoteOrThrow(session.user.companyId, quoteId);
     return NextResponse.json({ data: serializeQuote(quote) });
   } catch (error) {
     return handleApiError(error);
   }
 }
 
-export async function PATCH(req: NextRequest, { params }: RouteContext) {
+export async function PATCH(req: NextRequest, context: RouteContext) {
   try {
     const session = await requireSession();
     ensureRoles(session, ["Admin", "Sales"]);
+    const { quoteId } = await context.params;
 
     const body = (await req.json()) as QuoteUpdatePayload;
     const companyId = session.user.companyId;
-    const quote = await getQuoteOrThrow(companyId, params.quoteId);
+    const quote = await getQuoteOrThrow(companyId, quoteId);
 
     if (body.lines) {
       if (!editableStatuses.has(quote.status)) {
@@ -312,13 +316,14 @@ export async function PATCH(req: NextRequest, { params }: RouteContext) {
   }
 }
 
-export async function DELETE(_req: NextRequest, { params }: RouteContext) {
+export async function DELETE(_req: NextRequest, context: RouteContext) {
   try {
     const session = await requireSession();
     ensureRoles(session, ["Admin", "Sales"]);
+    const { quoteId } = await context.params;
 
     const companyId = session.user.companyId;
-    const quote = await getQuoteOrThrow(companyId, params.quoteId);
+    const quote = await getQuoteOrThrow(companyId, quoteId);
 
     if (!editableStatuses.has(quote.status)) {
       throw new ApiError(400, "Only draft or rejected quotes can be deleted");

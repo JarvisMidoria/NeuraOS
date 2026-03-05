@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { Suspense } from "react";
 import { LoginForm } from "./login-form";
 
 export const metadata: Metadata = {
@@ -18,7 +19,9 @@ export default function LoginPage() {
             Enter the admin credentials created by the seed script.
           </p>
         </div>
-        <LoginForm />
+        <Suspense fallback={<p className="text-sm text-zinc-500">Loading form...</p>}>
+          <LoginForm />
+        </Suspense>
       </div>
     </div>
   );

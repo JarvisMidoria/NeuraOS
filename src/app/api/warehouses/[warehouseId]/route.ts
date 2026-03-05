@@ -4,14 +4,19 @@ import { prisma } from "@/lib/prisma";
 import { ApiError, ensureRoles, handleApiError, requireSession } from "@/lib/api-helpers";
 import { logAudit } from "@/lib/audit";
 
-export async function PATCH(req: NextRequest, { params }: { params: { warehouseId: string } }) {
+interface RouteContext {
+  params: Promise<{ warehouseId: string }>;
+}
+
+export async function PATCH(req: NextRequest, context: RouteContext) {
   try {
     const session = await requireSession();
     ensureRoles(session, ["Admin"]);
+    const { warehouseId } = await context.params;
 
     const body = await req.json();
     const warehouse = await prisma.warehouse.findFirst({
-      where: { id: params.warehouseId, companyId: session.user.companyId },
+      where: { id: warehouseId, companyId: session.user.companyId },
     });
 
     if (!warehouse) {
@@ -45,13 +50,14 @@ export async function PATCH(req: NextRequest, { params }: { params: { warehouseI
   }
 }
 
-export async function DELETE(_req: NextRequest, { params }: { params: { warehouseId: string } }) {
+export async function DELETE(_req: NextRequest, context: RouteContext) {
   try {
     const session = await requireSession();
     ensureRoles(session, ["Admin"]);
+    const { warehouseId } = await context.params;
 
     const warehouse = await prisma.warehouse.findFirst({
-      where: { id: params.warehouseId, companyId: session.user.companyId },
+      where: { id: warehouseId, companyId: session.user.companyId },
     });
 
     if (!warehouse) {

@@ -5,7 +5,7 @@ import { ApiError, ensurePermissions, handleApiError, requireSession } from "@/l
 import { logAudit } from "@/lib/audit";
 
 interface RouteContext {
-  params: { supplierId: string };
+  params: Promise<{ supplierId: string }>;
 }
 
 async function getSupplierOrThrow(companyId: string, supplierId: string) {
@@ -18,22 +18,24 @@ async function getSupplierOrThrow(companyId: string, supplierId: string) {
   return supplier;
 }
 
-export async function GET(_req: NextRequest, { params }: RouteContext) {
+export async function GET(_req: NextRequest, context: RouteContext) {
   try {
     const session = await requireSession();
     ensurePermissions(session, ["MANAGE_PURCHASING"]);
+    const { supplierId } = await context.params;
 
-    const supplier = await getSupplierOrThrow(session.user.companyId, params.supplierId);
+    const supplier = await getSupplierOrThrow(session.user.companyId, supplierId);
     return NextResponse.json({ data: supplier });
   } catch (error) {
     return handleApiError(error);
   }
 }
 
-export async function PATCH(req: NextRequest, { params }: RouteContext) {
+export async function PATCH(req: NextRequest, context: RouteContext) {
   try {
     const session = await requireSession();
     ensurePermissions(session, ["MANAGE_PURCHASING"]);
+    const { supplierId } = await context.params;
 
     const body = await req.json();
     const updates = {
@@ -47,10 +49,10 @@ export async function PATCH(req: NextRequest, { params }: RouteContext) {
       throw new ApiError(400, "name cannot be empty");
     }
 
-    await getSupplierOrThrow(session.user.companyId, params.supplierId);
+    await getSupplierOrThrow(session.user.companyId, supplierId);
 
     const supplier = await prisma.supplier.update({
-      where: { id: params.supplierId },
+      where: { id: supplierId },
       data: {
         ...(updates.name !== undefined ? { name: updates.name } : {}),
         ...(updates.email !== undefined ? { email: updates.email ?? null } : {}),
@@ -74,20 +76,21 @@ export async function PATCH(req: NextRequest, { params }: RouteContext) {
   }
 }
 
-export async function DELETE(_req: NextRequest, { params }: RouteContext) {
+export async function DELETE(_req: NextRequest, context: RouteContext) {
   try {
     const session = await requireSession();
     ensurePermissions(session, ["MANAGE_PURCHASING"]);
+    const { supplierId } = await context.params;
 
-    await getSupplierOrThrow(session.user.companyId, params.supplierId);
+    await getSupplierOrThrow(session.user.companyId, supplierId);
 
-    await prisma.supplier.delete({ where: { id: params.supplierId } });
+    await prisma.supplier.delete({ where: { id: supplierId } });
 
     await logAudit({
       companyId: session.user.companyId,
       userId: session.user.id,
       entity: "supplier",
-      entityId: params.supplierId,
+      entityId: supplierId,
       action: "SUPPLIER_DELETE",
     });
 

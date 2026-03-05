@@ -27,6 +27,7 @@ type OrderRecord = {
   client: ClientOption;
   lines: Array<{
     id: string;
+    productId: string;
     product?: { id: string; name: string; sku: string } | null;
     warehouse?: { id: string; name: string } | null;
     quantity: string;
