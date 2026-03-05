@@ -9,8 +9,8 @@ export const metadata: Metadata = {
 
 export default function LoginPage() {
   return (
-    <div className="mx-auto flex min-h-screen w-full max-w-6xl flex-col px-5 py-8 sm:px-8">
-      <div className="fade-up mb-8">
+    <div className="mx-auto flex min-h-screen w-full max-w-6xl flex-col px-4 py-6 sm:px-8 sm:py-8">
+      <div className="fade-up mb-6 sm:mb-8">
         <NeuraLogo />
       </div>
       <div className="grid w-full flex-1 gap-8 lg:grid-cols-[1fr_460px]">
@@ -30,10 +30,10 @@ export default function LoginPage() {
           </div>
         </section>
 
-        <div className="fade-up glass-panel rounded-3xl p-7 sm:p-9">
+        <div className="fade-up glass-panel rounded-3xl p-6 sm:p-9">
           <div className="mb-8 space-y-2">
             <p className="text-xs font-semibold uppercase tracking-[0.2em] text-zinc-400">ERP Admin</p>
-            <h2 className="text-3xl font-semibold tracking-tight text-zinc-100">Sign in</h2>
+            <h2 className="text-2xl font-semibold tracking-tight text-zinc-100 sm:text-3xl">Sign in</h2>
             <p className="text-sm text-zinc-400">Use your admin credentials to access the console.</p>
           </div>
           <Suspense fallback={<p className="text-sm text-zinc-400">Loading form...</p>}>

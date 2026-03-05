@@ -36,7 +36,7 @@ export function LoginForm() {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="w-full space-y-4">
+    <form onSubmit={handleSubmit} className="w-full space-y-4 sm:space-y-5">
       {error ? (
         <div className="rounded-xl border border-red-500/30 bg-red-500/15 px-4 py-3 text-sm text-red-200">
           {error}
@@ -75,7 +75,7 @@ export function LoginForm() {
       >
         {isSubmitting ? "Signing in..." : "Sign in"}
       </button>
-      <p className="text-center text-xs text-zinc-500">
+      <p className="text-center text-[11px] text-zinc-500 sm:text-xs">
         Use admin@acme.local / admin123 (seed data)
       </p>
     </form>

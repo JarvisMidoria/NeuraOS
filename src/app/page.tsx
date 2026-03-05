@@ -3,7 +3,7 @@ import { NeuraLogo } from "@/components/brand/neura-logo";
 
 export default function Home() {
   return (
-    <main className="mx-auto flex min-h-screen w-full max-w-6xl flex-col px-5 py-6 sm:px-8 sm:py-8">
+    <main className="mx-auto flex min-h-screen w-full max-w-6xl flex-col px-4 py-5 sm:px-8 sm:py-8">
       <header className="fade-up flex items-center justify-between">
         <NeuraLogo />
         <Link
@@ -14,37 +14,37 @@ export default function Home() {
         </Link>
       </header>
 
-      <section className="grid flex-1 items-center gap-12 py-10 lg:grid-cols-[1.15fr_0.85fr]">
-        <div className="fade-up space-y-8">
+      <section className="grid flex-1 items-center gap-8 py-8 sm:gap-12 sm:py-10 lg:grid-cols-[1.15fr_0.85fr]">
+        <div className="fade-up space-y-6 sm:space-y-8">
           <div className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/5 px-3 py-1 text-xs text-zinc-300">
             <span className="h-2 w-2 rounded-full bg-[var(--accent)]" />
             ERP control center
           </div>
-          <h1 className="max-w-3xl text-5xl font-semibold leading-[1.05] tracking-tight text-zinc-50 sm:text-6xl">
+          <h1 className="max-w-3xl text-4xl font-semibold leading-[1.08] tracking-tight text-zinc-50 sm:text-6xl">
             Operational clarity for teams shipping every day.
           </h1>
-          <p className="max-w-2xl text-lg leading-relaxed text-[var(--muted)]">
+          <p className="max-w-2xl text-base leading-relaxed text-[var(--muted)] sm:text-lg">
             Run stock, purchasing, and sales from one fast interface. NeuraOS is structured for
             execution with clean workflows and strict operational traceability.
           </p>
-          <div className="flex flex-wrap gap-3">
+          <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap">
             <Link
               href="/login"
-              className="rounded-full bg-[var(--accent)] px-6 py-3 text-sm font-medium text-white transition hover:brightness-110"
+              className="rounded-full bg-[var(--accent)] px-6 py-3 text-center text-sm font-medium text-white transition hover:brightness-110"
             >
               Open Admin
             </Link>
             <Link
               href="https://nextjs.org/docs"
               target="_blank"
-              className="rounded-full border border-white/20 px-6 py-3 text-sm font-medium text-zinc-200 transition hover:border-white/35 hover:bg-white/5"
+              className="rounded-full border border-white/20 px-6 py-3 text-center text-sm font-medium text-zinc-200 transition hover:border-white/35 hover:bg-white/5"
             >
               Platform docs
             </Link>
           </div>
         </div>
 
-        <div className="fade-up glass-panel rounded-2xl p-5 sm:p-6">
+        <div className="fade-up glass-panel rounded-2xl p-4 sm:p-6">
           <div className="mb-5 flex items-center justify-between">
             <p className="text-sm font-medium text-zinc-100">Overview</p>
             <p className="text-xs text-zinc-400">Realtime</p>
@@ -74,7 +74,7 @@ export default function Home() {
         </div>
       </section>
 
-      <footer className="fade-up pb-2 text-xs text-zinc-500">
+      <footer className="fade-up pb-2 text-center text-xs text-zinc-500 sm:text-left">
         Built for operators who prefer speed over noise.
       </footer>
     </main>
