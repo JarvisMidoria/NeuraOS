@@ -50,32 +50,56 @@ body {
   background: transparent !important;
 }
 
+.admin-shell {
+  --admin-surface: rgba(16, 20, 30, 0.74);
+  --admin-border: rgba(255, 255, 255, 0.12);
+  --admin-text: #f3f5fb;
+  --admin-muted: #a0a7bb;
+  --admin-soft-bg: rgba(255, 255, 255, 0.08);
+  --admin-input-bg: rgba(5, 7, 11, 0.35);
+  --admin-shadow: 0 20px 45px rgba(0, 0, 0, 0.32);
+}
+
+[data-admin-theme="light"] .admin-shell {
+  --admin-surface: rgba(255, 255, 255, 0.95);
+  --admin-border: rgba(20, 24, 33, 0.1);
+  --admin-text: #161a24;
+  --admin-muted: #626b81;
+  --admin-soft-bg: rgba(20, 24, 33, 0.06);
+  --admin-input-bg: rgba(255, 255, 255, 0.94);
+  --admin-shadow: 0 14px 30px rgba(9, 17, 34, 0.12);
+}
+
+[data-admin-theme="light"] .admin-shell {
+  background: #f3f5fb !important;
+}
+
 .admin-shell .bg-white {
-  background: rgba(16, 20, 30, 0.74) !important;
+  background: var(--admin-surface) !important;
 }
 
 .admin-shell .border-zinc-100,
 .admin-shell .border-zinc-200,
 .admin-shell .border-zinc-300 {
-  border-color: rgba(255, 255, 255, 0.12) !important;
+  border-color: var(--admin-border) !important;
 }
 
 .admin-shell .text-zinc-900 {
-  color: #f3f5fb !important;
+  color: var(--admin-text) !important;
 }
 
 .admin-shell .text-zinc-700,
 .admin-shell .text-zinc-600,
 .admin-shell .text-zinc-500 {
-  color: #a0a7bb !important;
+  color: var(--admin-muted) !important;
 }
 
 .admin-shell .bg-zinc-100 {
-  background: rgba(255, 255, 255, 0.08) !important;
+  background: var(--admin-soft-bg) !important;
 }
 
 .admin-shell .shadow-sm {
-  box-shadow: 0 20px 45px rgba(0, 0, 0, 0.32) !important;
+  box-shadow: var(--admin-shadow) !important;
 }
 
 .admin-shell .bg-zinc-900 {
@@ -85,9 +109,9 @@ body {
 .admin-shell input,
 .admin-shell select,
 .admin-shell textarea {
-  border-color: rgba(255, 255, 255, 0.16) !important;
-  background: rgba(5, 7, 11, 0.35) !important;
-  color: #eef2ff !important;
+  border-color: var(--admin-border) !important;
+  background: var(--admin-input-bg) !important;
+  color: var(--admin-text) !important;
 }
 
 .admin-shell input::placeholder,
@@ -108,6 +132,10 @@ body {
 
 .admin-shell .text-red-600 {
   color: #ff8b95 !important;
+}
+
+.admin-shell .hover\:bg-zinc-50:hover {
+  background: rgba(124, 140, 255, 0.12) !important;
 }
 
 @keyframes fadeUp {

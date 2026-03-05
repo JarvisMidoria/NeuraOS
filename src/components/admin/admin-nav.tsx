@@ -2,15 +2,19 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useEffect, useMemo, useState } from "react";
 
 const NAV_ITEMS = [
-  { href: "/admin", label: "Overview" },
-  { href: "/admin/products", label: "Products" },
-  { href: "/admin/stock", label: "Inventory" },
-  { href: "/admin/sales/quotes", label: "Quotes" },
-  { href: "/admin/sales/orders", label: "Orders" },
-  { href: "/admin/warehouses", label: "Warehouses" },
+  { href: "/admin", en: "Overview", fr: "Apercu" },
+  { href: "/admin/products", en: "Products", fr: "Produits" },
+  { href: "/admin/stock", en: "Inventory", fr: "Stock" },
+  { href: "/admin/sales/quotes", en: "Quotes", fr: "Devis" },
+  { href: "/admin/sales/orders", en: "Orders", fr: "Commandes" },
+  { href: "/admin/warehouses", en: "Warehouses", fr: "Entrepots" },
 ];
+
+type AdminLang = "en" | "fr";
+type AdminTheme = "dark" | "light";
 
 function isActive(pathname: string, href: string) {
   if (href === "/admin") return pathname === "/admin";
@@ -19,11 +23,120 @@ function isActive(pathname: string, href: string) {
 
 export function AdminNav() {
   const pathname = usePathname();
+  const [query, setQuery] = useState("");
+  const [lang, setLang] = useState<AdminLang>(() => {
+    if (typeof window === "undefined") return "en";
+    const cookieLang = document.cookie.match(/(?:^|;\s*)neura_lang=([^;]+)/)?.[1];
+    const localLang = window.localStorage.getItem("neura_lang");
+    return (cookieLang || localLang) === "fr" ? "fr" : "en";
+  });
+  const [theme, setTheme] = useState<AdminTheme>(() => {
+    if (typeof window === "undefined") return "dark";
+    const cookieTheme = document.cookie.match(/(?:^|;\s*)neura_theme=([^;]+)/)?.[1];
+    const localTheme = window.localStorage.getItem("neura_theme");
+    return (cookieTheme || localTheme) === "light" ? "light" : "dark";
+  });
+
+  const text = useMemo(
+    () => ({
+      search: lang === "fr" ? "Rechercher..." : "Search...",
+      language: lang === "fr" ? "Langue" : "Language",
+      theme: lang === "fr" ? "Theme" : "Theme",
+      dark: lang === "fr" ? "Nuit" : "Dark",
+      light: lang === "fr" ? "Jour" : "Light",
+      english: "EN",
+      french: "FR",
+    }),
+    [lang],
+  );
+
+  useEffect(() => {
+    document.documentElement.setAttribute("data-admin-theme", theme);
+  }, [theme]);
+
+  const savePreference = (key: "neura_lang" | "neura_theme", value: string) => {
+    document.cookie = `${key}=${value}; Path=/; Max-Age=31536000; SameSite=Lax`;
+    window.localStorage.setItem(key, value);
+  };
+
+  const setLanguage = (value: AdminLang) => {
+    setLang(value);
+    savePreference("neura_lang", value);
+    window.location.reload();
+  };
+
+  const setColorMode = (value: AdminTheme) => {
+    setTheme(value);
+    document.documentElement.setAttribute("data-admin-theme", value);
+    savePreference("neura_theme", value);
+  };
+
+  const filteredItems = NAV_ITEMS.filter((item) => {
+    const label = lang === "fr" ? item.fr : item.en;
+    return label.toLowerCase().includes(query.toLowerCase());
+  });
 
   return (
     <>
+      <div className="mb-4 space-y-3">
+        <input
+          value={query}
+          onChange={(event) => setQuery(event.target.value)}
+          placeholder={text.search}
+          className="w-full rounded-lg border border-white/15 bg-black/25 px-3 py-2 text-sm text-zinc-100 placeholder:text-zinc-500"
+        />
+        <div className="grid grid-cols-2 gap-2">
+          <button
+            type="button"
+            onClick={() => setLanguage("en")}
+            className={`rounded-lg border px-2 py-1.5 text-xs ${
+              lang === "en"
+                ? "border-white/25 bg-white/12 text-zinc-100"
+                : "border-white/12 text-zinc-400 hover:text-zinc-200"
+            }`}
+          >
+            {text.language}: {text.english}
+          </button>
+          <button
+            type="button"
+            onClick={() => setLanguage("fr")}
+            className={`rounded-lg border px-2 py-1.5 text-xs ${
+              lang === "fr"
+                ? "border-white/25 bg-white/12 text-zinc-100"
+                : "border-white/12 text-zinc-400 hover:text-zinc-200"
+            }`}
+          >
+            {text.language}: {text.french}
+          </button>
+        </div>
+        <div className="grid grid-cols-2 gap-2">
+          <button
+            type="button"
+            onClick={() => setColorMode("dark")}
+            className={`rounded-lg border px-2 py-1.5 text-xs ${
+              theme === "dark"
+                ? "border-white/25 bg-white/12 text-zinc-100"
+                : "border-white/12 text-zinc-400 hover:text-zinc-200"
+            }`}
+          >
+            {text.theme}: {text.dark}
+          </button>
+          <button
+            type="button"
+            onClick={() => setColorMode("light")}
+            className={`rounded-lg border px-2 py-1.5 text-xs ${
+              theme === "light"
+                ? "border-white/25 bg-white/12 text-zinc-100"
+                : "border-white/12 text-zinc-400 hover:text-zinc-200"
+            }`}
+          >
+            {text.theme}: {text.light}
+          </button>
+        </div>
+      </div>
+
       <nav className="hidden flex-col gap-1 lg:flex">
-        {NAV_ITEMS.map((item) => {
+        {filteredItems.map((item) => {
           const active = isActive(pathname, item.href);
           return (
             <Link
@@ -35,14 +148,14 @@ export function AdminNav() {
                   : "text-zinc-400 hover:bg-white/6 hover:text-zinc-200"
               }`}
             >
-              {item.label}
+              {lang === "fr" ? item.fr : item.en}
             </Link>
           );
         })}
       </nav>
 
       <nav className="flex gap-2 overflow-x-auto pb-1 lg:hidden">
-        {NAV_ITEMS.map((item) => {
+        {filteredItems.map((item) => {
           const active = isActive(pathname, item.href);
           return (
             <Link
@@ -54,7 +167,7 @@ export function AdminNav() {
                   : "border border-white/10 text-zinc-400 hover:text-zinc-200"
               }`}
             >
-              {item.label}
+              {lang === "fr" ? item.fr : item.en}
             </Link>
           );
         })}
