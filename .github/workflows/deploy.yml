@@ -1,0 +1,19 @@
+name: Deploy to Render
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Deploy to Render
+        uses: renderinc/action@v1
+        with:
+          api_key: ${{ secrets.RENDER_API_KEY }}
+          service_id: tea-d6k2qci4d50c73d7mao0
+          branch: main
