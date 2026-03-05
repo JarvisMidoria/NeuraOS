@@ -93,7 +93,6 @@ model Role {
 
   @@unique([companyId, name])
   @@index([companyId])
-  @@index([companyId, clientType])
 }
 
 model Permission {
