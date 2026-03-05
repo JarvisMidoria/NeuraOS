@@ -185,7 +185,7 @@ export async function getDashboardSnapshot(companyId: string): Promise<Dashboard
       WHERE "companyId" = ${companyId}
         AND "orderDate" >= ${sixMonthsAgo}
         AND "status" IN (${Prisma.join(
-          FULFILLED_ORDER_STATUSES.map((status) => Prisma.sql`${status}`),
+          FULFILLED_ORDER_STATUSES.map((status) => Prisma.sql`CAST(${status} AS "DocumentStatus")`),
         )})
       GROUP BY 1
       ORDER BY 1 ASC
