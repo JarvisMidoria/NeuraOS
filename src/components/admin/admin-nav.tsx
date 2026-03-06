@@ -6,6 +6,7 @@ import { useEffect, useMemo, useState } from "react";
 
 const NAV_ITEMS = [
   { href: "/admin", en: "Overview", fr: "Apercu" },
+  { href: "/admin/analytics", en: "Analytics", fr: "Analytics" },
   { href: "/admin/products", en: "Products", fr: "Produits" },
   { href: "/admin/stock", en: "Inventory", fr: "Stock" },
   { href: "/admin/sales/quotes", en: "Quotes", fr: "Devis" },
@@ -24,6 +25,14 @@ type AdminNavProps = {
   onNavigate?: () => void;
 };
 
+type SearchResult = {
+  id: string;
+  type: "product" | "client" | "supplier" | "quote" | "order" | "purchase";
+  title: string;
+  subtitle: string;
+  href: string;
+};
+
 function isActive(pathname: string, href: string) {
   if (href === "/admin") return pathname === "/admin";
   return pathname.startsWith(href);
@@ -32,6 +41,8 @@ function isActive(pathname: string, href: string) {
 export function AdminNav({ onNavigate }: AdminNavProps) {
   const pathname = usePathname();
   const [query, setQuery] = useState("");
+  const [results, setResults] = useState<SearchResult[]>([]);
+  const [loading, setLoading] = useState(false);
   const [lang, setLang] = useState<AdminLang>(() => {
     if (typeof window === "undefined") return "en";
     const cookieLang = document.cookie.match(/(?:^|;\s*)neura_lang=([^;]+)/)?.[1];
@@ -47,7 +58,10 @@ export function AdminNav({ onNavigate }: AdminNavProps) {
 
   const text = useMemo(
     () => ({
-      search: lang === "fr" ? "Rechercher..." : "Search...",
+      search: lang === "fr" ? "Recherche globale..." : "Global search...",
+      searchHint: lang === "fr" ? "Produits, clients, devis, commandes..." : "Products, clients, quotes, orders...",
+      noResults: lang === "fr" ? "Aucun resultat" : "No results",
+      loading: lang === "fr" ? "Recherche..." : "Searching...",
       language: lang === "fr" ? "Langue" : "Language",
       english: "EN",
       french: "FR",
@@ -57,9 +71,50 @@ export function AdminNav({ onNavigate }: AdminNavProps) {
     [lang],
   );
 
+  const typeLabels: Record<SearchResult["type"], string> = {
+    product: lang === "fr" ? "Produit" : "Product",
+    client: lang === "fr" ? "Client" : "Client",
+    supplier: lang === "fr" ? "Fournisseur" : "Supplier",
+    quote: lang === "fr" ? "Devis" : "Quote",
+    order: lang === "fr" ? "Commande" : "Order",
+    purchase: lang === "fr" ? "Achat" : "Purchase",
+  };
+
   useEffect(() => {
     document.documentElement.setAttribute("data-admin-theme", theme);
   }, [theme]);
+
+  useEffect(() => {
+    const normalized = query.trim();
+    if (normalized.length < 2) {
+      setResults([]);
+      setLoading(false);
+      return;
+    }
+
+    const controller = new AbortController();
+    const timeout = window.setTimeout(async () => {
+      try {
+        setLoading(true);
+        const response = await fetch(`/api/search/global?query=${encodeURIComponent(normalized)}`, {
+          signal: controller.signal,
+          cache: "no-store",
+        });
+        if (!response.ok) return;
+        const payload = (await response.json()) as { data?: SearchResult[] };
+        setResults(Array.isArray(payload.data) ? payload.data : []);
+      } catch {
+        setResults([]);
+      } finally {
+        setLoading(false);
+      }
+    }, 220);
+
+    return () => {
+      controller.abort();
+      window.clearTimeout(timeout);
+    };
+  }, [query]);
 
   const savePreference = (key: "neura_lang" | "neura_theme", value: string) => {
     document.cookie = `${key}=${value}; Path=/; Max-Age=31536000; SameSite=Lax`;
@@ -78,20 +133,43 @@ export function AdminNav({ onNavigate }: AdminNavProps) {
     savePreference("neura_theme", value);
   };
 
-  const filteredItems = NAV_ITEMS.filter((item) => {
-    const label = lang === "fr" ? item.fr : item.en;
-    return label.toLowerCase().includes(query.toLowerCase());
-  });
-
   return (
     <>
       <div className="mb-4 space-y-3">
-        <input
-          value={query}
-          onChange={(event) => setQuery(event.target.value)}
-          placeholder={text.search}
-          className="w-full rounded-lg border border-white/15 bg-black/25 px-3 py-2 text-sm text-zinc-100 placeholder:text-zinc-500"
-        />
+        <div className="relative">
+          <input
+            value={query}
+            onChange={(event) => setQuery(event.target.value)}
+            placeholder={text.search}
+            className="w-full rounded-lg border border-white/15 bg-black/25 px-3 py-2 text-sm text-zinc-100 placeholder:text-zinc-500"
+          />
+          {(query.trim().length >= 2 || loading) && (
+            <div className="absolute left-0 right-0 top-[calc(100%+0.4rem)] z-20 max-h-72 overflow-auto rounded-lg border border-white/15 bg-[#0a0f1d] p-2 shadow-2xl">
+              {loading && <p className="px-2 py-1.5 text-xs text-zinc-400">{text.loading}</p>}
+              {!loading && results.length === 0 && <p className="px-2 py-1.5 text-xs text-zinc-400">{text.noResults}</p>}
+              {!loading &&
+                results.map((result) => (
+                  <Link
+                    key={result.id}
+                    href={result.href}
+                    onClick={() => {
+                      setQuery("");
+                      setResults([]);
+                      onNavigate?.();
+                    }}
+                    className="block rounded-md px-2 py-2 transition hover:bg-white/10"
+                  >
+                    <p className="text-sm font-medium text-zinc-100">{result.title}</p>
+                    <p className="text-xs text-zinc-400">
+                      {typeLabels[result.type]} · {result.subtitle}
+                    </p>
+                  </Link>
+                ))}
+            </div>
+          )}
+          {query.trim().length < 2 && <p className="mt-1 text-[11px] text-zinc-500">{text.searchHint}</p>}
+        </div>
+
         <div className="grid grid-cols-2 gap-2">
           <button
             type="button"
@@ -147,7 +225,7 @@ export function AdminNav({ onNavigate }: AdminNavProps) {
       </div>
 
       <nav className="flex flex-col gap-1">
-        {filteredItems.map((item) => {
+        {NAV_ITEMS.map((item) => {
           const active = isActive(pathname, item.href);
           return (
             <Link
