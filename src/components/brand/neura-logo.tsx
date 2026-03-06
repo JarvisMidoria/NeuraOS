@@ -11,26 +11,36 @@ export function NeuraLogo({ href = "/", compact = false, className = "" }: Neura
     <span className={`inline-flex items-center gap-2 ${className}`}>
       <svg
         aria-hidden
-        viewBox="0 0 32 32"
+        viewBox="0 0 64 64"
         className="h-7 w-7"
         fill="none"
         xmlns="http://www.w3.org/2000/svg"
       >
-        <rect x="1" y="1" width="30" height="30" rx="8" fill="url(#neura-bg)" />
         <path
-          d="M12 11.5C10.34 11.5 9 12.84 9 14.5C9 15.79 9.81 16.89 10.95 17.33V19.1C10.95 20.19 11.83 21.07 12.92 21.07H14.15M20 11.5C21.66 11.5 23 12.84 23 14.5C23 15.79 22.19 16.89 21.05 17.33V19.1C21.05 20.19 20.17 21.07 19.08 21.07H17.85"
-          stroke="#DDE3FF"
-          strokeWidth="1.5"
+          d="M11 27C11 17 20 10 31 10C41 10 51 15 53 24C55 34 47 39 36 36C30 34 25 31 20 31C16 31 13 33 11 36"
+          stroke="url(#neura-stroke)"
+          strokeWidth="4"
           strokeLinecap="round"
+          strokeLinejoin="round"
         />
-        <path d="M16 10V22" stroke="#DDE3FF" strokeWidth="1.5" strokeLinecap="round" />
-        <circle cx="13.2" cy="14.5" r="1.2" fill="#DDE3FF" />
-        <circle cx="18.8" cy="14.5" r="1.2" fill="#DDE3FF" />
-        <circle cx="16" cy="18.6" r="1.2" fill="#DDE3FF" />
+        <path
+          d="M18 39C24 34 31 34 38 37C43 40 47 45 47 50"
+          stroke="url(#neura-stroke)"
+          strokeWidth="4"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+        <path
+          d="M27 49C27 44 30 40 34 38"
+          stroke="url(#neura-stroke)"
+          strokeWidth="4"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
         <defs>
-          <linearGradient id="neura-bg" x1="4" y1="4" x2="28" y2="28" gradientUnits="userSpaceOnUse">
-            <stop stopColor="#6F7FFF" />
-            <stop offset="1" stopColor="#4F5CC8" />
+          <linearGradient id="neura-stroke" x1="10" y1="12" x2="52" y2="52" gradientUnits="userSpaceOnUse">
+            <stop stopColor="#d946ef" />
+            <stop offset="1" stopColor="#6366f1" />
           </linearGradient>
         </defs>
       </svg>

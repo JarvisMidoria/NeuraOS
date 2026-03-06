@@ -84,7 +84,21 @@ export function NotificationCenter({ lang }: NotificationCenterProps) {
         className="relative rounded-lg border border-white/15 p-2 text-zinc-200 hover:bg-white/10"
         aria-label={text.title}
       >
-        <span className="text-sm">🔔</span>
+        <svg
+          aria-hidden
+          viewBox="0 0 24 24"
+          className="h-4 w-4"
+          fill="none"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <path
+            d="M8 18H16M6 16.5H18C16.6 15.2 16 13.5 16 11V10C16 7.8 14.2 6 12 6C9.8 6 8 7.8 8 10V11C8 13.5 7.4 15.2 6 16.5Z"
+            stroke="currentColor"
+            strokeWidth="1.7"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+        </svg>
         {unread > 0 && (
           <span className="absolute -right-1 -top-1 inline-flex min-w-4 items-center justify-center rounded-full bg-rose-500 px-1 text-[10px] font-semibold text-white">
             {unread > 9 ? "9+" : unread}
