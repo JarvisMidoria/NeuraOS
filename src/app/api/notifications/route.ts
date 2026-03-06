@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { ensurePermissions, handleApiError, requireSession } from "@/lib/api-helpers";
-import { listCompanyNotifications, syncCompanyNotifications } from "@/lib/notifications-service";
+import { listCompanyNotifications, maybeSyncCompanyNotifications, syncCompanyNotifications } from "@/lib/notifications-service";
 
 function parseLimit(req: NextRequest) {
   const value = Number(new URL(req.url).searchParams.get("limit") ?? "20");
@@ -14,6 +14,11 @@ function shouldSync(req: NextRequest) {
   return raw === "1" || raw === "true";
 }
 
+function shouldAutoSync(req: NextRequest) {
+  const raw = new URL(req.url).searchParams.get("auto");
+  return raw === "1" || raw === "true";
+}
+
 export async function GET(req: NextRequest) {
   try {
     const session = await requireSession();
@@ -21,10 +26,16 @@ export async function GET(req: NextRequest) {
 
     if (shouldSync(req)) {
       await syncCompanyNotifications(session.user.companyId);
+    } else if (shouldAutoSync(req)) {
+      await maybeSyncCompanyNotifications(session.user.companyId);
     }
 
     const payload = await listCompanyNotifications(session.user.companyId, parseLimit(req));
-    return NextResponse.json(payload);
+    return NextResponse.json(payload, {
+      headers: {
+        "Cache-Control": "private, max-age=10, stale-while-revalidate=30",
+      },
+    });
   } catch (error) {
     return handleApiError(error);
   }

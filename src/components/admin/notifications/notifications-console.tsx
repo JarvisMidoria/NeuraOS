@@ -55,9 +55,8 @@ export function NotificationsConsole({ lang }: { lang: "en" | "fr" }) {
   const load = useCallback(async (sync = false) => {
     try {
       setLoading(true);
-      const response = await fetch(`/api/notifications?limit=100${sync ? "&sync=1" : ""}`, {
-        cache: "no-store",
-      });
+      const mode = sync ? "sync=1" : "auto=1";
+      const response = await fetch(`/api/notifications?limit=100&${mode}`);
       if (!response.ok) return;
       const payload = (await response.json()) as { data?: NotificationItem[]; unread?: number };
       setItems(Array.isArray(payload.data) ? payload.data : []);
@@ -68,7 +67,7 @@ export function NotificationsConsole({ lang }: { lang: "en" | "fr" }) {
   }, []);
 
   useEffect(() => {
-    load(true);
+    load(false);
   }, [load]);
 
   const markOneRead = async (notificationId: string) => {

@@ -1,4 +1,5 @@
 import { DocumentStatus, Prisma } from "@prisma/client";
+import { unstable_cache } from "next/cache";
 import { prisma } from "@/lib/prisma";
 import { getLowStockProducts } from "@/lib/stock-service";
 
@@ -413,4 +414,14 @@ export async function getDashboardSnapshot(companyId: string): Promise<Dashboard
     latestDocuments,
     operationalTodo,
   };
+}
+
+const getDashboardSnapshotCachedInternal = unstable_cache(
+  async (companyId: string) => getDashboardSnapshot(companyId),
+  ["dashboard-snapshot-v1"],
+  { revalidate: 30 },
+);
+
+export function getDashboardSnapshotCached(companyId: string) {
+  return getDashboardSnapshotCachedInternal(companyId);
 }

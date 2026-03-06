@@ -34,21 +34,28 @@ export async function GET() {
 
     const completed = checklist.filter((item) => item.done).length;
 
-    return NextResponse.json({
-      data: {
-        progress: {
-          completed,
-          total: checklist.length,
-          percent: Math.round((completed / checklist.length) * 100),
-        },
-        checklist,
-        subscription: {
-          plan: limits.plan,
-          status: limits.status,
-          limits: limits.limits,
+    return NextResponse.json(
+      {
+        data: {
+          progress: {
+            completed,
+            total: checklist.length,
+            percent: Math.round((completed / checklist.length) * 100),
+          },
+          checklist,
+          subscription: {
+            plan: limits.plan,
+            status: limits.status,
+            limits: limits.limits,
+          },
         },
       },
-    });
+      {
+        headers: {
+          "Cache-Control": "private, max-age=15, stale-while-revalidate=45",
+        },
+      },
+    );
   } catch (error) {
     return handleApiError(error);
   }

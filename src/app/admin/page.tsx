@@ -2,7 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { auth } from "@/auth";
 import { getAdminLang } from "@/lib/admin-preferences";
-import { getDashboardSnapshot } from "@/lib/dashboard-service";
+import { getDashboardSnapshotCached } from "@/lib/dashboard-service";
 
 function formatMetric(
   value: number,
@@ -79,7 +79,7 @@ export default async function AdminDashboard() {
     notFound();
   }
 
-  const snapshot = await getDashboardSnapshot(user.companyId);
+  const snapshot = await getDashboardSnapshotCached(user.companyId);
   const maxMonthlyValue = Math.max(...snapshot.monthlySales.map((entry) => entry.total), 1);
   const recentLowStock = snapshot.lowStock.slice(0, 6);
   const displayName = lang === "fr" ? "Ghali" : user.name ?? "Admin";

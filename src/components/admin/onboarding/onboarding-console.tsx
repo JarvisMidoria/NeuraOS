@@ -50,7 +50,7 @@ export function OnboardingConsole({ lang }: { lang: "en" | "fr" }) {
     try {
       setLoading(true);
       setError(null);
-      const response = await fetch("/api/onboarding/status", { cache: "no-store" });
+      const response = await fetch("/api/onboarding/status");
       if (!response.ok) {
         let message = text.loadingError;
         try {

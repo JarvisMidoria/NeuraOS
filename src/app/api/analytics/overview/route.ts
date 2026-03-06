@@ -11,7 +11,14 @@ export async function GET(req: NextRequest) {
     const monthsParam = Number(new URL(req.url).searchParams.get("months") ?? "6");
     const data = await getAnalyticsSnapshot(session.user.companyId, monthsParam);
 
-    return NextResponse.json({ data });
+    return NextResponse.json(
+      { data },
+      {
+        headers: {
+          "Cache-Control": "private, max-age=20, stale-while-revalidate=60",
+        },
+      },
+    );
   } catch (error) {
     return handleApiError(error);
   }

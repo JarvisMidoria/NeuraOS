@@ -103,7 +103,6 @@ export function AdminNav({ onNavigate }: AdminNavProps) {
         setLoading(true);
         const response = await fetch(`/api/search/global?query=${encodeURIComponent(normalized)}`, {
           signal: controller.signal,
-          cache: "no-store",
         });
         if (!response.ok) return;
         const payload = (await response.json()) as { data?: SearchResult[] };

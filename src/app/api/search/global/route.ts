@@ -155,7 +155,14 @@ export async function GET(req: NextRequest) {
       })),
     ].slice(0, 24);
 
-    return NextResponse.json({ data });
+    return NextResponse.json(
+      { data },
+      {
+        headers: {
+          "Cache-Control": "private, max-age=15, stale-while-revalidate=45",
+        },
+      },
+    );
   } catch (error) {
     return handleApiError(error);
   }

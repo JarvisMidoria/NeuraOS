@@ -44,9 +44,8 @@ export function NotificationCenter({ lang }: NotificationCenterProps) {
   const loadNotifications = async (sync = false) => {
     try {
       setLoading(true);
-      const response = await fetch(`/api/notifications?limit=20${sync ? "&sync=1" : ""}`, {
-        cache: "no-store",
-      });
+      const mode = sync ? "sync=1" : "auto=1";
+      const response = await fetch(`/api/notifications?limit=20&${mode}`);
       if (!response.ok) return;
       const payload = (await response.json()) as { data?: NotificationItem[]; unread?: number };
       setItems(Array.isArray(payload.data) ? payload.data : []);
@@ -57,10 +56,10 @@ export function NotificationCenter({ lang }: NotificationCenterProps) {
   };
 
   useEffect(() => {
-    loadNotifications(true);
+    loadNotifications(false);
     const id = window.setInterval(() => {
       loadNotifications(false);
-    }, 45_000);
+    }, 90_000);
     return () => window.clearInterval(id);
   }, []);
 

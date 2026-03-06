@@ -31,6 +31,9 @@ function makeFingerprint(parts: Array<string | number>) {
   return parts.join("|");
 }
 
+const AUTO_SYNC_MIN_INTERVAL_MS = 5 * 60 * 1000;
+const lastAutoSyncByCompany = new Map<string, number>();
+
 async function buildSeeds(companyId: string): Promise<NotificationSeed[]> {
   const now = new Date();
   const next7Days = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
@@ -164,6 +167,25 @@ export async function syncCompanyNotifications(companyId: string) {
   });
 
   return { generated: seeds.length, unread };
+}
+
+export async function maybeSyncCompanyNotifications(companyId: string, minIntervalMs = AUTO_SYNC_MIN_INTERVAL_MS) {
+  const now = Date.now();
+  const last = lastAutoSyncByCompany.get(companyId) ?? 0;
+
+  if (now - last < minIntervalMs) {
+    return { skipped: true as const };
+  }
+
+  lastAutoSyncByCompany.set(companyId, now);
+  try {
+    const result = await syncCompanyNotifications(companyId);
+    return { skipped: false as const, ...result };
+  } catch (error) {
+    // Avoid hot-loop retries on failure.
+    lastAutoSyncByCompany.set(companyId, now);
+    throw error;
+  }
 }
 
 export async function listCompanyNotifications(companyId: string, limit = 20) {
