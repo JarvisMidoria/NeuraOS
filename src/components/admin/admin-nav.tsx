@@ -68,7 +68,6 @@ export function AdminNav({ onNavigate }: AdminNavProps) {
       searchHint: lang === "fr" ? "Produits, clients, devis, commandes..." : "Products, clients, quotes, orders...",
       noResults: lang === "fr" ? "Aucun resultat" : "No results",
       loading: lang === "fr" ? "Recherche..." : "Searching...",
-      language: lang === "fr" ? "Langue" : "Language",
       english: "EN",
       french: "FR",
       darkLabel: lang === "fr" ? "Mode nuit" : "Dark mode",
@@ -147,12 +146,12 @@ export function AdminNav({ onNavigate }: AdminNavProps) {
             value={query}
             onChange={(event) => setQuery(event.target.value)}
             placeholder={text.search}
-            className="w-full rounded-lg border border-white/15 bg-black/25 px-3 py-2 text-sm text-zinc-100 placeholder:text-zinc-500"
+            className="w-full rounded-lg border border-[var(--admin-border)] bg-[var(--admin-input-bg)] px-3 py-2 text-sm text-[var(--admin-text)] placeholder:text-[var(--admin-muted)]"
           />
           {(query.trim().length >= 2 || loading) && (
-            <div className="absolute left-0 right-0 top-[calc(100%+0.4rem)] z-20 max-h-72 overflow-auto rounded-lg border border-white/15 bg-[#0a0f1d] p-2 shadow-2xl">
-              {loading && <p className="px-2 py-1.5 text-xs text-zinc-400">{text.loading}</p>}
-              {!loading && results.length === 0 && <p className="px-2 py-1.5 text-xs text-zinc-400">{text.noResults}</p>}
+            <div className="absolute left-0 right-0 top-[calc(100%+0.4rem)] z-20 max-h-72 overflow-auto rounded-lg border border-[var(--admin-border)] bg-[var(--admin-surface)] p-2 shadow-2xl">
+              {loading && <p className="px-2 py-1.5 text-xs text-[var(--admin-muted)]">{text.loading}</p>}
+              {!loading && results.length === 0 && <p className="px-2 py-1.5 text-xs text-[var(--admin-muted)]">{text.noResults}</p>}
               {!loading &&
                 results.map((result) => (
                   <Link
@@ -163,41 +162,41 @@ export function AdminNav({ onNavigate }: AdminNavProps) {
                       setResults([]);
                       onNavigate?.();
                     }}
-                    className="block rounded-md px-2 py-2 transition hover:bg-white/10"
+                    className="block rounded-md px-2 py-2 transition hover:bg-[var(--admin-soft-bg)]"
                   >
-                    <p className="text-sm font-medium text-zinc-100">{result.title}</p>
-                    <p className="text-xs text-zinc-400">
+                    <p className="text-sm font-medium text-[var(--admin-text)]">{result.title}</p>
+                    <p className="text-xs text-[var(--admin-muted)]">
                       {typeLabels[result.type]} · {result.subtitle}
                     </p>
                   </Link>
                 ))}
             </div>
           )}
-          {query.trim().length < 2 && <p className="mt-1 text-[11px] text-zinc-500">{text.searchHint}</p>}
+          {query.trim().length < 2 && <p className="mt-1 text-[11px] text-[var(--admin-muted)]">{text.searchHint}</p>}
         </div>
 
         <div className="grid grid-cols-2 gap-2">
           <button
             type="button"
             onClick={() => setLanguage("en")}
-            className={`rounded-lg border px-2 py-1.5 text-xs ${
+            className={`rounded-full border border-[var(--admin-border)] px-2 py-1 text-[10px] ${
               lang === "en"
-                ? "border-white/25 bg-white/12 text-zinc-100"
-                : "border-white/12 text-zinc-400 hover:text-zinc-200"
+                ? "bg-[var(--admin-soft-bg)] text-[var(--admin-text)]"
+                : "text-[var(--admin-muted)] hover:text-[var(--admin-text)]"
             }`}
           >
-            {text.language}: {text.english}
+            {text.english}
           </button>
           <button
             type="button"
             onClick={() => setLanguage("fr")}
-            className={`rounded-lg border px-2 py-1.5 text-xs ${
+            className={`rounded-full border border-[var(--admin-border)] px-2 py-1 text-[10px] ${
               lang === "fr"
-                ? "border-white/25 bg-white/12 text-zinc-100"
-                : "border-white/12 text-zinc-400 hover:text-zinc-200"
+                ? "bg-[var(--admin-soft-bg)] text-[var(--admin-text)]"
+                : "text-[var(--admin-muted)] hover:text-[var(--admin-text)]"
             }`}
           >
-            {text.language}: {text.french}
+            {text.french}
           </button>
         </div>
         <div className="grid grid-cols-2 gap-2">
@@ -206,26 +205,38 @@ export function AdminNav({ onNavigate }: AdminNavProps) {
             onClick={() => setColorMode("dark")}
             aria-label={text.darkLabel}
             title={text.darkLabel}
-            className={`rounded-lg border px-2 py-1.5 text-sm ${
+            className={`inline-flex items-center justify-center rounded-full border border-[var(--admin-border)] px-2 py-1 text-[10px] ${
               theme === "dark"
-                ? "border-white/25 bg-white/12 text-zinc-100"
-                : "border-white/12 text-zinc-400 hover:text-zinc-200"
+                ? "bg-[var(--admin-soft-bg)] text-[var(--admin-text)]"
+                : "text-[var(--admin-muted)] hover:text-[var(--admin-text)]"
             }`}
           >
-            ☾
+            <svg aria-hidden viewBox="0 0 24 24" className="h-3.5 w-3.5 fill-none stroke-current" strokeWidth="1.8">
+              <path d="M18 15.5A7.5 7.5 0 1 1 8.5 6a6.5 6.5 0 1 0 9.5 9.5Z" />
+            </svg>
           </button>
           <button
             type="button"
             onClick={() => setColorMode("light")}
             aria-label={text.lightLabel}
             title={text.lightLabel}
-            className={`rounded-lg border px-2 py-1.5 text-sm ${
+            className={`inline-flex items-center justify-center rounded-full border border-[var(--admin-border)] px-2 py-1 text-[10px] ${
               theme === "light"
-                ? "border-white/25 bg-white/12 text-zinc-100"
-                : "border-white/12 text-zinc-400 hover:text-zinc-200"
+                ? "bg-[var(--admin-soft-bg)] text-[var(--admin-text)]"
+                : "text-[var(--admin-muted)] hover:text-[var(--admin-text)]"
             }`}
           >
-            ☀
+            <svg aria-hidden viewBox="0 0 24 24" className="h-3.5 w-3.5 fill-none stroke-current" strokeWidth="1.8">
+              <circle cx="12" cy="12" r="4" />
+              <path d="M12 2.5V5" />
+              <path d="M12 19V21.5" />
+              <path d="M2.5 12H5" />
+              <path d="M19 12H21.5" />
+              <path d="m4.9 4.9 1.8 1.8" />
+              <path d="m17.3 17.3 1.8 1.8" />
+              <path d="m17.3 6.7 1.8-1.8" />
+              <path d="m4.9 19.1 1.8-1.8" />
+            </svg>
           </button>
         </div>
       </div>
@@ -240,8 +251,8 @@ export function AdminNav({ onNavigate }: AdminNavProps) {
               onClick={onNavigate}
               className={`rounded-lg px-3 py-2 text-sm transition ${
                 active
-                  ? "bg-white/12 text-zinc-100"
-                  : "text-zinc-400 hover:bg-white/6 hover:text-zinc-200"
+                  ? "bg-[var(--admin-soft-bg)] text-[var(--admin-text)]"
+                  : "text-[var(--admin-muted)] hover:bg-[var(--admin-soft-bg)] hover:text-[var(--admin-text)]"
               }`}
             >
               {lang === "fr" ? item.fr : item.en}
