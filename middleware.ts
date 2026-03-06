@@ -12,7 +12,7 @@ export async function middleware(req: NextRequest) {
     return NextResponse.redirect(url);
   }
 
-  if (pathname.startsWith("/admin/saas")) {
+  if (pathname.startsWith("/master") || pathname.startsWith("/admin/saas")) {
     const isMaster = token.isSuperAdmin === true || token.userKind === "MASTER";
     if (!isMaster) {
       return NextResponse.redirect(new URL("/admin", req.url));
@@ -23,5 +23,5 @@ export async function middleware(req: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/admin/:path*"],
+  matcher: ["/admin/:path*", "/master/:path*"],
 };

@@ -33,6 +33,13 @@ type TenantPayload = {
   data: Tenant[];
 };
 
+type Operation = {
+  id: string;
+  action: string;
+  companyName: string;
+  createdAt: string;
+};
+
 const PLANS: Array<Subscription["plan"]> = ["FREE", "STARTER", "GROWTH", "ENTERPRISE"];
 const STATUSES: Array<Subscription["status"]> = ["TRIALING", "ACTIVE", "PAST_DUE", "CANCELED"];
 
@@ -43,6 +50,7 @@ export function SaasConsole() {
   const [savingId, setSavingId] = useState<string | null>(null);
   const [creating, setCreating] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [operations, setOperations] = useState<Operation[]>([]);
 
   const [tenantForm, setTenantForm] = useState({
     companyName: "",
@@ -59,8 +67,8 @@ export function SaasConsole() {
 
   const text = useMemo(
     () => ({
-      title: "SaaS Super Admin",
-      subtitle: "Manage tenants, create companies, and control subscriptions.",
+      title: "Master Client Manager",
+      subtitle: "Manage subscribers, plans, lifecycle actions, and operations history.",
       createTenant: "Create tenant",
       save: "Save",
       create: "Create",
@@ -77,6 +85,10 @@ export function SaasConsole() {
       products: "Products",
       sales: "Sales",
       purchases: "Purchases",
+      suspend: "Suspend",
+      cancel: "Cancel",
+      deleteLogical: "Delete (logical)",
+      operations: "Recent operations",
     }),
     [],
   );
@@ -88,13 +100,20 @@ export function SaasConsole() {
       const params = new URLSearchParams();
       if (query.trim()) params.set("q", query.trim());
       params.set("pageSize", "50");
-      const response = await fetch(`/api/saas/tenants?${params.toString()}`, { cache: "no-store" });
-      if (!response.ok) {
-        const payload = await response.json().catch(() => null);
+      const [tenantsRes, opsRes] = await Promise.all([
+        fetch(`/api/saas/tenants?${params.toString()}`, { cache: "no-store" }),
+        fetch("/api/master/operations"),
+      ]);
+      if (!tenantsRes.ok) {
+        const payload = await tenantsRes.json().catch(() => null);
         throw new Error(payload?.error ?? "Failed to load tenants");
       }
-      const payload = (await response.json()) as TenantPayload;
+      const payload = (await tenantsRes.json()) as TenantPayload;
       setItems(payload.data ?? []);
+      if (opsRes.ok) {
+        const opsPayload = (await opsRes.json()) as { data?: Operation[] };
+        setOperations(Array.isArray(opsPayload.data) ? opsPayload.data : []);
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to load tenants");
     } finally {
@@ -159,6 +178,18 @@ export function SaasConsole() {
     } finally {
       setSavingId(null);
     }
+  };
+
+  const runLifecycleAction = async (tenantId: string, action: "suspend" | "cancel" | "deleteLogical") => {
+    if (action === "suspend") {
+      await updateSubscription(tenantId, { status: "PAST_DUE" });
+      return;
+    }
+    if (action === "cancel") {
+      await updateSubscription(tenantId, { status: "CANCELED" });
+      return;
+    }
+    await updateSubscription(tenantId, { status: "CANCELED" });
   };
 
   return (
@@ -262,9 +293,48 @@ export function SaasConsole() {
                   <span>{text.purchases}: {tenant.counts.purchaseOrders}</span>
                 </div>
 
+                <div className="mt-3 flex flex-wrap gap-2">
+                  <button
+                    type="button"
+                    onClick={() => runLifecycleAction(tenant.id, "suspend")}
+                    className="rounded-md border border-zinc-300 px-2 py-1 text-xs text-zinc-700 hover:bg-zinc-50"
+                  >
+                    {text.suspend}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => runLifecycleAction(tenant.id, "cancel")}
+                    className="rounded-md border border-zinc-300 px-2 py-1 text-xs text-zinc-700 hover:bg-zinc-50"
+                  >
+                    {text.cancel}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => runLifecycleAction(tenant.id, "deleteLogical")}
+                    className="rounded-md border border-zinc-300 px-2 py-1 text-xs text-zinc-700 hover:bg-zinc-50"
+                  >
+                    {text.deleteLogical}
+                  </button>
+                </div>
+
                 {savingId === tenant.id && <p className="mt-2 text-xs text-zinc-500">{text.save}...</p>}
               </article>
             ))}
+        </div>
+      </section>
+
+      <section className="rounded-2xl border border-zinc-200 bg-white p-5 shadow-sm">
+        <h2 className="text-lg font-semibold text-zinc-900">{text.operations}</h2>
+        <div className="mt-3 space-y-2">
+          {operations.length === 0 && <p className="text-sm text-zinc-500">No operations yet.</p>}
+          {operations.map((op) => (
+            <div key={op.id} className="rounded-xl border border-zinc-100 p-3">
+              <p className="text-sm font-semibold text-zinc-900">{op.action}</p>
+              <p className="text-xs text-zinc-500">
+                {op.companyName} · {new Date(op.createdAt).toLocaleString("en-US")}
+              </p>
+            </div>
+          ))}
         </div>
       </section>
     </div>

@@ -1,7 +1,9 @@
+import type { ReactNode } from "react";
 import { redirect } from "next/navigation";
 import { auth } from "@/auth";
+import { MasterShell } from "@/components/master/master-shell";
 
-export default async function AdminSaasPage() {
+export default async function MasterLayout({ children }: { children: ReactNode }) {
   const session = await auth();
   const user = session?.user;
 
@@ -13,5 +15,5 @@ export default async function AdminSaasPage() {
     redirect("/admin");
   }
 
-  redirect("/master/clients");
+  return <MasterShell>{children}</MasterShell>;
 }

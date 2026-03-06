@@ -58,13 +58,22 @@ export async function PATCH(req: NextRequest, context: RouteContext) {
       update: data,
     });
 
+    const auditAction =
+      body.deleteRequested === true
+        ? "TENANT_DELETE_REQUEST"
+        : status === "PAST_DUE"
+          ? "TENANT_SUSPEND"
+          : status === "CANCELED"
+            ? "TENANT_CANCEL"
+            : "TENANT_SUBSCRIPTION_UPDATE";
+
     await prisma.auditLog.create({
       data: {
         companyId: tenantId,
         userId: session.user.id,
         entity: "tenant_subscription",
         entityId: subscription.id,
-        action: "TENANT_SUBSCRIPTION_UPDATE",
+        action: auditAction,
         metadata: {
           updatedBySuperAdminId: session.user.id,
           data,
