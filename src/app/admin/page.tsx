@@ -52,6 +52,19 @@ const TYPE_LABELS: Record<string, { en: string; fr: string }> = {
   "Purchase Order": { en: "Purchase Order", fr: "Commande achat" },
 };
 
+const STATUS_BADGE_CLASSES: Record<string, string> = {
+  DRAFT: "bg-slate-100 text-slate-700",
+  SENT: "bg-sky-100 text-sky-700",
+  APPROVED: "bg-emerald-100 text-emerald-700",
+  CONFIRMED: "bg-blue-100 text-blue-700",
+  CONVERTED: "bg-violet-100 text-violet-700",
+  REJECTED: "bg-rose-100 text-rose-700",
+  FULFILLED: "bg-teal-100 text-teal-700",
+  CLOSED: "bg-zinc-200 text-zinc-700",
+  PARTIAL: "bg-amber-100 text-amber-700",
+  PARTIALLY_RECEIVED: "bg-cyan-100 text-cyan-700",
+};
+
 export default async function AdminDashboard() {
   const session = await auth();
   const user = session?.user;
@@ -239,29 +252,33 @@ export default async function AdminDashboard() {
               <h2 className="text-xl font-semibold text-zinc-900">{text.documents}</h2>
             </div>
           </div>
-          <div className="mt-4 divide-y divide-zinc-100">
+          <div className="mt-4 space-y-4">
             {snapshot.latestDocuments.map((doc) => (
               <Link
                 key={`${doc.type}-${doc.id}`}
                 href={doc.href}
-                className="grid gap-2 py-4 transition hover:bg-zinc-50 sm:grid-cols-[minmax(120px,1fr)_minmax(170px,1fr)_auto_120px] sm:items-center sm:gap-4"
+                className="block rounded-2xl border border-zinc-100 p-4 transition hover:bg-zinc-50"
               >
-                <div className="flex min-w-[7rem] flex-col">
-                  <span className="text-xs uppercase tracking-wide text-zinc-500">
-                    {(TYPE_LABELS[doc.type]?.[lang] ?? doc.type) as string}
+                <div className="grid gap-2 sm:grid-cols-[minmax(120px,1fr)_minmax(170px,1fr)_auto_120px] sm:items-center sm:gap-4">
+                  <div className="flex min-w-[7rem] flex-col">
+                    <span className="text-xs uppercase tracking-wide text-zinc-500">
+                      {(TYPE_LABELS[doc.type]?.[lang] ?? doc.type) as string}
+                    </span>
+                    <span className="font-semibold text-zinc-900">{doc.code}</span>
+                  </div>
+                  <div className="flex-1">
+                    <p className="text-sm font-medium text-zinc-900">{doc.counterpart}</p>
+                    <p className="text-xs text-zinc-500">{new Date(doc.date).toLocaleDateString(locale)}</p>
+                  </div>
+                  <span
+                    className={`w-fit rounded-full px-3 py-1 text-xs font-medium ${STATUS_BADGE_CLASSES[doc.status] ?? "bg-zinc-100 text-zinc-700"}`}
+                  >
+                    {(STATUS_LABELS[doc.status]?.[lang] ?? doc.status) as string}
                   </span>
-                  <span className="font-semibold text-zinc-900">{doc.code}</span>
+                  <p className="text-sm font-semibold text-zinc-900 sm:text-right">
+                    {doc.total === null ? "—" : formatMetric(doc.total, "currency", locale)}
+                  </p>
                 </div>
-                <div className="flex-1">
-                  <p className="text-sm font-medium text-zinc-900">{doc.counterpart}</p>
-                  <p className="text-xs text-zinc-500">{new Date(doc.date).toLocaleDateString(locale)}</p>
-                </div>
-                <span className="w-fit rounded-full bg-zinc-100 px-3 py-1 text-xs font-medium text-zinc-600">
-                  {(STATUS_LABELS[doc.status]?.[lang] ?? doc.status) as string}
-                </span>
-                <p className="text-sm font-semibold text-zinc-900 sm:text-right">
-                  {doc.total === null ? "—" : formatMetric(doc.total, "currency", locale)}
-                </p>
               </Link>
             ))}
             {snapshot.latestDocuments.length === 0 && (
