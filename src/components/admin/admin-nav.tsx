@@ -8,6 +8,8 @@ const NAV_ITEMS = [
   { href: "/admin", en: "Overview", fr: "Apercu" },
   { href: "/admin/analytics", en: "Analytics", fr: "Analytics" },
   { href: "/admin/notifications", en: "Notifications", fr: "Notifications" },
+  { href: "/admin/onboarding", en: "Onboarding", fr: "Onboarding" },
+  { href: "/admin/billing", en: "Billing", fr: "Facturation" },
   { href: "/admin/documents", en: "Documents", fr: "Documents" },
   { href: "/admin/products", en: "Products", fr: "Produits" },
   { href: "/admin/stock", en: "Inventory", fr: "Stock" },

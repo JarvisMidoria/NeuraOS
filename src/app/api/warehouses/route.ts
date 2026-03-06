@@ -3,6 +3,7 @@ import type { NextRequest } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { ApiError, ensureRoles, handleApiError, requireSession } from "@/lib/api-helpers";
 import { logAudit } from "@/lib/audit";
+import { enforcePlanLimit } from "@/lib/subscription-limits";
 
 export async function GET() {
   try {
@@ -24,6 +25,7 @@ export async function POST(req: NextRequest) {
   try {
     const session = await requireSession();
     ensureRoles(session, ["Admin"]);
+    await enforcePlanLimit(session.user.companyId, "warehouses");
 
     const body = await req.json();
     const { name, location } = body;

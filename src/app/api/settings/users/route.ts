@@ -5,6 +5,7 @@ import { prisma } from "@/lib/prisma";
 import { ApiError, handleApiError } from "@/lib/api-helpers";
 import { requireAdminSession } from "@/lib/settings-api";
 import { logAudit } from "@/lib/audit";
+import { enforcePlanLimit } from "@/lib/subscription-limits";
 
 const userInclude = {
   roles: {
@@ -52,6 +53,7 @@ export async function GET() {
 export async function POST(req: NextRequest) {
   try {
     const session = await requireAdminSession();
+    await enforcePlanLimit(session.user.companyId, "users");
     const body = await req.json();
 
     const email = String(body.email ?? "").trim().toLowerCase();

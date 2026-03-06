@@ -4,6 +4,7 @@ import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { ApiError, ensureRoles, handleApiError, requireSession } from "@/lib/api-helpers";
 import { logAudit } from "@/lib/audit";
+import { enforcePlanLimit } from "@/lib/subscription-limits";
 
 type ProductWithRelations = Prisma.ProductGetPayload<{
   include: {
@@ -101,6 +102,7 @@ export async function POST(req: NextRequest) {
   try {
     const session = await requireSession();
     ensureRoles(session, ["Admin"]);
+    await enforcePlanLimit(session.user.companyId, "products");
 
     const body = (await req.json()) as ProductPayload;
     const {

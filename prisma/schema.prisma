@@ -603,6 +603,8 @@ model TenantSubscription {
   status       SubscriptionStatus @default(TRIALING)
   seatLimit    Int                @default(3)
   billingEmail String?
+  stripeCustomerId     String?    @unique
+  stripeSubscriptionId String?    @unique
   startsAt     DateTime           @default(now())
   renewsAt     DateTime?
   canceledAt   DateTime?

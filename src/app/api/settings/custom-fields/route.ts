@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { ApiError, handleApiError } from "@/lib/api-helpers";
 import { requireAdminSession } from "@/lib/settings-api";
 import { logAudit } from "@/lib/audit";
+import { enforcePlanLimit } from "@/lib/subscription-limits";
 
 export async function GET(req: NextRequest) {
   try {
@@ -27,6 +28,7 @@ export async function GET(req: NextRequest) {
 export async function POST(req: NextRequest) {
   try {
     const session = await requireAdminSession();
+    await enforcePlanLimit(session.user.companyId, "customFields");
     const body = await req.json();
 
     const entityType = String(body.entityType ?? "").trim().toLowerCase();
