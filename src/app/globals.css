@@ -139,6 +139,33 @@ body {
   background: rgba(124, 140, 255, 0.12) !important;
 }
 
+.admin-shell .overflow-x-auto {
+  position: relative;
+  -webkit-overflow-scrolling: touch;
+}
+
+.admin-shell .overflow-x-auto::before,
+.admin-shell .overflow-x-auto::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.admin-shell .overflow-x-auto::before {
+  left: 0;
+  width: 14px;
+  background: linear-gradient(to right, var(--admin-surface), rgba(0, 0, 0, 0));
+}
+
+.admin-shell .overflow-x-auto::after {
+  right: 0;
+  width: 22px;
+  background: linear-gradient(to left, var(--admin-surface), rgba(0, 0, 0, 0));
+}
+
 @keyframes fadeUp {
   from {
     opacity: 0;
