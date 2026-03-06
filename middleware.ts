@@ -6,10 +6,17 @@ export async function middleware(req: NextRequest) {
   const token = await getToken({ req, secret: process.env.NEXTAUTH_SECRET });
   const { pathname, search } = req.nextUrl;
 
-  if (!token || !Array.isArray(token.roles) || !token.roles.includes("Admin")) {
+  if (!token || typeof token.sub !== "string" || typeof token.companyId !== "string") {
     const url = new URL("/login", req.url);
     url.searchParams.set("callbackUrl", pathname + search);
     return NextResponse.redirect(url);
+  }
+
+  if (pathname.startsWith("/admin/saas")) {
+    const isMaster = token.isSuperAdmin === true || token.userKind === "MASTER";
+    if (!isMaster) {
+      return NextResponse.redirect(new URL("/admin", req.url));
+    }
   }
 
   return NextResponse.next();

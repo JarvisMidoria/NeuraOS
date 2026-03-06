@@ -1,6 +1,7 @@
 import type { NextAuthOptions, Session } from "next-auth";
 import { getServerSession } from "next-auth";
 import type { JWT } from "next-auth/jwt";
+import { UserKind } from "@prisma/client";
 import Credentials from "next-auth/providers/credentials";
 import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/prisma";
@@ -28,6 +29,7 @@ export const authOptions: NextAuthOptions = {
         const user = await prisma.user.findUnique({
           where: { email: credentials.email },
           include: {
+            company: { select: { ownerUserId: true } },
             roles: {
               include: {
                 role: {
@@ -61,6 +63,8 @@ export const authOptions: NextAuthOptions = {
         const permissionCodes = user.roles.flatMap((userRole) =>
           userRole.role.permissions.map((rp) => rp.permission.code),
         );
+        const isSuperAdmin = isSuperAdminEmail(user.email);
+        const userKind = isSuperAdmin ? UserKind.MASTER : user.kind;
 
         await prisma.user.update({
           where: { id: user.id },
@@ -74,18 +78,30 @@ export const authOptions: NextAuthOptions = {
           companyId: user.companyId,
           roles: roleNames,
           permissions: Array.from(new Set(permissionCodes)),
-          isSuperAdmin: isSuperAdminEmail(user.email),
+          isSuperAdmin,
+          userKind,
+          isTenantOwner: user.company?.ownerUserId === user.id,
         };
       },
     }),
   ],
   callbacks: {
     async jwt({ token, user }) {
-      if (user && "companyId" in user && "roles" in user && "permissions" in user && "isSuperAdmin" in user) {
+      if (
+        user &&
+        "companyId" in user &&
+        "roles" in user &&
+        "permissions" in user &&
+        "isSuperAdmin" in user &&
+        "userKind" in user &&
+        "isTenantOwner" in user
+      ) {
         token.companyId = user.companyId;
         token.roles = user.roles;
         token.permissions = user.permissions;
         token.isSuperAdmin = Boolean(user.isSuperAdmin);
+        token.userKind = user.userKind;
+        token.isTenantOwner = Boolean(user.isTenantOwner);
       }
       return token;
     },
@@ -96,6 +112,8 @@ export const authOptions: NextAuthOptions = {
         session.user.roles = (token.roles as string[]) ?? [];
         session.user.permissions = (token.permissions as string[]) ?? [];
         session.user.isSuperAdmin = Boolean(token.isSuperAdmin);
+        session.user.userKind = (token.userKind as UserKind | undefined) ?? UserKind.TENANT_MEMBER;
+        session.user.isTenantOwner = Boolean(token.isTenantOwner);
       }
       return session;
     },

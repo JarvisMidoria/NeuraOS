@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import bcrypt from "bcryptjs";
-import { Prisma, SubscriptionPlan, SubscriptionStatus } from "@prisma/client";
+import { Prisma, SubscriptionPlan, SubscriptionStatus, UserKind } from "@prisma/client";
 import { handleApiError, ApiError } from "@/lib/api-helpers";
 import { prisma } from "@/lib/prisma";
 import { requireSuperAdminSession } from "@/lib/saas-admin";
@@ -46,7 +46,10 @@ export async function GET(req: NextRequest) {
         where,
         include: {
           subscription: true,
-          users: { select: { id: true, email: true, name: true, isActive: true, lastLoginAt: true } },
+          users: {
+            where: { kind: UserKind.TENANT_ADMIN },
+            select: { id: true, email: true, name: true, isActive: true, lastLoginAt: true },
+          },
           _count: {
             select: {
               users: true,
@@ -152,11 +155,17 @@ export async function POST(req: NextRequest) {
       const user = await tx.user.create({
         data: {
           companyId: company.id,
+          kind: UserKind.TENANT_ADMIN,
           name: adminName,
           email: adminEmail,
           passwordHash,
           isActive: true,
         },
+      });
+
+      await tx.company.update({
+        where: { id: company.id },
+        data: { ownerUserId: user.id },
       });
 
       await tx.userRole.create({

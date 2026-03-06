@@ -10,7 +10,7 @@ export default async function AdminSaasPage() {
     redirect("/login");
   }
 
-  if (!user.isSuperAdmin) {
+  if (!(user.isSuperAdmin || user.userKind === "MASTER")) {
     redirect("/admin");
   }
 

@@ -1,5 +1,6 @@
 import type { DefaultSession } from "next-auth";
 import "next-auth/jwt";
+import type { UserKind } from "@prisma/client";
 
 declare module "next-auth" {
   interface Session extends DefaultSession {
@@ -9,6 +10,8 @@ declare module "next-auth" {
       roles: string[];
       permissions: string[];
       isSuperAdmin: boolean;
+      userKind: UserKind;
+      isTenantOwner: boolean;
     };
   }
 
@@ -17,6 +20,8 @@ declare module "next-auth" {
     roles: string[];
     permissions: string[];
     isSuperAdmin: boolean;
+    userKind: UserKind;
+    isTenantOwner: boolean;
   }
 }
 
@@ -26,5 +31,7 @@ declare module "next-auth/jwt" {
     roles?: string[];
     permissions?: string[];
     isSuperAdmin?: boolean;
+    userKind?: UserKind;
+    isTenantOwner?: boolean;
   }
 }

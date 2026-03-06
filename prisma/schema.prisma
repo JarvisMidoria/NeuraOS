@@ -53,16 +53,24 @@ enum SubscriptionStatus {
   CANCELED
 }
 
+enum UserKind {
+  MASTER
+  TENANT_ADMIN
+  TENANT_MEMBER
+}
+
 model Company {
   id              String                  @id @default(uuid())
   name            String
   domain          String?
+  ownerUserId     String?                 @unique
   currencyCode    String                  @default("USD")
   locale          String                  @default("en-US")
   timezone        String                  @default("UTC")
   createdAt       DateTime                @default(now())
   updatedAt       DateTime                @updatedAt
-  users           User[]
+  users           User[]                  @relation("CompanyUsers")
+  owner           User?                   @relation("CompanyOwner", fields: [ownerUserId], references: [id])
   roles           Role[]
   roleAssignments UserRole[]
   rolePermissions RolePermission[]
@@ -84,12 +92,15 @@ model Company {
   taxRules        TaxRule[]
   stockRule       StockRule?
   subscription    TenantSubscription?
+
 }
 
 model User {
   id              String       @id @default(uuid())
   companyId       String
-  company         Company      @relation(fields: [companyId], references: [id])
+  company         Company      @relation("CompanyUsers", fields: [companyId], references: [id])
+  kind            UserKind     @default(TENANT_MEMBER)
+  ownedCompany    Company?     @relation("CompanyOwner")
   email           String       @unique
   name            String
   passwordHash    String

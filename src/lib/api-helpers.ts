@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import type { Session } from "next-auth";
 import { auth } from "@/auth";
+import type { UserKind } from "@prisma/client";
 
 export class ApiError extends Error {
   status: number;
@@ -34,6 +35,19 @@ export function ensurePermissions(session: Session, requiredCodes: string[]) {
   const hasAll = requiredCodes.every((code) => permissions.includes(code));
   if (!hasAll) {
     throw new ApiError(403, "Forbidden");
+  }
+}
+
+export function ensureUserKinds(session: Session, allowedKinds: UserKind[]) {
+  const currentKind = session.user?.userKind;
+  if (!currentKind || !allowedKinds.includes(currentKind)) {
+    throw new ApiError(403, "Forbidden");
+  }
+}
+
+export function ensureTenantOwner(session: Session) {
+  if (!session.user?.isTenantOwner && session.user?.userKind !== "MASTER") {
+    throw new ApiError(403, "Tenant owner only");
   }
 }
 

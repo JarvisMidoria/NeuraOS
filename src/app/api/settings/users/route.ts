@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import bcrypt from "bcryptjs";
+import { UserKind } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { ApiError, handleApiError } from "@/lib/api-helpers";
 import { requireAdminSession } from "@/lib/settings-api";
@@ -19,6 +20,7 @@ function serializeUser(user: {
   id: string;
   email: string;
   name: string;
+  kind: UserKind;
   isActive: boolean;
   lastLoginAt: Date | null;
   createdAt: Date;
@@ -28,6 +30,7 @@ function serializeUser(user: {
     id: user.id,
     email: user.email,
     name: user.name,
+    kind: user.kind,
     isActive: user.isActive,
     lastLoginAt: user.lastLoginAt,
     createdAt: user.createdAt,
@@ -78,6 +81,7 @@ export async function POST(req: NextRequest) {
     const user = await prisma.user.create({
       data: {
         companyId: session.user.companyId,
+        kind: UserKind.TENANT_MEMBER,
         email,
         name,
         passwordHash,

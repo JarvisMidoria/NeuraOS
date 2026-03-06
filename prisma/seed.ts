@@ -1,4 +1,4 @@
-import { PrismaClient, Prisma, DocumentStatus, StockMovementType } from "@prisma/client";
+import { PrismaClient, Prisma, DocumentStatus, StockMovementType, UserKind } from "@prisma/client";
 import bcrypt from "bcryptjs";
 
 const prisma = new PrismaClient();
@@ -103,10 +103,16 @@ async function main() {
   const adminUser = await prisma.user.create({
     data: {
       companyId: company.id,
+      kind: UserKind.TENANT_ADMIN,
       email: "admin@acme.local",
       name: "Acme Admin",
       passwordHash,
     },
+  });
+
+  await prisma.company.update({
+    where: { id: company.id },
+    data: { ownerUserId: adminUser.id },
   });
 
   await prisma.userRole.create({

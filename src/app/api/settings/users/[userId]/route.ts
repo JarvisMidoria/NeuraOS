@@ -1,3 +1,4 @@
+import { UserKind } from "@prisma/client";
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import bcrypt from "bcryptjs";
@@ -22,6 +23,7 @@ function serializeUser(user: {
   id: string;
   email: string;
   name: string;
+  kind: UserKind;
   isActive: boolean;
   lastLoginAt: Date | null;
   createdAt: Date;
@@ -31,6 +33,7 @@ function serializeUser(user: {
     id: user.id,
     email: user.email,
     name: user.name,
+    kind: user.kind,
     isActive: user.isActive,
     lastLoginAt: user.lastLoginAt,
     createdAt: user.createdAt,
@@ -53,6 +56,10 @@ export async function PATCH(req: NextRequest, context: RouteContext) {
     const { userId } = await context.params;
     const body = await req.json();
     const current = await getUser(session.user.companyId, userId);
+    const company = await prisma.company.findUnique({
+      where: { id: session.user.companyId },
+      select: { ownerUserId: true },
+    });
 
     const roleIds: string[] | null = Array.isArray(body.roleIds)
       ? Array.from(new Set(body.roleIds.map((id: unknown) => String(id))))
@@ -64,6 +71,10 @@ export async function PATCH(req: NextRequest, context: RouteContext) {
         select: { id: true },
       });
       if (roles.length !== roleIds.length) throw new ApiError(400, "One or more roles are invalid");
+    }
+
+    if (company?.ownerUserId === userId && body.isActive === false) {
+      throw new ApiError(400, "Tenant owner cannot be deactivated");
     }
 
     const updated = await prisma.$transaction(async (tx) => {
@@ -122,6 +133,14 @@ export async function DELETE(_req: NextRequest, context: RouteContext) {
 
     if (session.user.id === userId) {
       throw new ApiError(400, "You cannot delete your own account");
+    }
+
+    const company = await prisma.company.findUnique({
+      where: { id: session.user.companyId },
+      select: { ownerUserId: true },
+    });
+    if (company?.ownerUserId === userId) {
+      throw new ApiError(400, "Tenant owner cannot be deleted");
     }
 
     await getUser(session.user.companyId, userId);
