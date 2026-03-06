@@ -2,9 +2,11 @@ import { redirect } from "next/navigation";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { SalesQuotesManager } from "@/components/admin/sales/sales-quotes-manager";
+import { getAdminLang } from "@/lib/admin-preferences";
 
 export default async function SalesQuotesPage() {
   const session = await auth();
+  const lang = await getAdminLang();
   if (!session?.user?.companyId) {
     redirect("/login");
   }
@@ -26,10 +28,12 @@ export default async function SalesQuotesPage() {
   return (
     <div className="space-y-6">
       <div>
-        <p className="text-xs uppercase tracking-[0.2em] text-zinc-500">Sales</p>
-        <h1 className="text-3xl font-semibold tracking-tight text-zinc-900">Quotes</h1>
+        <p className="text-xs uppercase tracking-[0.2em] text-zinc-500">{lang === "fr" ? "Ventes" : "Sales"}</p>
+        <h1 className="text-3xl font-semibold tracking-tight text-zinc-900">{lang === "fr" ? "Devis" : "Quotes"}</h1>
         <p className="text-sm text-zinc-500">
-          Draft quotes, apply taxes, and convert approved quotes into orders.
+          {lang === "fr"
+            ? "Preparez les devis, appliquez les taxes et convertissez les devis approuves en commandes."
+            : "Draft quotes, apply taxes, and convert approved quotes into orders."}
         </p>
       </div>
       <SalesQuotesManager
@@ -42,6 +46,7 @@ export default async function SalesQuotesPage() {
         }))}
         warehouses={warehouses}
         canManageSales={canManageSales}
+        lang={lang}
       />
     </div>
   );

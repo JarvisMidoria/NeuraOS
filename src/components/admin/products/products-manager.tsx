@@ -34,11 +34,12 @@ type ProductRecord = {
 interface ProductsManagerProps {
   categories: Category[];
   customFieldDefinitions: CustomFieldDefinition[];
+  lang: "en" | "fr";
 }
 
 const PAGE_SIZE = 10;
 
-export function ProductsManager({ categories, customFieldDefinitions }: ProductsManagerProps) {
+export function ProductsManager({ categories, customFieldDefinitions, lang }: ProductsManagerProps) {
   const [products, setProducts] = useState<ProductRecord[]>([]);
   const [total, setTotal] = useState(0);
   const [page, setPage] = useState(1);
@@ -60,6 +61,48 @@ export function ProductsManager({ categories, customFieldDefinitions }: Products
   const [customValues, setCustomValues] = useState<Record<string, string>>({});
 
   const totalPages = useMemo(() => Math.max(1, Math.ceil(total / PAGE_SIZE)), [total]);
+  const t = useMemo(
+    () => ({
+      loadFailed: lang === "fr" ? "Impossible de charger les produits" : "Failed to load products",
+      deleteConfirm: lang === "fr" ? "Supprimer ce produit ?" : "Delete this product?",
+      deleteFailed: lang === "fr" ? "Impossible de supprimer le produit" : "Unable to delete product",
+      saveFailed: lang === "fr" ? "Impossible d'enregistrer le produit" : "Failed to save product",
+      edit: lang === "fr" ? "Modifier le produit" : "Edit Product",
+      create: lang === "fr" ? "Creer un produit" : "Create Product",
+      formHelp:
+        lang === "fr"
+          ? "Gerez les informations produit et attributs personnalises."
+          : "Manage core product information and custom attributes.",
+      cancelEdit: lang === "fr" ? "Annuler" : "Cancel edit",
+      sku: "SKU",
+      name: lang === "fr" ? "Nom" : "Name",
+      unitPrice: lang === "fr" ? "Prix unitaire" : "Unit Price",
+      uom: lang === "fr" ? "Unite" : "Unit of Measure",
+      category: lang === "fr" ? "Categorie" : "Category",
+      uncategorized: lang === "fr" ? "Sans categorie" : "Uncategorized",
+      lowStock: lang === "fr" ? "Seuil stock bas" : "Low Stock Threshold",
+      description: lang === "fr" ? "Description" : "Description",
+      lowStockPlaceholder: lang === "fr" ? "ex: 10" : "e.g. 10",
+      customFields: lang === "fr" ? "Champs personnalises" : "Custom Fields",
+      saving: lang === "fr" ? "Enregistrement..." : "Saving...",
+      update: lang === "fr" ? "Mettre a jour" : "Update Product",
+      createBtn: lang === "fr" ? "Creer le produit" : "Create Product",
+      reset: lang === "fr" ? "Reinitialiser" : "Reset",
+      products: lang === "fr" ? "Produits" : "Products",
+      showing: lang === "fr" ? "Affichage" : "Showing",
+      of: lang === "fr" ? "sur" : "of",
+      allCategories: lang === "fr" ? "Toutes les categories" : "All categories",
+      refresh: lang === "fr" ? "Actualiser" : "Refresh",
+      loading: lang === "fr" ? "Chargement des produits..." : "Loading products...",
+      customValuesEmpty: lang === "fr" ? "Aucune valeur personnalisee" : "No custom values",
+      editRow: lang === "fr" ? "Modifier" : "Edit",
+      deleteRow: lang === "fr" ? "Supprimer" : "Delete",
+      page: lang === "fr" ? "Page" : "Page",
+      previous: lang === "fr" ? "Precedent" : "Previous",
+      next: lang === "fr" ? "Suivant" : "Next",
+    }),
+    [lang],
+  );
 
   const handleCategoryChange = (value: string) => {
     setCategoryFilter(value);
@@ -93,17 +136,17 @@ export function ProductsManager({ categories, customFieldDefinitions }: Products
       }
       const response = await fetch(`/api/products?${params.toString()}`);
       if (!response.ok) {
-        throw new Error("Failed to load products");
+        throw new Error(t.loadFailed);
       }
       const payload = await response.json();
       setProducts(payload.data ?? []);
       setTotal(payload.total ?? 0);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to load products");
+      setError(err instanceof Error ? err.message : t.loadFailed);
     } finally {
       setLoading(false);
     }
-  }, [page, categoryFilter]);
+  }, [page, categoryFilter, t.loadFailed]);
 
   useEffect(() => {
     loadProducts();
@@ -129,7 +172,7 @@ export function ProductsManager({ categories, customFieldDefinitions }: Products
   };
 
   const handleDelete = async (productId: string) => {
-    if (!window.confirm("Delete this product?")) return;
+    if (!window.confirm(t.deleteConfirm)) return;
     setError(null);
     try {
       const response = await fetch(`/api/products/${productId}`, {
@@ -137,14 +180,14 @@ export function ProductsManager({ categories, customFieldDefinitions }: Products
       });
       if (!response.ok) {
         const payload = await response.json();
-        throw new Error(payload.error ?? "Unable to delete product");
+        throw new Error(payload.error ?? t.deleteFailed);
       }
       await loadProducts();
       if (formData.id === productId) {
         resetForm();
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Unable to delete product");
+      setError(err instanceof Error ? err.message : t.deleteFailed);
     }
   };
 
@@ -179,13 +222,13 @@ export function ProductsManager({ categories, customFieldDefinitions }: Products
 
       if (!response.ok) {
         const result = await response.json();
-        throw new Error(result.error ?? "Failed to save product");
+        throw new Error(result.error ?? t.saveFailed);
       }
 
       await loadProducts();
       resetForm();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to save product");
+      setError(err instanceof Error ? err.message : t.saveFailed);
     } finally {
       setIsSubmitting(false);
     }
@@ -203,10 +246,10 @@ export function ProductsManager({ categories, customFieldDefinitions }: Products
         <div className="mb-4 flex items-center justify-between">
           <div>
             <h2 className="text-lg font-semibold text-zinc-900">
-              {formData.id ? "Edit Product" : "Create Product"}
+              {formData.id ? t.edit : t.create}
             </h2>
             <p className="text-sm text-zinc-500">
-              Manage core product information and custom attributes.
+              {t.formHelp}
             </p>
           </div>
           {formData.id && (
@@ -215,14 +258,14 @@ export function ProductsManager({ categories, customFieldDefinitions }: Products
               onClick={resetForm}
               className="text-sm font-medium text-zinc-600 hover:text-zinc-900"
             >
-              Cancel edit
+              {t.cancelEdit}
             </button>
           )}
         </div>
 
         <form onSubmit={handleSubmit} className="grid gap-4 md:grid-cols-2">
           <div className="space-y-2">
-            <label className="text-sm font-medium text-zinc-700">SKU</label>
+            <label className="text-sm font-medium text-zinc-700">{t.sku}</label>
             <input
               className="w-full rounded-md border border-zinc-300 px-3 py-2 text-sm"
               value={formData.sku}
@@ -231,7 +274,7 @@ export function ProductsManager({ categories, customFieldDefinitions }: Products
             />
           </div>
           <div className="space-y-2">
-            <label className="text-sm font-medium text-zinc-700">Name</label>
+            <label className="text-sm font-medium text-zinc-700">{t.name}</label>
             <input
               className="w-full rounded-md border border-zinc-300 px-3 py-2 text-sm"
               value={formData.name}
@@ -240,7 +283,7 @@ export function ProductsManager({ categories, customFieldDefinitions }: Products
             />
           </div>
           <div className="space-y-2">
-            <label className="text-sm font-medium text-zinc-700">Unit Price</label>
+            <label className="text-sm font-medium text-zinc-700">{t.unitPrice}</label>
             <input
               type="number"
               step="0.01"
@@ -251,7 +294,7 @@ export function ProductsManager({ categories, customFieldDefinitions }: Products
             />
           </div>
           <div className="space-y-2">
-            <label className="text-sm font-medium text-zinc-700">Unit of Measure</label>
+            <label className="text-sm font-medium text-zinc-700">{t.uom}</label>
             <input
               className="w-full rounded-md border border-zinc-300 px-3 py-2 text-sm"
               value={formData.unitOfMeasure}
@@ -262,13 +305,13 @@ export function ProductsManager({ categories, customFieldDefinitions }: Products
             />
           </div>
           <div className="space-y-2">
-            <label className="text-sm font-medium text-zinc-700">Category</label>
+            <label className="text-sm font-medium text-zinc-700">{t.category}</label>
             <select
               className="w-full rounded-md border border-zinc-300 px-3 py-2 text-sm"
               value={formData.categoryId}
               onChange={(event) => setFormData((prev) => ({ ...prev, categoryId: event.target.value }))}
             >
-              <option value="">Uncategorized</option>
+              <option value="">{t.uncategorized}</option>
               {categories.map((category) => (
                 <option key={category.id} value={category.id}>
                   {category.name}
@@ -277,7 +320,7 @@ export function ProductsManager({ categories, customFieldDefinitions }: Products
             </select>
           </div>
           <div className="space-y-2">
-            <label className="text-sm font-medium text-zinc-700">Low Stock Threshold</label>
+            <label className="text-sm font-medium text-zinc-700">{t.lowStock}</label>
             <input
               type="number"
               step="0.01"
@@ -286,11 +329,11 @@ export function ProductsManager({ categories, customFieldDefinitions }: Products
               onChange={(event) =>
                 setFormData((prev) => ({ ...prev, lowStockThreshold: event.target.value }))
               }
-              placeholder="e.g. 10"
+              placeholder={t.lowStockPlaceholder}
             />
           </div>
           <div className="md:col-span-2 space-y-2">
-            <label className="text-sm font-medium text-zinc-700">Description</label>
+            <label className="text-sm font-medium text-zinc-700">{t.description}</label>
             <textarea
               className="w-full rounded-md border border-zinc-300 px-3 py-2 text-sm"
               rows={3}
@@ -301,7 +344,7 @@ export function ProductsManager({ categories, customFieldDefinitions }: Products
 
           {customFieldDefinitions.length > 0 && (
             <div className="md:col-span-2 space-y-4">
-              <p className="text-sm font-medium text-zinc-700">Custom Fields</p>
+              <p className="text-sm font-medium text-zinc-700">{t.customFields}</p>
               <div className="grid gap-4 md:grid-cols-2">
                 {customFieldDefinitions.map((definition) => (
                   <div key={definition.id} className="space-y-2">
@@ -325,7 +368,7 @@ export function ProductsManager({ categories, customFieldDefinitions }: Products
               disabled={isSubmitting}
               className="rounded-md bg-zinc-900 px-4 py-2 text-sm font-medium text-white disabled:opacity-70"
             >
-              {isSubmitting ? "Saving..." : formData.id ? "Update Product" : "Create Product"}
+              {isSubmitting ? t.saving : formData.id ? t.update : t.createBtn}
             </button>
             {formData.id && (
               <button
@@ -333,7 +376,7 @@ export function ProductsManager({ categories, customFieldDefinitions }: Products
                 onClick={resetForm}
                 className="text-sm font-medium text-zinc-600 hover:text-zinc-900"
               >
-                Reset
+                {t.reset}
               </button>
             )}
           </div>
@@ -343,9 +386,9 @@ export function ProductsManager({ categories, customFieldDefinitions }: Products
       <div className="rounded-xl border border-zinc-200 bg-white p-6 shadow-sm">
         <div className="mb-4 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
           <div>
-            <h2 className="text-lg font-semibold text-zinc-900">Products</h2>
+            <h2 className="text-lg font-semibold text-zinc-900">{t.products}</h2>
             <p className="text-sm text-zinc-500">
-              Showing {products.length} of {total} products
+              {t.showing} {products.length} {t.of} {total} {lang === "fr" ? "produits" : "products"}
             </p>
           </div>
           <div className="flex items-center gap-3">
@@ -354,7 +397,7 @@ export function ProductsManager({ categories, customFieldDefinitions }: Products
               value={categoryFilter}
               onChange={(event) => handleCategoryChange(event.target.value)}
             >
-              <option value="all">All categories</option>
+              <option value="all">{t.allCategories}</option>
               {categories.map((category) => (
                 <option key={category.id} value={category.id}>
                   {category.name}
@@ -366,24 +409,24 @@ export function ProductsManager({ categories, customFieldDefinitions }: Products
               onClick={loadProducts}
               className="rounded-md border border-zinc-300 px-3 py-2 text-sm"
             >
-              Refresh
+              {t.refresh}
             </button>
           </div>
         </div>
 
         {loading ? (
-          <p className="text-sm text-zinc-500">Loading products...</p>
+          <p className="text-sm text-zinc-500">{t.loading}</p>
         ) : (
           <div className="overflow-x-auto">
             <table className="min-w-full text-left text-sm">
               <thead>
                 <tr className="text-xs uppercase tracking-wide text-zinc-500">
                   <th className="px-3 py-2">SKU</th>
-                  <th className="px-3 py-2">Name</th>
-                  <th className="px-3 py-2">Category</th>
-                  <th className="px-3 py-2">Unit Price</th>
-                  <th className="px-3 py-2">Low Stock Threshold</th>
-                  <th className="px-3 py-2">Custom Fields</th>
+                  <th className="px-3 py-2">{t.name}</th>
+                  <th className="px-3 py-2">{t.category}</th>
+                  <th className="px-3 py-2">{t.unitPrice}</th>
+                  <th className="px-3 py-2">{t.lowStock}</th>
+                  <th className="px-3 py-2">{t.customFields}</th>
                   <th className="px-3 py-2" />
                 </tr>
               </thead>
@@ -404,7 +447,7 @@ export function ProductsManager({ categories, customFieldDefinitions }: Products
                             </span>
                           ))
                         ) : (
-                          <span className="text-zinc-400">No custom values</span>
+                          <span className="text-zinc-400">{t.customValuesEmpty}</span>
                         )}
                       </div>
                     </td>
@@ -414,13 +457,13 @@ export function ProductsManager({ categories, customFieldDefinitions }: Products
                           className="text-zinc-600 hover:text-zinc-900"
                           onClick={() => handleEdit(product)}
                         >
-                          Edit
+                          {t.editRow}
                         </button>
                         <button
                           className="text-red-600 hover:text-red-800"
                           onClick={() => handleDelete(product.id)}
                         >
-                          Delete
+                          {t.deleteRow}
                         </button>
                       </div>
                     </td>
@@ -433,7 +476,7 @@ export function ProductsManager({ categories, customFieldDefinitions }: Products
 
         <div className="mt-4 flex items-center justify-between text-sm text-zinc-600">
           <span>
-            Page {page} of {totalPages}
+            {t.page} {page} {t.of} {totalPages}
           </span>
           <div className="flex gap-2">
             <button
@@ -442,7 +485,7 @@ export function ProductsManager({ categories, customFieldDefinitions }: Products
               onClick={() => setPage((prev) => Math.max(1, prev - 1))}
               className="rounded-md border border-zinc-300 px-3 py-1 disabled:opacity-40"
             >
-              Previous
+              {t.previous}
             </button>
             <button
               type="button"
@@ -450,7 +493,7 @@ export function ProductsManager({ categories, customFieldDefinitions }: Products
               onClick={() => setPage((prev) => Math.min(totalPages, prev + 1))}
               className="rounded-md border border-zinc-300 px-3 py-1 disabled:opacity-40"
             >
-              Next
+              {t.next}
             </button>
           </div>
         </div>

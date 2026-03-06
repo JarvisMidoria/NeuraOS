@@ -2,9 +2,11 @@ import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/auth";
 import { ProductsManager } from "@/components/admin/products/products-manager";
+import { getAdminLang } from "@/lib/admin-preferences";
 
 export default async function ProductsPage() {
   const session = await auth();
+  const lang = await getAdminLang();
   if (!session?.user?.companyId) {
     redirect("/login");
   }
@@ -25,13 +27,19 @@ export default async function ProductsPage() {
   return (
     <div className="space-y-6">
       <div>
-        <p className="text-xs uppercase tracking-[0.2em] text-zinc-500">Catalog</p>
-        <h1 className="text-3xl font-semibold tracking-tight text-zinc-900">Products</h1>
+        <p className="text-xs uppercase tracking-[0.2em] text-zinc-500">
+          {lang === "fr" ? "Catalogue" : "Catalog"}
+        </p>
+        <h1 className="text-3xl font-semibold tracking-tight text-zinc-900">
+          {lang === "fr" ? "Produits" : "Products"}
+        </h1>
         <p className="text-sm text-zinc-500">
-          Manage product master data, categories, and custom attributes.
+          {lang === "fr"
+            ? "Gerez les fiches produit, categories et attributs personnalises."
+            : "Manage product master data, categories, and custom attributes."}
         </p>
       </div>
-      <ProductsManager categories={categories} customFieldDefinitions={customFields} />
+      <ProductsManager categories={categories} customFieldDefinitions={customFields} lang={lang} />
     </div>
   );
 }

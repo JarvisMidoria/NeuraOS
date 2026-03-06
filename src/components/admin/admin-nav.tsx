@@ -15,13 +15,16 @@ const NAV_ITEMS = [
 
 type AdminLang = "en" | "fr";
 type AdminTheme = "dark" | "light";
+type AdminNavProps = {
+  onNavigate?: () => void;
+};
 
 function isActive(pathname: string, href: string) {
   if (href === "/admin") return pathname === "/admin";
   return pathname.startsWith(href);
 }
 
-export function AdminNav() {
+export function AdminNav({ onNavigate }: AdminNavProps) {
   const pathname = usePathname();
   const [query, setQuery] = useState("");
   const [lang, setLang] = useState<AdminLang>(() => {
@@ -135,36 +138,18 @@ export function AdminNav() {
         </div>
       </div>
 
-      <nav className="hidden flex-col gap-1 lg:flex">
+      <nav className="flex flex-col gap-1">
         {filteredItems.map((item) => {
           const active = isActive(pathname, item.href);
           return (
             <Link
               key={item.href}
               href={item.href}
+              onClick={onNavigate}
               className={`rounded-lg px-3 py-2 text-sm transition ${
                 active
                   ? "bg-white/12 text-zinc-100"
                   : "text-zinc-400 hover:bg-white/6 hover:text-zinc-200"
-              }`}
-            >
-              {lang === "fr" ? item.fr : item.en}
-            </Link>
-          );
-        })}
-      </nav>
-
-      <nav className="flex gap-2 overflow-x-auto pb-1 lg:hidden">
-        {filteredItems.map((item) => {
-          const active = isActive(pathname, item.href);
-          return (
-            <Link
-              key={item.href}
-              href={item.href}
-              className={`whitespace-nowrap rounded-full px-3 py-1.5 text-xs transition ${
-                active
-                  ? "bg-white/15 text-zinc-100"
-                  : "border border-white/10 text-zinc-400 hover:text-zinc-200"
               }`}
             >
               {lang === "fr" ? item.fr : item.en}

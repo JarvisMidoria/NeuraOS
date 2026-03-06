@@ -1,0 +1,98 @@
+"use client";
+
+import type { ReactNode } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { NeuraLogo } from "@/components/brand/neura-logo";
+import { AdminNav } from "@/components/admin/admin-nav";
+
+export function AdminShell({ children }: { children: ReactNode }) {
+  const [mobileOpen, setMobileOpen] = useState(false);
+  const [lang, setLang] = useState<"en" | "fr">("en");
+
+  useEffect(() => {
+    const cookieLang = document.cookie.match(/(?:^|;\s*)neura_lang=([^;]+)/)?.[1];
+    const localLang = window.localStorage.getItem("neura_lang");
+    setLang((cookieLang || localLang) === "fr" ? "fr" : "en");
+  }, []);
+
+  useEffect(() => {
+    document.body.style.overflowX = "hidden";
+    return () => {
+      document.body.style.overflowX = "";
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!mobileOpen) return;
+    const previous = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = previous;
+    };
+  }, [mobileOpen]);
+
+  const text = useMemo(
+    () => ({
+      menu: lang === "fr" ? "Menu" : "Menu",
+      close: lang === "fr" ? "Fermer" : "Close",
+      admin: lang === "fr" ? "Admin" : "Admin",
+    }),
+    [lang],
+  );
+
+  return (
+    <div className="admin-shell min-h-screen overflow-x-hidden bg-[#080b12] text-zinc-100">
+      <header className="sticky top-0 z-30 flex items-center justify-between border-b border-white/10 bg-[#080b12]/95 px-4 py-3 backdrop-blur lg:hidden">
+        <button
+          type="button"
+          onClick={() => setMobileOpen(true)}
+          className="rounded-lg border border-white/15 px-2.5 py-1.5 text-xs text-zinc-200"
+        >
+          {text.menu}
+        </button>
+        <NeuraLogo compact />
+        <span className="rounded-full border border-white/15 px-2.5 py-1 text-[11px] text-zinc-300">
+          {text.admin}
+        </span>
+      </header>
+
+      <div className="mx-auto grid min-h-[calc(100vh-57px)] w-full max-w-[1400px] grid-cols-1 lg:min-h-screen lg:grid-cols-[280px_1fr]">
+        <aside className="hidden border-r border-white/10 px-5 py-6 lg:block">
+          <div className="mb-8 flex items-center justify-between">
+            <NeuraLogo />
+            <span className="rounded-full border border-white/15 px-2.5 py-1 text-[11px] text-zinc-300">
+              {text.admin}
+            </span>
+          </div>
+          <AdminNav />
+        </aside>
+
+        <main className="px-4 py-5 sm:px-6 sm:py-6 lg:px-8 lg:py-8">{children}</main>
+      </div>
+
+      <div
+        className={`fixed inset-0 z-40 bg-black/55 transition ${
+          mobileOpen ? "pointer-events-auto opacity-100" : "pointer-events-none opacity-0"
+        } lg:hidden`}
+        onClick={() => setMobileOpen(false)}
+      />
+      <aside
+        className={`fixed inset-y-0 left-0 z-50 w-[88%] max-w-[320px] border-r border-white/10 bg-[#080b12] px-4 py-5 transition-transform duration-200 lg:hidden ${
+          mobileOpen ? "translate-x-0" : "-translate-x-full"
+        }`}
+      >
+        <div className="mb-5 flex items-center justify-between">
+          <NeuraLogo />
+          <button
+            type="button"
+            onClick={() => setMobileOpen(false)}
+            className="rounded-lg border border-white/15 px-2.5 py-1.5 text-xs text-zinc-300"
+          >
+            {text.close}
+          </button>
+        </div>
+        <AdminNav onNavigate={() => setMobileOpen(false)} />
+      </aside>
+    </div>
+  );
+}

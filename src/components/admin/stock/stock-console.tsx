@@ -32,9 +32,10 @@ interface StockConsoleProps {
   warehouses: Warehouse[];
   products: ProductStockSnapshot[];
   lowStock: LowStockItem[];
+  lang: "en" | "fr";
 }
 
-async function submitMovement(endpoint: string, payload: Record<string, unknown>) {
+async function submitMovement(endpoint: string, payload: Record<string, unknown>, fallback: string) {
   const response = await fetch(endpoint, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -43,11 +44,11 @@ async function submitMovement(endpoint: string, payload: Record<string, unknown>
 
   if (!response.ok) {
     const body = await response.json();
-    throw new Error(body.error ?? "Stock operation failed");
+    throw new Error(body.error ?? fallback);
   }
 }
 
-export function StockConsole({ warehouses, products, lowStock }: StockConsoleProps) {
+export function StockConsole({ warehouses, products, lowStock, lang }: StockConsoleProps) {
   const [inboundForm, setInboundForm] = useState({ productId: "", warehouseId: "", quantity: "", reference: "" });
   const [outboundForm, setOutboundForm] = useState({ productId: "", warehouseId: "", quantity: "", reference: "" });
   const [adjustForm, setAdjustForm] = useState({ productId: "", warehouseId: "", quantity: "", reference: "" });
@@ -56,6 +57,64 @@ export function StockConsole({ warehouses, products, lowStock }: StockConsolePro
   const [error, setError] = useState<string | null>(null);
   const [lowStockItems, setLowStockItems] = useState(lowStock);
   const [refreshing, setRefreshing] = useState(false);
+
+  const t = {
+    opFailed: lang === "fr" ? "Operation de stock echouee" : "Stock operation failed",
+    updated:
+      lang === "fr"
+        ? "Stock mis a jour. Actualisez la page pour voir les soldes."
+        : "Stock updated. Refresh page to see the latest balances.",
+    loadLowStockFailed: lang === "fr" ? "Impossible de charger le stock bas" : "Failed to load low stock items",
+    inbound: lang === "fr" ? "Entree de stock" : "Inbound Stock",
+    inboundHelp:
+      lang === "fr"
+        ? "Ajoutez du stock dans un entrepot depuis les achats ou retours."
+        : "Add stock into a warehouse from purchasing or returns.",
+    outbound: lang === "fr" ? "Sortie de stock" : "Outbound Stock",
+    outboundHelp:
+      lang === "fr"
+        ? "Deduisez du stock pour expeditions ou consommation."
+        : "Deduct stock for shipments or consumption.",
+    adjustment: lang === "fr" ? "Ajustement de stock" : "Stock Adjustment",
+    adjustmentHelp:
+      lang === "fr"
+        ? "Appliquez des corrections (+/-) apres inventaire."
+        : "Apply inventory corrections (+/-) for cycle counts.",
+    transfer: lang === "fr" ? "Transfert de stock" : "Transfer Stock",
+    transferHelp: lang === "fr" ? "Deplacez le stock entre entrepots." : "Move stock between warehouses.",
+    selectProduct: lang === "fr" ? "Selectionner un produit" : "Select product",
+    selectWarehouse: lang === "fr" ? "Selectionner un entrepot" : "Select warehouse",
+    fromWarehouse: lang === "fr" ? "Depuis entrepot" : "From warehouse",
+    toWarehouse: lang === "fr" ? "Vers entrepot" : "To warehouse",
+    quantity: lang === "fr" ? "Quantite" : "Quantity",
+    quantityAdjust:
+      lang === "fr" ? "Quantite (negative pour perte)" : "Quantity (use negative for shrinkage)",
+    reference: lang === "fr" ? "Reference (optionnelle)" : "Reference (optional)",
+    recordInbound: lang === "fr" ? "Enregistrer entree" : "Record inbound",
+    recordOutbound: lang === "fr" ? "Enregistrer sortie" : "Record outbound",
+    recordAdjustment: lang === "fr" ? "Enregistrer ajustement" : "Record adjustment",
+    transferStock: lang === "fr" ? "Transferer stock" : "Transfer stock",
+    lowStockTitle: lang === "fr" ? "Alertes stock bas" : "Low Stock Alerts",
+    lowStockHelp: lang === "fr" ? "Produits sous leur seuil defini." : "Products below their defined thresholds.",
+    refreshing: lang === "fr" ? "Actualisation..." : "Refreshing...",
+    refresh: lang === "fr" ? "Actualiser" : "Refresh",
+    sku: "SKU",
+    name: lang === "fr" ? "Nom" : "Name",
+    stock: lang === "fr" ? "Stock" : "Stock",
+    threshold: lang === "fr" ? "Seuil" : "Threshold",
+    allAbove:
+      lang === "fr" ? "Tous les produits sont au-dessus de leur seuil." : "All products are above their thresholds.",
+    stockByProduct: lang === "fr" ? "Stock par produit" : "Stock by Product",
+    stockByProductHelp:
+      lang === "fr"
+        ? "Totaux actuels par entrepot (actualisez apres mouvements)."
+        : "Current totals by warehouse (refresh page after posting movements).",
+    refreshPage: lang === "fr" ? "Actualiser la page" : "Refresh page",
+    product: lang === "fr" ? "Produit" : "Product",
+    total: lang === "fr" ? "Total" : "Total",
+    warehouses: lang === "fr" ? "Entrepots" : "Warehouses",
+    noMovements: lang === "fr" ? "Aucun mouvement" : "No movements yet",
+  };
 
   const submitHandler = async (
     event: React.FormEvent<HTMLFormElement>,
@@ -67,11 +126,11 @@ export function StockConsole({ warehouses, products, lowStock }: StockConsolePro
     setStatus(null);
     setError(null);
     try {
-      await submitMovement(endpoint, payload);
-      setStatus("Stock updated. Refresh page to see the latest balances.");
+      await submitMovement(endpoint, payload, t.opFailed);
+      setStatus(t.updated);
       reset();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Stock operation failed");
+      setError(err instanceof Error ? err.message : t.opFailed);
     }
   };
 
@@ -81,12 +140,12 @@ export function StockConsole({ warehouses, products, lowStock }: StockConsolePro
     try {
       const response = await fetch("/api/stock/low");
       if (!response.ok) {
-        throw new Error("Failed to load low stock items");
+        throw new Error(t.loadLowStockFailed);
       }
       const payload = await response.json();
       setLowStockItems(payload.data ?? []);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to load low stock items");
+      setError(err instanceof Error ? err.message : t.loadLowStockFailed);
     } finally {
       setRefreshing(false);
     }
@@ -111,17 +170,22 @@ export function StockConsole({ warehouses, products, lowStock }: StockConsolePro
 
       <div className="grid gap-6 lg:grid-cols-2">
         <div className="rounded-xl border border-zinc-200 bg-white p-6 shadow-sm">
-          <h2 className="text-lg font-semibold text-zinc-900">Inbound Stock</h2>
-          <p className="mb-4 text-sm text-zinc-500">Add stock into a warehouse from purchasing or returns.</p>
+          <h2 className="text-lg font-semibold text-zinc-900">{t.inbound}</h2>
+          <p className="mb-4 text-sm text-zinc-500">{t.inboundHelp}</p>
           <form
             className="space-y-3"
             onSubmit={(event) =>
-              submitHandler(event, "/api/stock/in", {
-                productId: inboundForm.productId,
-                warehouseId: inboundForm.warehouseId,
-                quantity: inboundForm.quantity,
-                reference: inboundForm.reference || null,
-              }, () => setInboundForm({ productId: "", warehouseId: "", quantity: "", reference: "" }))
+              submitHandler(
+                event,
+                "/api/stock/in",
+                {
+                  productId: inboundForm.productId,
+                  warehouseId: inboundForm.warehouseId,
+                  quantity: inboundForm.quantity,
+                  reference: inboundForm.reference || null,
+                },
+                () => setInboundForm({ productId: "", warehouseId: "", quantity: "", reference: "" }),
+              )
             }
           >
             <select
@@ -130,7 +194,7 @@ export function StockConsole({ warehouses, products, lowStock }: StockConsolePro
               value={inboundForm.productId}
               onChange={(event) => setInboundForm((prev) => ({ ...prev, productId: event.target.value }))}
             >
-              <option value="">Select product</option>
+              <option value="">{t.selectProduct}</option>
               {productOptions}
             </select>
             <select
@@ -139,7 +203,7 @@ export function StockConsole({ warehouses, products, lowStock }: StockConsolePro
               value={inboundForm.warehouseId}
               onChange={(event) => setInboundForm((prev) => ({ ...prev, warehouseId: event.target.value }))}
             >
-              <option value="">Select warehouse</option>
+              <option value="">{t.selectWarehouse}</option>
               {warehouseOptions}
             </select>
             <input
@@ -148,32 +212,37 @@ export function StockConsole({ warehouses, products, lowStock }: StockConsolePro
               min="0"
               required
               className="w-full rounded-md border border-zinc-300 px-3 py-2 text-sm"
-              placeholder="Quantity"
+              placeholder={t.quantity}
               value={inboundForm.quantity}
               onChange={(event) => setInboundForm((prev) => ({ ...prev, quantity: event.target.value }))}
             />
             <input
               className="w-full rounded-md border border-zinc-300 px-3 py-2 text-sm"
-              placeholder="Reference (optional)"
+              placeholder={t.reference}
               value={inboundForm.reference}
               onChange={(event) => setInboundForm((prev) => ({ ...prev, reference: event.target.value }))}
             />
-            <button className="w-full rounded-md bg-zinc-900 px-4 py-2 text-sm font-medium text-white">Record inbound</button>
+            <button className="w-full rounded-md bg-zinc-900 px-4 py-2 text-sm font-medium text-white">{t.recordInbound}</button>
           </form>
         </div>
 
         <div className="rounded-xl border border-zinc-200 bg-white p-6 shadow-sm">
-          <h2 className="text-lg font-semibold text-zinc-900">Outbound Stock</h2>
-          <p className="mb-4 text-sm text-zinc-500">Deduct stock for shipments or consumption.</p>
+          <h2 className="text-lg font-semibold text-zinc-900">{t.outbound}</h2>
+          <p className="mb-4 text-sm text-zinc-500">{t.outboundHelp}</p>
           <form
             className="space-y-3"
             onSubmit={(event) =>
-              submitHandler(event, "/api/stock/out", {
-                productId: outboundForm.productId,
-                warehouseId: outboundForm.warehouseId,
-                quantity: outboundForm.quantity,
-                reference: outboundForm.reference || null,
-              }, () => setOutboundForm({ productId: "", warehouseId: "", quantity: "", reference: "" }))
+              submitHandler(
+                event,
+                "/api/stock/out",
+                {
+                  productId: outboundForm.productId,
+                  warehouseId: outboundForm.warehouseId,
+                  quantity: outboundForm.quantity,
+                  reference: outboundForm.reference || null,
+                },
+                () => setOutboundForm({ productId: "", warehouseId: "", quantity: "", reference: "" }),
+              )
             }
           >
             <select
@@ -182,7 +251,7 @@ export function StockConsole({ warehouses, products, lowStock }: StockConsolePro
               value={outboundForm.productId}
               onChange={(event) => setOutboundForm((prev) => ({ ...prev, productId: event.target.value }))}
             >
-              <option value="">Select product</option>
+              <option value="">{t.selectProduct}</option>
               {productOptions}
             </select>
             <select
@@ -191,7 +260,7 @@ export function StockConsole({ warehouses, products, lowStock }: StockConsolePro
               value={outboundForm.warehouseId}
               onChange={(event) => setOutboundForm((prev) => ({ ...prev, warehouseId: event.target.value }))}
             >
-              <option value="">Select warehouse</option>
+              <option value="">{t.selectWarehouse}</option>
               {warehouseOptions}
             </select>
             <input
@@ -200,34 +269,39 @@ export function StockConsole({ warehouses, products, lowStock }: StockConsolePro
               min="0"
               required
               className="w-full rounded-md border border-zinc-300 px-3 py-2 text-sm"
-              placeholder="Quantity"
+              placeholder={t.quantity}
               value={outboundForm.quantity}
               onChange={(event) => setOutboundForm((prev) => ({ ...prev, quantity: event.target.value }))}
             />
             <input
               className="w-full rounded-md border border-zinc-300 px-3 py-2 text-sm"
-              placeholder="Reference (optional)"
+              placeholder={t.reference}
               value={outboundForm.reference}
               onChange={(event) => setOutboundForm((prev) => ({ ...prev, reference: event.target.value }))}
             />
-            <button className="w-full rounded-md bg-zinc-900 px-4 py-2 text-sm font-medium text-white">Record outbound</button>
+            <button className="w-full rounded-md bg-zinc-900 px-4 py-2 text-sm font-medium text-white">{t.recordOutbound}</button>
           </form>
         </div>
       </div>
 
       <div className="grid gap-6 lg:grid-cols-2">
         <div className="rounded-xl border border-zinc-200 bg-white p-6 shadow-sm">
-          <h2 className="text-lg font-semibold text-zinc-900">Stock Adjustment</h2>
-          <p className="mb-4 text-sm text-zinc-500">Apply inventory corrections (+/-) for cycle counts.</p>
+          <h2 className="text-lg font-semibold text-zinc-900">{t.adjustment}</h2>
+          <p className="mb-4 text-sm text-zinc-500">{t.adjustmentHelp}</p>
           <form
             className="space-y-3"
             onSubmit={(event) =>
-              submitHandler(event, "/api/stock/adjust", {
-                productId: adjustForm.productId,
-                warehouseId: adjustForm.warehouseId,
-                quantity: adjustForm.quantity,
-                reference: adjustForm.reference || null,
-              }, () => setAdjustForm({ productId: "", warehouseId: "", quantity: "", reference: "" }))
+              submitHandler(
+                event,
+                "/api/stock/adjust",
+                {
+                  productId: adjustForm.productId,
+                  warehouseId: adjustForm.warehouseId,
+                  quantity: adjustForm.quantity,
+                  reference: adjustForm.reference || null,
+                },
+                () => setAdjustForm({ productId: "", warehouseId: "", quantity: "", reference: "" }),
+              )
             }
           >
             <select
@@ -236,7 +310,7 @@ export function StockConsole({ warehouses, products, lowStock }: StockConsolePro
               value={adjustForm.productId}
               onChange={(event) => setAdjustForm((prev) => ({ ...prev, productId: event.target.value }))}
             >
-              <option value="">Select product</option>
+              <option value="">{t.selectProduct}</option>
               {productOptions}
             </select>
             <select
@@ -245,42 +319,46 @@ export function StockConsole({ warehouses, products, lowStock }: StockConsolePro
               value={adjustForm.warehouseId}
               onChange={(event) => setAdjustForm((prev) => ({ ...prev, warehouseId: event.target.value }))}
             >
-              <option value="">Select warehouse</option>
+              <option value="">{t.selectWarehouse}</option>
               {warehouseOptions}
             </select>
             <input
               type="number"
               step="0.01"
               className="w-full rounded-md border border-zinc-300 px-3 py-2 text-sm"
-              placeholder="Quantity (use negative for shrinkage)"
+              placeholder={t.quantityAdjust}
               value={adjustForm.quantity}
               onChange={(event) => setAdjustForm((prev) => ({ ...prev, quantity: event.target.value }))}
               required
             />
             <input
               className="w-full rounded-md border border-zinc-300 px-3 py-2 text-sm"
-              placeholder="Reference (optional)"
+              placeholder={t.reference}
               value={adjustForm.reference}
               onChange={(event) => setAdjustForm((prev) => ({ ...prev, reference: event.target.value }))}
             />
-            <button className="w-full rounded-md bg-zinc-900 px-4 py-2 text-sm font-medium text-white">Record adjustment</button>
+            <button className="w-full rounded-md bg-zinc-900 px-4 py-2 text-sm font-medium text-white">{t.recordAdjustment}</button>
           </form>
         </div>
 
         <div className="rounded-xl border border-zinc-200 bg-white p-6 shadow-sm">
-          <h2 className="text-lg font-semibold text-zinc-900">Transfer Stock</h2>
-          <p className="mb-4 text-sm text-zinc-500">Move stock between warehouses.</p>
+          <h2 className="text-lg font-semibold text-zinc-900">{t.transfer}</h2>
+          <p className="mb-4 text-sm text-zinc-500">{t.transferHelp}</p>
           <form
             className="space-y-3"
             onSubmit={(event) =>
-              submitHandler(event, "/api/stock/transfer", {
-                productId: transferForm.productId,
-                fromWarehouseId: transferForm.fromWarehouseId,
-                toWarehouseId: transferForm.toWarehouseId,
-                quantity: transferForm.quantity,
-                reference: transferForm.reference || null,
-              }, () =>
-                setTransferForm({ productId: "", fromWarehouseId: "", toWarehouseId: "", quantity: "", reference: "" })
+              submitHandler(
+                event,
+                "/api/stock/transfer",
+                {
+                  productId: transferForm.productId,
+                  fromWarehouseId: transferForm.fromWarehouseId,
+                  toWarehouseId: transferForm.toWarehouseId,
+                  quantity: transferForm.quantity,
+                  reference: transferForm.reference || null,
+                },
+                () =>
+                  setTransferForm({ productId: "", fromWarehouseId: "", toWarehouseId: "", quantity: "", reference: "" }),
               )
             }
           >
@@ -290,7 +368,7 @@ export function StockConsole({ warehouses, products, lowStock }: StockConsolePro
               value={transferForm.productId}
               onChange={(event) => setTransferForm((prev) => ({ ...prev, productId: event.target.value }))}
             >
-              <option value="">Select product</option>
+              <option value="">{t.selectProduct}</option>
               {productOptions}
             </select>
             <div className="grid gap-3 md:grid-cols-2">
@@ -300,7 +378,7 @@ export function StockConsole({ warehouses, products, lowStock }: StockConsolePro
                 value={transferForm.fromWarehouseId}
                 onChange={(event) => setTransferForm((prev) => ({ ...prev, fromWarehouseId: event.target.value }))}
               >
-                <option value="">From warehouse</option>
+                <option value="">{t.fromWarehouse}</option>
                 {warehouseOptions}
               </select>
               <select
@@ -309,7 +387,7 @@ export function StockConsole({ warehouses, products, lowStock }: StockConsolePro
                 value={transferForm.toWarehouseId}
                 onChange={(event) => setTransferForm((prev) => ({ ...prev, toWarehouseId: event.target.value }))}
               >
-                <option value="">To warehouse</option>
+                <option value="">{t.toWarehouse}</option>
                 {warehouseOptions}
               </select>
             </div>
@@ -319,17 +397,17 @@ export function StockConsole({ warehouses, products, lowStock }: StockConsolePro
               min="0"
               required
               className="w-full rounded-md border border-zinc-300 px-3 py-2 text-sm"
-              placeholder="Quantity"
+              placeholder={t.quantity}
               value={transferForm.quantity}
               onChange={(event) => setTransferForm((prev) => ({ ...prev, quantity: event.target.value }))}
             />
             <input
               className="w-full rounded-md border border-zinc-300 px-3 py-2 text-sm"
-              placeholder="Reference (optional)"
+              placeholder={t.reference}
               value={transferForm.reference}
               onChange={(event) => setTransferForm((prev) => ({ ...prev, reference: event.target.value }))}
             />
-            <button className="w-full rounded-md bg-zinc-900 px-4 py-2 text-sm font-medium text-white">Transfer stock</button>
+            <button className="w-full rounded-md bg-zinc-900 px-4 py-2 text-sm font-medium text-white">{t.transferStock}</button>
           </form>
         </div>
       </div>
@@ -337,8 +415,8 @@ export function StockConsole({ warehouses, products, lowStock }: StockConsolePro
       <div className="rounded-xl border border-zinc-200 bg-white p-6 shadow-sm">
         <div className="mb-4 flex items-center justify-between">
           <div>
-            <h2 className="text-lg font-semibold text-zinc-900">Low Stock Alerts</h2>
-            <p className="text-sm text-zinc-500">Products below their defined thresholds.</p>
+            <h2 className="text-lg font-semibold text-zinc-900">{t.lowStockTitle}</h2>
+            <p className="text-sm text-zinc-500">{t.lowStockHelp}</p>
           </div>
           <button
             type="button"
@@ -346,7 +424,7 @@ export function StockConsole({ warehouses, products, lowStock }: StockConsolePro
             disabled={refreshing}
             className="rounded-md border border-zinc-300 px-3 py-2 text-sm disabled:opacity-60"
           >
-            {refreshing ? "Refreshing..." : "Refresh"}
+            {refreshing ? t.refreshing : t.refresh}
           </button>
         </div>
         {lowStockItems.length ? (
@@ -354,10 +432,10 @@ export function StockConsole({ warehouses, products, lowStock }: StockConsolePro
             <table className="min-w-full text-left text-sm">
               <thead>
                 <tr className="text-xs uppercase tracking-wide text-zinc-500">
-                  <th className="px-3 py-2">SKU</th>
-                  <th className="px-3 py-2">Name</th>
-                  <th className="px-3 py-2">Stock</th>
-                  <th className="px-3 py-2">Threshold</th>
+                  <th className="px-3 py-2">{t.sku}</th>
+                  <th className="px-3 py-2">{t.name}</th>
+                  <th className="px-3 py-2">{t.stock}</th>
+                  <th className="px-3 py-2">{t.threshold}</th>
                 </tr>
               </thead>
               <tbody>
@@ -373,32 +451,32 @@ export function StockConsole({ warehouses, products, lowStock }: StockConsolePro
             </table>
           </div>
         ) : (
-          <p className="text-sm text-zinc-500">All products are above their thresholds.</p>
+          <p className="text-sm text-zinc-500">{t.allAbove}</p>
         )}
       </div>
 
       <div className="rounded-xl border border-zinc-200 bg-white p-6 shadow-sm">
         <div className="mb-4 flex items-center justify-between">
           <div>
-            <h2 className="text-lg font-semibold text-zinc-900">Stock by Product</h2>
-            <p className="text-sm text-zinc-500">Current totals by warehouse (refresh page after posting movements).</p>
+            <h2 className="text-lg font-semibold text-zinc-900">{t.stockByProduct}</h2>
+            <p className="text-sm text-zinc-500">{t.stockByProductHelp}</p>
           </div>
           <button
             type="button"
             onClick={() => window.location.reload()}
             className="rounded-md border border-zinc-300 px-3 py-2 text-sm"
           >
-            Refresh page
+            {t.refreshPage}
           </button>
         </div>
         <div className="overflow-x-auto">
           <table className="min-w-full text-left text-sm">
             <thead>
               <tr className="text-xs uppercase tracking-wide text-zinc-500">
-                <th className="px-3 py-2">SKU</th>
-                <th className="px-3 py-2">Product</th>
-                <th className="px-3 py-2">Total</th>
-                <th className="px-3 py-2">Warehouses</th>
+                <th className="px-3 py-2">{t.sku}</th>
+                <th className="px-3 py-2">{t.product}</th>
+                <th className="px-3 py-2">{t.total}</th>
+                <th className="px-3 py-2">{t.warehouses}</th>
               </tr>
             </thead>
             <tbody>
@@ -408,7 +486,9 @@ export function StockConsole({ warehouses, products, lowStock }: StockConsolePro
                   <td className="px-3 py-2">
                     <div className="font-medium text-zinc-900">{item.name}</div>
                     {item.lowStockThreshold ? (
-                      <p className="text-xs text-zinc-500">Threshold: {item.lowStockThreshold}</p>
+                      <p className="text-xs text-zinc-500">
+                        {t.threshold}: {item.lowStockThreshold}
+                      </p>
                     ) : null}
                   </td>
                   <td className="px-3 py-2 font-semibold">{item.totalQuantity}</td>
@@ -421,7 +501,7 @@ export function StockConsole({ warehouses, products, lowStock }: StockConsolePro
                           </span>
                         ))
                       ) : (
-                        <span className="text-zinc-400">No movements yet</span>
+                        <span className="text-zinc-400">{t.noMovements}</span>
                       )}
                     </div>
                   </td>
