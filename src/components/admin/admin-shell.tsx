@@ -8,13 +8,12 @@ import { NotificationCenter } from "@/components/admin/notification-center";
 
 export function AdminShell({ children }: { children: ReactNode }) {
   const [mobileOpen, setMobileOpen] = useState(false);
-  const [lang, setLang] = useState<"en" | "fr">("en");
-
-  useEffect(() => {
+  const [lang] = useState<"en" | "fr">(() => {
+    if (typeof window === "undefined") return "en";
     const cookieLang = document.cookie.match(/(?:^|;\s*)neura_lang=([^;]+)/)?.[1];
     const localLang = window.localStorage.getItem("neura_lang");
-    setLang((cookieLang || localLang) === "fr" ? "fr" : "en");
-  }, []);
+    return (cookieLang || localLang) === "fr" ? "fr" : "en";
+  });
 
   useEffect(() => {
     document.body.style.overflowX = "hidden";

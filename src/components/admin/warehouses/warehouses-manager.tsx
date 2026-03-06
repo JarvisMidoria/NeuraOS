@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 
 type Warehouse = {
   id: string;
@@ -41,7 +41,7 @@ export function WarehousesManager({ lang }: { lang: "en" | "fr" }) {
     delete: lang === "fr" ? "Supprimer" : "Delete",
   };
 
-  const loadWarehouses = async () => {
+  const loadWarehouses = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
@@ -56,11 +56,11 @@ export function WarehousesManager({ lang }: { lang: "en" | "fr" }) {
     } finally {
       setLoading(false);
     }
-  };
+  }, [t.loadFailed]);
 
   useEffect(() => {
     loadWarehouses();
-  }, []);
+  }, [loadWarehouses]);
 
   const resetForm = () => setFormData({ id: "", name: "", location: "" });
 

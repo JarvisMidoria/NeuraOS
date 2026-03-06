@@ -13,6 +13,75 @@ type Row = {
   hrefCompact: string;
 };
 
+type SectionText = {
+  templates: string;
+  clean: string;
+  compact: string;
+  empty: string;
+  counterpart: string;
+  date: string;
+};
+
+function DocumentsSection({
+  label,
+  rows,
+  text,
+  locale,
+}: {
+  label: string;
+  rows: Row[];
+  text: SectionText;
+  locale: string;
+}) {
+  return (
+    <section className="rounded-2xl border border-zinc-200 bg-white p-5 shadow-sm">
+      <div className="mb-3 flex items-center justify-between">
+        <h2 className="text-lg font-semibold text-zinc-900">{label}</h2>
+        <span className="text-xs text-zinc-500">
+          {text.templates}: {text.clean} / {text.compact}
+        </span>
+      </div>
+      {rows.length === 0 ? (
+        <p className="text-sm text-zinc-500">{text.empty}</p>
+      ) : (
+        <div className="space-y-3">
+          {rows.map((row) => (
+            <article key={row.id} className="rounded-xl border border-zinc-100 p-4">
+              <div className="flex flex-wrap items-center justify-between gap-3">
+                <div>
+                  <p className="text-sm font-semibold text-zinc-900">{row.code}</p>
+                  <p className="text-xs text-zinc-500">
+                    {text.counterpart}: {row.counterpart}
+                  </p>
+                  <p className="text-xs text-zinc-500">
+                    {text.date}: {row.date.toLocaleDateString(locale)}
+                  </p>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Link
+                    href={row.hrefClean}
+                    target="_blank"
+                    className="rounded-md border border-zinc-300 px-3 py-1.5 text-sm text-zinc-700 hover:bg-zinc-50"
+                  >
+                    {text.clean}
+                  </Link>
+                  <Link
+                    href={row.hrefCompact}
+                    target="_blank"
+                    className="rounded-md border border-zinc-300 px-3 py-1.5 text-sm text-zinc-700 hover:bg-zinc-50"
+                  >
+                    {text.compact}
+                  </Link>
+                </div>
+              </div>
+            </article>
+          ))}
+        </div>
+      )}
+    </section>
+  );
+}
+
 export default async function AdminDocumentsPage() {
   const session = await auth();
   const user = session?.user;
@@ -103,52 +172,6 @@ export default async function AdminDocumentsPage() {
     date: lang === "fr" ? "Date" : "Date",
   };
 
-  const Section = ({ label, rows }: { label: string; rows: Row[] }) => (
-    <section className="rounded-2xl border border-zinc-200 bg-white p-5 shadow-sm">
-      <div className="mb-3 flex items-center justify-between">
-        <h2 className="text-lg font-semibold text-zinc-900">{label}</h2>
-        <span className="text-xs text-zinc-500">{text.templates}: {text.clean} / {text.compact}</span>
-      </div>
-      {rows.length === 0 ? (
-        <p className="text-sm text-zinc-500">{text.empty}</p>
-      ) : (
-        <div className="space-y-3">
-          {rows.map((row) => (
-            <article key={row.id} className="rounded-xl border border-zinc-100 p-4">
-              <div className="flex flex-wrap items-center justify-between gap-3">
-                <div>
-                  <p className="text-sm font-semibold text-zinc-900">{row.code}</p>
-                  <p className="text-xs text-zinc-500">
-                    {text.counterpart}: {row.counterpart}
-                  </p>
-                  <p className="text-xs text-zinc-500">
-                    {text.date}: {row.date.toLocaleDateString(locale)}
-                  </p>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Link
-                    href={row.hrefClean}
-                    target="_blank"
-                    className="rounded-md border border-zinc-300 px-3 py-1.5 text-sm text-zinc-700 hover:bg-zinc-50"
-                  >
-                    {text.clean}
-                  </Link>
-                  <Link
-                    href={row.hrefCompact}
-                    target="_blank"
-                    className="rounded-md border border-zinc-300 px-3 py-1.5 text-sm text-zinc-700 hover:bg-zinc-50"
-                  >
-                    {text.compact}
-                  </Link>
-                </div>
-              </div>
-            </article>
-          ))}
-        </div>
-      )}
-    </section>
-  );
-
   return (
     <div className="space-y-6">
       <section className="rounded-2xl border border-zinc-200 bg-white p-5 shadow-sm">
@@ -156,9 +179,9 @@ export default async function AdminDocumentsPage() {
         <p className="mt-1 text-sm text-zinc-500">{text.subtitle}</p>
       </section>
 
-      <Section label={text.quotes} rows={quoteRows} />
-      <Section label={text.delivery} rows={orderRows} />
-      <Section label={text.purchases} rows={purchaseRows} />
+      <DocumentsSection label={text.quotes} rows={quoteRows} text={text} locale={locale} />
+      <DocumentsSection label={text.delivery} rows={orderRows} text={text} locale={locale} />
+      <DocumentsSection label={text.purchases} rows={purchaseRows} text={text} locale={locale} />
     </div>
   );
 }
