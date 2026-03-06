@@ -14,7 +14,17 @@ const PLAN_LIMITS: Record<SubscriptionPlan, Record<PlanFeature, number>> = {
 const BLOCKED_STATUSES: SubscriptionStatus[] = [SubscriptionStatus.PAST_DUE, SubscriptionStatus.CANCELED];
 
 async function getSubscription(companyId: string) {
-  return prisma.tenantSubscription.findUnique({ where: { companyId } });
+  return prisma.tenantSubscription.findUnique({
+    where: { companyId },
+    select: {
+      plan: true,
+      status: true,
+      seatLimit: true,
+      billingEmail: true,
+      renewsAt: true,
+      companyId: true,
+    },
+  });
 }
 
 export async function ensureSubscriptionActiveOrTrialing(companyId: string) {

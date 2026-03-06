@@ -25,6 +25,7 @@ type Payload = {
 export function OnboardingConsole({ lang }: { lang: "en" | "fr" }) {
   const [loading, setLoading] = useState(true);
   const [payload, setPayload] = useState<Payload["data"] | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
   const text = useMemo(
     () => ({
@@ -38,6 +39,7 @@ export function OnboardingConsole({ lang }: { lang: "en" | "fr" }) {
       subscription: lang === "fr" ? "Abonnement" : "Subscription",
       limits: lang === "fr" ? "Limites du plan" : "Plan limits",
       loading: lang === "fr" ? "Chargement..." : "Loading...",
+      loadingError: lang === "fr" ? "Impossible de charger les donnees." : "Failed to load data.",
       done: lang === "fr" ? "Termine" : "Done",
       pending: lang === "fr" ? "A faire" : "Pending",
     }),
@@ -47,21 +49,47 @@ export function OnboardingConsole({ lang }: { lang: "en" | "fr" }) {
   const load = useCallback(async () => {
     try {
       setLoading(true);
+      setError(null);
       const response = await fetch("/api/onboarding/status", { cache: "no-store" });
-      if (!response.ok) return;
+      if (!response.ok) {
+        let message = text.loadingError;
+        try {
+          const body = (await response.json()) as { error?: string };
+          if (body?.error) message = body.error;
+        } catch {
+          // Ignore JSON parsing errors and keep the default message.
+        }
+        setError(message);
+        setPayload(null);
+        return;
+      }
       const json = (await response.json()) as Payload;
       setPayload(json.data);
+    } catch {
+      setError(text.loadingError);
+      setPayload(null);
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [text.loadingError]);
 
   useEffect(() => {
     load();
   }, [load]);
 
-  if (loading || !payload) {
+  if (loading) {
     return <p className="text-sm text-zinc-500">{text.loading}</p>;
+  }
+
+  if (error || !payload) {
+    return (
+      <div className="space-y-3">
+        <p className="text-sm text-rose-400">{error ?? text.loadingError}</p>
+        <button onClick={load} className="rounded-md border border-zinc-300 px-3 py-1.5 text-sm text-zinc-700 hover:bg-zinc-50">
+          {text.refresh}
+        </button>
+      </div>
+    );
   }
 
   return (
