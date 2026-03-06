@@ -4,6 +4,7 @@ import type { ReactNode } from "react";
 import { useEffect, useMemo, useState } from "react";
 import { NeuraLogo } from "@/components/brand/neura-logo";
 import { AdminNav } from "@/components/admin/admin-nav";
+import { NotificationCenter } from "@/components/admin/notification-center";
 
 export function AdminShell({ children }: { children: ReactNode }) {
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -51,6 +52,9 @@ export function AdminShell({ children }: { children: ReactNode }) {
 
   return (
     <div className="admin-shell min-h-screen overflow-x-hidden bg-[#080b12] text-zinc-100">
+      <div className="fixed right-4 top-[calc(0.75rem+env(safe-area-inset-top))] z-40 hidden lg:flex">
+        <NotificationCenter lang={lang} />
+      </div>
       <header className="fixed inset-x-0 top-0 z-30 flex items-center justify-between border-b border-white/10 bg-[#080b12]/95 px-4 pb-3 pt-[calc(0.75rem+env(safe-area-inset-top))] backdrop-blur lg:hidden">
         <button
           type="button"
@@ -65,9 +69,12 @@ export function AdminShell({ children }: { children: ReactNode }) {
           </span>
         </button>
         <NeuraLogo compact href="/admin" />
-        <span className="rounded-full border border-white/15 px-2.5 py-1 text-[11px] text-zinc-300">
-          {text.admin}
-        </span>
+        <div className="flex items-center gap-2">
+          <NotificationCenter lang={lang} />
+          <span className="rounded-full border border-white/15 px-2.5 py-1 text-[11px] text-zinc-300">
+            {text.admin}
+          </span>
+        </div>
       </header>
 
       <div className="mx-auto grid min-h-[calc(100vh-57px)] w-full max-w-[1400px] grid-cols-1 pt-[calc(57px+env(safe-area-inset-top))] lg:min-h-screen lg:grid-cols-[280px_1fr] lg:pt-0">

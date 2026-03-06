@@ -8,6 +8,7 @@ async function resetDatabase() {
     prisma.customFieldValue.deleteMany(),
     prisma.rolePermission.deleteMany(),
     prisma.userRole.deleteMany(),
+    prisma.notification.deleteMany(),
     prisma.salesOrderTaxLine.deleteMany(),
     prisma.salesOrderLine.deleteMany(),
     prisma.salesOrder.deleteMany(),
