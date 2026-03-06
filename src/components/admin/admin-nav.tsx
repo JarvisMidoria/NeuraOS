@@ -10,7 +10,12 @@ const NAV_ITEMS = [
   { href: "/admin/stock", en: "Inventory", fr: "Stock" },
   { href: "/admin/sales/quotes", en: "Quotes", fr: "Devis" },
   { href: "/admin/sales/orders", en: "Orders", fr: "Commandes" },
+  { href: "/admin/purchases/orders", en: "Purchases", fr: "Achats" },
+  { href: "/admin/purchases/receipts", en: "Receipts", fr: "Receptions" },
+  { href: "/admin/purchases/replenishment", en: "Replenishment", fr: "Reappro" },
+  { href: "/admin/suppliers", en: "Suppliers", fr: "Fournisseurs" },
   { href: "/admin/warehouses", en: "Warehouses", fr: "Entrepots" },
+  { href: "/admin/settings", en: "Settings", fr: "Parametres" },
 ];
 
 type AdminLang = "en" | "fr";

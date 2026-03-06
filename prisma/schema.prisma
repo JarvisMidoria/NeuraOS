@@ -37,6 +37,9 @@ model Company {
   id              String                  @id @default(uuid())
   name            String
   domain          String?
+  currencyCode    String                  @default("USD")
+  locale          String                  @default("en-US")
+  timezone        String                  @default("UTC")
   createdAt       DateTime                @default(now())
   updatedAt       DateTime                @updatedAt
   users           User[]
@@ -57,6 +60,8 @@ model Company {
   purchaseOrders  PurchaseOrder[]
   goodsReceipts   GoodsReceipt[]
   auditLogs       AuditLog[]
+  taxRules        TaxRule[]
+  stockRule       StockRule?
 }
 
 model User {
@@ -520,4 +525,30 @@ model AuditLog {
 
   @@index([companyId])
   @@index([entity])
+}
+
+model TaxRule {
+  id         String   @id @default(uuid())
+  companyId  String
+  company    Company  @relation(fields: [companyId], references: [id])
+  code       String
+  label      String
+  rate       Decimal  @db.Decimal(6, 3)
+  isDefault  Boolean  @default(false)
+  isActive   Boolean  @default(true)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@unique([companyId, code])
+  @@index([companyId])
+}
+
+model StockRule {
+  id                       String   @id @default(uuid())
+  companyId                String   @unique
+  company                  Company  @relation(fields: [companyId], references: [id])
+  allowNegativeStock       Boolean  @default(false)
+  defaultLowStockThreshold Decimal? @db.Decimal(12, 2)
+  createdAt                DateTime @default(now())
+  updatedAt                DateTime @updatedAt
 }
