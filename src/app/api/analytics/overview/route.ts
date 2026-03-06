@@ -2,8 +2,10 @@ import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { ensurePermissions, handleApiError, requireSession } from "@/lib/api-helpers";
 import { getAnalyticsSnapshot } from "@/lib/analytics-service";
+import { perfLog, perfNow } from "@/lib/perf";
 
 export async function GET(req: NextRequest) {
+  const startedAt = perfNow();
   try {
     const session = await requireSession();
     ensurePermissions(session, ["VIEW_DASHBOARD"]);
@@ -21,5 +23,7 @@ export async function GET(req: NextRequest) {
     );
   } catch (error) {
     return handleApiError(error);
+  } finally {
+    perfLog("api.analytics.overview.GET", startedAt, 500);
   }
 }

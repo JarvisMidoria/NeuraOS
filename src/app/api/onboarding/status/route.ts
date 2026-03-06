@@ -1,9 +1,11 @@
 import { NextResponse } from "next/server";
 import { ensurePermissions, handleApiError, requireSession } from "@/lib/api-helpers";
+import { perfLog, perfNow } from "@/lib/perf";
 import { prisma } from "@/lib/prisma";
 import { getCompanyPlanLimits } from "@/lib/subscription-limits";
 
 export async function GET() {
+  const startedAt = perfNow();
   try {
     const session = await requireSession();
     ensurePermissions(session, ["VIEW_DASHBOARD"]);
@@ -58,5 +60,7 @@ export async function GET() {
     );
   } catch (error) {
     return handleApiError(error);
+  } finally {
+    perfLog("api.onboarding.status.GET", startedAt, 450);
   }
 }

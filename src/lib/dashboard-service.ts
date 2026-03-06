@@ -1,5 +1,6 @@
 import { DocumentStatus, Prisma } from "@prisma/client";
 import { unstable_cache } from "next/cache";
+import { perfLog, perfNow } from "@/lib/perf";
 import { prisma } from "@/lib/prisma";
 import { getLowStockProducts } from "@/lib/stock-service";
 
@@ -71,6 +72,7 @@ export type DashboardSnapshot = {
 };
 
 export async function getDashboardSnapshot(companyId: string): Promise<DashboardSnapshot> {
+  const startedAt = perfNow();
   const now = new Date();
   const startOfMonth = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1));
   const startOfNextMonth = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() + 1, 1));
@@ -369,7 +371,7 @@ export async function getDashboardSnapshot(companyId: string): Promise<Dashboard
     },
   ];
 
-  return {
+  const payload: DashboardSnapshot = {
     timestamp: now.toISOString(),
     kpis: [
       {
@@ -414,6 +416,9 @@ export async function getDashboardSnapshot(companyId: string): Promise<Dashboard
     latestDocuments,
     operationalTodo,
   };
+
+  perfLog("dashboard.snapshot", startedAt, 700);
+  return payload;
 }
 
 const getDashboardSnapshotCachedInternal = unstable_cache(

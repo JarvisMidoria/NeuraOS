@@ -338,6 +338,8 @@ model SalesQuote {
   @@unique([companyId, quoteNumber])
   @@index([companyId])
   @@index([quoteDate])
+  @@index([companyId, quoteDate, status])
+  @@index([companyId, status, validUntil])
 }
 
 model SalesQuoteLine {
@@ -405,6 +407,7 @@ model SalesOrder {
   @@index([companyId])
   @@index([companyId, status])
   @@index([orderDate])
+  @@index([companyId, status, orderDate])
 }
 
 model SalesOrderLine {
@@ -464,6 +467,8 @@ model PurchaseOrder {
   @@index([companyId])
   @@index([orderDate])
   @@index([companyId, poNumber])
+  @@index([companyId, status, orderDate])
+  @@index([companyId, status, expectedDate])
 }
 
 model PurchaseOrderLine {
@@ -514,6 +519,7 @@ model GoodsReceipt {
   @@index([companyId])
   @@index([receivedDate])
   @@index([companyId, receiptNumber])
+  @@index([companyId, status, receivedDate])
 }
 
 model GoodsReceiptLine {
@@ -547,6 +553,8 @@ model AuditLog {
 
   @@index([companyId])
   @@index([entity])
+  @@index([companyId, createdAt])
+  @@index([companyId, entity, createdAt])
 }
 
 model TaxRule {

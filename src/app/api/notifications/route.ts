@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { ensurePermissions, handleApiError, requireSession } from "@/lib/api-helpers";
 import { listCompanyNotifications, maybeSyncCompanyNotifications, syncCompanyNotifications } from "@/lib/notifications-service";
+import { perfLog, perfNow } from "@/lib/perf";
 
 function parseLimit(req: NextRequest) {
   const value = Number(new URL(req.url).searchParams.get("limit") ?? "20");
@@ -20,6 +21,7 @@ function shouldAutoSync(req: NextRequest) {
 }
 
 export async function GET(req: NextRequest) {
+  const startedAt = perfNow();
   try {
     const session = await requireSession();
     ensurePermissions(session, ["VIEW_DASHBOARD"]);
@@ -38,10 +40,13 @@ export async function GET(req: NextRequest) {
     });
   } catch (error) {
     return handleApiError(error);
+  } finally {
+    perfLog("api.notifications.GET", startedAt, 450);
   }
 }
 
 export async function POST() {
+  const startedAt = perfNow();
   try {
     const session = await requireSession();
     ensurePermissions(session, ["VIEW_DASHBOARD"]);
@@ -50,5 +55,7 @@ export async function POST() {
     return NextResponse.json(result);
   } catch (error) {
     return handleApiError(error);
+  } finally {
+    perfLog("api.notifications.POST", startedAt, 450);
   }
 }
