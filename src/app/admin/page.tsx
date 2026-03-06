@@ -69,9 +69,10 @@ export default async function AdminDashboard() {
   const snapshot = await getDashboardSnapshot(user.companyId);
   const maxMonthlyValue = Math.max(...snapshot.monthlySales.map((entry) => entry.total), 1);
   const recentLowStock = snapshot.lowStock.slice(0, 6);
+  const displayName = lang === "fr" ? "Ghali" : user.name ?? "Admin";
   const text = {
     dashboard: lang === "fr" ? "Tableau de bord" : "Dashboard",
-    welcome: lang === "fr" ? "Bon retour" : "Welcome back",
+    welcome: lang === "fr" ? "Bonjour" : "Welcome back",
     company: lang === "fr" ? "Societe" : "Company",
     keyMetrics: lang === "fr" ? "Indicateurs cles" : "Key metrics",
     salesTrend: lang === "fr" ? "Tendance ventes et stock" : "Sales trend and inventory",
@@ -102,7 +103,7 @@ export default async function AdminDashboard() {
       <div className="flex flex-col gap-2">
         <p className="text-xs uppercase tracking-[0.2em] text-zinc-500">{text.dashboard}</p>
         <h1 className="text-3xl font-semibold tracking-tight text-zinc-900">
-          {text.welcome}, {user.name ?? "Admin"}
+          {text.welcome}, {displayName}
         </h1>
         <p className="text-sm text-zinc-500">
           {text.company}: {user.companyId}
@@ -238,38 +239,34 @@ export default async function AdminDashboard() {
               <h2 className="text-xl font-semibold text-zinc-900">{text.documents}</h2>
             </div>
           </div>
-          <div className="relative mt-4">
-            <div className="overflow-x-auto">
-              <div className="min-w-[720px] divide-y divide-zinc-100">
-                {snapshot.latestDocuments.map((doc) => (
-                  <Link
-                    key={`${doc.type}-${doc.id}`}
-                    href={doc.href}
-                    className="flex items-center gap-4 py-4 transition hover:bg-zinc-50"
-                  >
-                    <div className="flex min-w-[7rem] flex-col">
-                      <span className="text-xs uppercase tracking-wide text-zinc-500">
-                        {(TYPE_LABELS[doc.type]?.[lang] ?? doc.type) as string}
-                      </span>
-                      <span className="font-semibold text-zinc-900">{doc.code}</span>
-                    </div>
-                    <div className="flex-1">
-                      <p className="text-sm font-medium text-zinc-900">{doc.counterpart}</p>
-                      <p className="text-xs text-zinc-500">{new Date(doc.date).toLocaleDateString(locale)}</p>
-                    </div>
-                    <span className="rounded-full bg-zinc-100 px-3 py-1 text-xs font-medium text-zinc-600">
-                      {(STATUS_LABELS[doc.status]?.[lang] ?? doc.status) as string}
-                    </span>
-                    <p className="w-32 text-right text-sm font-semibold text-zinc-900">
-                      {doc.total === null ? "—" : formatMetric(doc.total, "currency", locale)}
-                    </p>
-                  </Link>
-                ))}
-                {snapshot.latestDocuments.length === 0 && (
-                  <p className="py-4 text-sm text-zinc-500">{text.noTransactions}</p>
-                )}
-              </div>
-            </div>
+          <div className="mt-4 divide-y divide-zinc-100">
+            {snapshot.latestDocuments.map((doc) => (
+              <Link
+                key={`${doc.type}-${doc.id}`}
+                href={doc.href}
+                className="grid gap-2 py-4 transition hover:bg-zinc-50 sm:grid-cols-[minmax(120px,1fr)_minmax(170px,1fr)_auto_120px] sm:items-center sm:gap-4"
+              >
+                <div className="flex min-w-[7rem] flex-col">
+                  <span className="text-xs uppercase tracking-wide text-zinc-500">
+                    {(TYPE_LABELS[doc.type]?.[lang] ?? doc.type) as string}
+                  </span>
+                  <span className="font-semibold text-zinc-900">{doc.code}</span>
+                </div>
+                <div className="flex-1">
+                  <p className="text-sm font-medium text-zinc-900">{doc.counterpart}</p>
+                  <p className="text-xs text-zinc-500">{new Date(doc.date).toLocaleDateString(locale)}</p>
+                </div>
+                <span className="w-fit rounded-full bg-zinc-100 px-3 py-1 text-xs font-medium text-zinc-600">
+                  {(STATUS_LABELS[doc.status]?.[lang] ?? doc.status) as string}
+                </span>
+                <p className="text-sm font-semibold text-zinc-900 sm:text-right">
+                  {doc.total === null ? "—" : formatMetric(doc.total, "currency", locale)}
+                </p>
+              </Link>
+            ))}
+            {snapshot.latestDocuments.length === 0 && (
+              <p className="py-4 text-sm text-zinc-500">{text.noTransactions}</p>
+            )}
           </div>
         </div>
 
@@ -280,46 +277,42 @@ export default async function AdminDashboard() {
               <h2 className="text-xl font-semibold text-zinc-900">{text.todo}</h2>
             </div>
           </div>
-          <div className="relative mt-4">
-            <div className="overflow-x-auto">
-              <div className="min-w-[420px] space-y-4">
-                {snapshot.operationalTodo.map((task) => (
-                  <Link key={task.id} href={task.href} className="block rounded-2xl border border-zinc-100 p-4 hover:bg-zinc-50">
-                    <div className="flex items-center justify-between">
-                      <p className="font-semibold text-zinc-900">
-                        {lang === "fr"
-                          ? task.label
-                              .replace("Quotes expiring in 7 days", "Devis expirant sous 7 jours")
-                              .replace("Orders awaiting confirmation", "Commandes en attente de confirmation")
-                              .replace("Receipts overdue", "Receptions en retard")
-                          : task.label}
-                      </p>
-                      <span
-                        className={`rounded-full px-2 py-0.5 text-xs font-semibold ${
-                          task.severity === "high"
-                            ? "bg-rose-100 text-rose-600"
-                            : task.severity === "medium"
-                              ? "bg-amber-100 text-amber-700"
-                              : "bg-emerald-100 text-emerald-600"
-                        }`}
-                      >
-                        {formatMetric(task.count, "number", locale)}
-                      </span>
-                    </div>
-                    <p className="mt-1 text-sm text-zinc-500">
-                      {lang === "fr"
-                        ? task.description
-                            .replace("Send reminders or close out quotes before validity lapses.", "Relancer ou cloturer les devis avant expiration.")
-                            .replace("Confirm approved orders to release fulfillment tasks.", "Confirmer les commandes approuvees pour lancer la preparation.")
-                            .replace("Follow up with suppliers on late inbound shipments.", "Relancer les fournisseurs sur les livraisons en retard.")
-                        : task.description}
-                    </p>
-                  </Link>
-                ))}
-              </div>
+          <div className="mt-4 space-y-4">
+            {snapshot.operationalTodo.map((task) => (
+              <Link key={task.id} href={task.href} className="block rounded-2xl border border-zinc-100 p-4 hover:bg-zinc-50">
+                <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                  <p className="font-semibold text-zinc-900">
+                    {lang === "fr"
+                      ? task.label
+                          .replace("Quotes expiring in 7 days", "Devis expirant sous 7 jours")
+                          .replace("Orders awaiting confirmation", "Commandes en attente de confirmation")
+                          .replace("Receipts overdue", "Receptions en retard")
+                      : task.label}
+                  </p>
+                  <span
+                    className={`w-fit rounded-full px-2 py-0.5 text-xs font-semibold ${
+                      task.severity === "high"
+                        ? "bg-rose-100 text-rose-600"
+                        : task.severity === "medium"
+                          ? "bg-amber-100 text-amber-700"
+                          : "bg-emerald-100 text-emerald-600"
+                    }`}
+                  >
+                    {formatMetric(task.count, "number", locale)}
+                  </span>
+                </div>
+                <p className="mt-1 text-sm text-zinc-500">
+                  {lang === "fr"
+                    ? task.description
+                        .replace("Send reminders or close out quotes before validity lapses.", "Relancer ou cloturer les devis avant expiration.")
+                        .replace("Confirm approved orders to release fulfillment tasks.", "Confirmer les commandes approuvees pour lancer la preparation.")
+                        .replace("Follow up with suppliers on late inbound shipments.", "Relancer les fournisseurs sur les livraisons en retard.")
+                    : task.description}
+                </p>
+              </Link>
+            ))}
             </div>
           </div>
-        </div>
       </section>
     </div>
   );

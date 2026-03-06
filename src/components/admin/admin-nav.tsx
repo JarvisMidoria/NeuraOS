@@ -44,11 +44,10 @@ export function AdminNav({ onNavigate }: AdminNavProps) {
     () => ({
       search: lang === "fr" ? "Rechercher..." : "Search...",
       language: lang === "fr" ? "Langue" : "Language",
-      theme: lang === "fr" ? "Theme" : "Theme",
-      dark: lang === "fr" ? "Nuit" : "Dark",
-      light: lang === "fr" ? "Jour" : "Light",
       english: "EN",
       french: "FR",
+      darkLabel: lang === "fr" ? "Mode nuit" : "Dark mode",
+      lightLabel: lang === "fr" ? "Mode jour" : "Light mode",
     }),
     [lang],
   );
@@ -116,24 +115,28 @@ export function AdminNav({ onNavigate }: AdminNavProps) {
           <button
             type="button"
             onClick={() => setColorMode("dark")}
-            className={`rounded-lg border px-2 py-1.5 text-xs ${
+            aria-label={text.darkLabel}
+            title={text.darkLabel}
+            className={`rounded-lg border px-2 py-1.5 text-sm ${
               theme === "dark"
                 ? "border-white/25 bg-white/12 text-zinc-100"
                 : "border-white/12 text-zinc-400 hover:text-zinc-200"
             }`}
           >
-            {text.theme}: {text.dark}
+            ☾
           </button>
           <button
             type="button"
             onClick={() => setColorMode("light")}
-            className={`rounded-lg border px-2 py-1.5 text-xs ${
+            aria-label={text.lightLabel}
+            title={text.lightLabel}
+            className={`rounded-lg border px-2 py-1.5 text-sm ${
               theme === "light"
                 ? "border-white/25 bg-white/12 text-zinc-100"
                 : "border-white/12 text-zinc-400 hover:text-zinc-200"
             }`}
           >
-            {text.theme}: {text.light}
+            ☀
           </button>
         </div>
       </div>

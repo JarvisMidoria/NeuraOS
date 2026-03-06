@@ -46,11 +46,16 @@ export function AdminShell({ children }: { children: ReactNode }) {
         <button
           type="button"
           onClick={() => setMobileOpen(true)}
-          className="rounded-lg border border-white/15 px-2.5 py-1.5 text-xs text-zinc-200"
+          className="rounded-lg border border-white/15 p-2 text-zinc-200"
+          aria-label={text.menu}
         >
-          {text.menu}
+          <span className="flex h-4 w-4 flex-col justify-between">
+            <span className="h-[2px] w-full rounded bg-current" />
+            <span className="h-[2px] w-full rounded bg-current" />
+            <span className="h-[2px] w-full rounded bg-current" />
+          </span>
         </button>
-        <NeuraLogo compact />
+        <NeuraLogo compact href="/admin" />
         <span className="rounded-full border border-white/15 px-2.5 py-1 text-[11px] text-zinc-300">
           {text.admin}
         </span>
@@ -59,7 +64,7 @@ export function AdminShell({ children }: { children: ReactNode }) {
       <div className="mx-auto grid min-h-[calc(100vh-57px)] w-full max-w-[1400px] grid-cols-1 lg:min-h-screen lg:grid-cols-[280px_1fr]">
         <aside className="hidden border-r border-white/10 px-5 py-6 lg:block">
           <div className="mb-8 flex items-center justify-between">
-            <NeuraLogo />
+            <NeuraLogo href="/admin" />
             <span className="rounded-full border border-white/15 px-2.5 py-1 text-[11px] text-zinc-300">
               {text.admin}
             </span>
@@ -82,7 +87,7 @@ export function AdminShell({ children }: { children: ReactNode }) {
         }`}
       >
         <div className="mb-5 flex items-center justify-between">
-          <NeuraLogo />
+          <NeuraLogo href="/admin" />
           <button
             type="button"
             onClick={() => setMobileOpen(false)}
