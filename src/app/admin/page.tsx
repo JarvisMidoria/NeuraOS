@@ -110,7 +110,7 @@ export default async function AdminDashboard() {
         </p>
       </div>
 
-      <section aria-label={text.keyMetrics} className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+      <section aria-label={text.keyMetrics} className="perf-section grid gap-4 md:grid-cols-2 xl:grid-cols-4">
         {snapshot.kpis.map((kpi) => (
           <div key={kpi.id} className="rounded-2xl border border-zinc-200 bg-white p-5 shadow-sm">
             <p className="text-sm text-zinc-500">
@@ -146,7 +146,7 @@ export default async function AdminDashboard() {
         ))}
       </section>
 
-      <section className="grid gap-6 lg:grid-cols-3" aria-label={text.salesTrend}>
+      <section className="perf-section grid gap-6 lg:grid-cols-3" aria-label={text.salesTrend}>
         <div className="rounded-2xl border border-zinc-200 bg-white p-5 shadow-sm lg:col-span-2">
           <div className="flex items-center justify-between">
             <div>
@@ -231,7 +231,7 @@ export default async function AdminDashboard() {
         </div>
       </section>
 
-      <section className="grid gap-6 lg:grid-cols-3" aria-label={text.docsAndTasks}>
+      <section className="perf-section grid gap-6 lg:grid-cols-3" aria-label={text.docsAndTasks}>
         <div className="rounded-2xl border border-zinc-200 bg-white p-5 shadow-sm lg:col-span-2">
           <div className="flex items-center justify-between">
             <div>

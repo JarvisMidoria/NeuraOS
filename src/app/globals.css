@@ -34,6 +34,12 @@ body {
     linear-gradient(180deg, #0a0d14 0%, #07090d 100%);
 }
 
+html,
+body {
+  max-width: 100%;
+  overflow-x: hidden;
+}
+
 .glass-panel {
   background: var(--surface);
   border: 1px solid var(--surface-border);
@@ -59,6 +65,8 @@ body {
   --admin-soft-bg: rgba(255, 255, 255, 0.08);
   --admin-input-bg: rgba(5, 7, 11, 0.35);
   --admin-shadow: 0 20px 45px rgba(0, 0, 0, 0.32);
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
 }
 
 [data-admin-theme="light"] .admin-shell {
@@ -142,6 +150,10 @@ body {
 .admin-shell .overflow-x-auto {
   position: relative;
   -webkit-overflow-scrolling: touch;
+  overscroll-behavior-x: contain;
+  scrollbar-gutter: stable;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(124, 140, 255, 0.45) transparent;
 }
 
 .admin-shell .overflow-x-auto::before,
@@ -164,6 +176,33 @@ body {
   right: 0;
   width: 22px;
   background: linear-gradient(to left, var(--admin-surface), rgba(0, 0, 0, 0));
+}
+
+.admin-shell .overflow-x-auto::-webkit-scrollbar {
+  height: 8px;
+}
+
+.admin-shell .overflow-x-auto::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.admin-shell .overflow-x-auto::-webkit-scrollbar-thumb {
+  border-radius: 999px;
+  background: rgba(124, 140, 255, 0.35);
+}
+
+.admin-shell .perf-section {
+  content-visibility: auto;
+  contain-intrinsic-size: 1px 720px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .admin-shell * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }
 
 @keyframes fadeUp {

@@ -31,6 +31,15 @@ export function AdminShell({ children }: { children: ReactNode }) {
     };
   }, [mobileOpen]);
 
+  useEffect(() => {
+    if (!mobileOpen) return;
+    const handleEscape = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setMobileOpen(false);
+    };
+    window.addEventListener("keydown", handleEscape);
+    return () => window.removeEventListener("keydown", handleEscape);
+  }, [mobileOpen]);
+
   const text = useMemo(
     () => ({
       menu: lang === "fr" ? "Menu" : "Menu",
@@ -42,7 +51,7 @@ export function AdminShell({ children }: { children: ReactNode }) {
 
   return (
     <div className="admin-shell min-h-screen overflow-x-hidden bg-[#080b12] text-zinc-100">
-      <header className="fixed inset-x-0 top-0 z-30 flex items-center justify-between border-b border-white/10 bg-[#080b12]/95 px-4 py-3 backdrop-blur lg:hidden">
+      <header className="fixed inset-x-0 top-0 z-30 flex items-center justify-between border-b border-white/10 bg-[#080b12]/95 px-4 pb-3 pt-[calc(0.75rem+env(safe-area-inset-top))] backdrop-blur lg:hidden">
         <button
           type="button"
           onClick={() => setMobileOpen(true)}
@@ -61,7 +70,7 @@ export function AdminShell({ children }: { children: ReactNode }) {
         </span>
       </header>
 
-      <div className="mx-auto grid min-h-[calc(100vh-57px)] w-full max-w-[1400px] grid-cols-1 pt-[57px] lg:min-h-screen lg:grid-cols-[280px_1fr] lg:pt-0">
+      <div className="mx-auto grid min-h-[calc(100vh-57px)] w-full max-w-[1400px] grid-cols-1 pt-[calc(57px+env(safe-area-inset-top))] lg:min-h-screen lg:grid-cols-[280px_1fr] lg:pt-0">
         <aside className="hidden border-r border-white/10 px-5 py-6 lg:block">
           <div className="mb-8 flex items-center justify-between">
             <NeuraLogo href="/admin" />
@@ -82,7 +91,7 @@ export function AdminShell({ children }: { children: ReactNode }) {
         onClick={() => setMobileOpen(false)}
       />
       <aside
-        className={`fixed inset-y-0 left-0 z-50 w-[88%] max-w-[320px] border-r border-white/10 bg-[#080b12] px-4 py-5 transition-transform duration-200 lg:hidden ${
+        className={`fixed inset-y-0 left-0 z-50 w-[88%] max-w-[320px] border-r border-white/10 bg-[#080b12] px-4 py-5 transition-transform duration-200 will-change-transform lg:hidden ${
           mobileOpen ? "translate-x-0" : "-translate-x-full"
         }`}
       >
