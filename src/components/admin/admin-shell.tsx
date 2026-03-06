@@ -42,7 +42,7 @@ export function AdminShell({ children }: { children: ReactNode }) {
 
   return (
     <div className="admin-shell min-h-screen overflow-x-hidden bg-[#080b12] text-zinc-100">
-      <header className="sticky top-0 z-30 flex items-center justify-between border-b border-white/10 bg-[#080b12]/95 px-4 py-3 backdrop-blur lg:hidden">
+      <header className="fixed inset-x-0 top-0 z-30 flex items-center justify-between border-b border-white/10 bg-[#080b12]/95 px-4 py-3 backdrop-blur lg:hidden">
         <button
           type="button"
           onClick={() => setMobileOpen(true)}
@@ -61,7 +61,7 @@ export function AdminShell({ children }: { children: ReactNode }) {
         </span>
       </header>
 
-      <div className="mx-auto grid min-h-[calc(100vh-57px)] w-full max-w-[1400px] grid-cols-1 lg:min-h-screen lg:grid-cols-[280px_1fr]">
+      <div className="mx-auto grid min-h-[calc(100vh-57px)] w-full max-w-[1400px] grid-cols-1 pt-[57px] lg:min-h-screen lg:grid-cols-[280px_1fr] lg:pt-0">
         <aside className="hidden border-r border-white/10 px-5 py-6 lg:block">
           <div className="mb-8 flex items-center justify-between">
             <NeuraLogo href="/admin" />
