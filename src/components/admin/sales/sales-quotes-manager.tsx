@@ -81,6 +81,15 @@ const STATUS_LABELS: Record<string, { en: string; fr: string }> = {
   CONFIRMED: { en: "Confirmed", fr: "Confirme" },
 };
 
+const STATUS_BADGE_CLASSES: Record<string, string> = {
+  DRAFT: "bg-slate-100 text-slate-700",
+  SENT: "bg-sky-100 text-sky-700",
+  APPROVED: "bg-emerald-100 text-emerald-700",
+  REJECTED: "bg-rose-100 text-rose-700",
+  CONVERTED: "bg-violet-100 text-violet-700",
+  CONFIRMED: "bg-blue-100 text-blue-700",
+};
+
 export function SalesQuotesManager({
   clients,
   products,
@@ -444,84 +453,78 @@ export function SalesQuotesManager({
         {loading ? (
           <p className="text-sm text-zinc-500">{t.loading}</p>
         ) : (
-          <div className="overflow-x-auto">
-            <table className="min-w-full text-left text-sm">
-              <thead>
-                <tr className="text-xs uppercase tracking-wide text-zinc-500">
-                  <th className="px-3 py-2">{t.quoteNumber}</th>
-                  <th className="px-3 py-2">{t.client}</th>
-                  <th className="px-3 py-2">{t.status}</th>
-                  <th className="px-3 py-2">{t.total}</th>
-                  <th className="px-3 py-2">{t.validUntil}</th>
-                  <th className="px-3 py-2">{t.lines}</th>
-                  <th className="px-3 py-2">{t.actions}</th>
-                </tr>
-              </thead>
-              <tbody>
-                {quotes.map((quote) => (
-                  <tr key={quote.id} className="border-t border-zinc-100">
-                    <td className="px-3 py-2 font-mono text-xs">Q-{quote.quoteNumber}</td>
-                    <td className="px-3 py-2">{quote.client?.name ?? "—"}</td>
-                    <td className="px-3 py-2">
-                      <span className="rounded-full bg-zinc-100 px-2 py-1 text-xs font-medium">
-                        {(STATUS_LABELS[quote.status]?.[lang] ?? quote.status) as string}
-                      </span>
-                    </td>
-                    <td className="px-3 py-2 font-semibold">
+          <div className="space-y-3">
+            {quotes.map((quote) => (
+              <div key={quote.id} className="rounded-2xl border border-zinc-100 p-4">
+                <div className="grid gap-3">
+                  <div className="flex flex-wrap items-center justify-between gap-2">
+                    <p className="font-mono text-xs text-zinc-500">Q-{quote.quoteNumber}</p>
+                    <span
+                      className={`rounded-full px-2 py-1 text-xs font-medium ${STATUS_BADGE_CLASSES[quote.status] ?? "bg-zinc-100 text-zinc-700"}`}
+                    >
+                      {(STATUS_LABELS[quote.status]?.[lang] ?? quote.status) as string}
+                    </span>
+                  </div>
+                  <div className="grid gap-2 sm:grid-cols-2">
+                    <p className="text-sm text-zinc-700">
+                      <span className="text-zinc-500">{t.client}: </span>
+                      {quote.client?.name ?? "—"}
+                    </p>
+                    <p className="text-sm text-zinc-700 sm:text-right">
+                      <span className="text-zinc-500">{t.total}: </span>
                       {new Intl.NumberFormat(locale, { style: "currency", currency: "USD" }).format(Number(quote.totalAmount))}
-                    </td>
-                    <td className="px-3 py-2 text-sm text-zinc-500">
-                      {quote.validUntil ? new Date(quote.validUntil).toLocaleDateString(locale) : "—"}
-                    </td>
-                    <td className="px-3 py-2 text-xs text-zinc-600">
-                      {quote.lines.map((line) => (
-                        <div key={line.id}>
-                          {line.product?.name ?? line.productId} — {t.qtyLong} {line.quantity} @ {new Intl.NumberFormat(locale, { style: "currency", currency: "USD" }).format(Number(line.unitPrice))}
-                        </div>
-                      ))}
-                    </td>
-                    <td className="px-3 py-2">
-                      <div className="flex flex-wrap gap-2 text-xs">
-                        {quote.status === "DRAFT" && (
-                          <button className="rounded-md border border-zinc-300 px-2 py-1" onClick={() => handleStatusChange(quote.id, "SENT")}>
-                            {t.markSent}
-                          </button>
-                        )}
-                        {quote.status !== "APPROVED" && quote.status !== "CONVERTED" && canManageSales && (
-                          <button
-                            className="rounded-md border border-emerald-200 px-2 py-1 text-emerald-700"
-                            onClick={() => handleStatusChange(quote.id, "APPROVED")}
-                          >
-                            {t.approve}
-                          </button>
-                        )}
-                        {quote.status !== "REJECTED" && quote.status !== "CONVERTED" && (
-                          <button
-                            className="rounded-md border border-red-200 px-2 py-1 text-red-600"
-                            onClick={() => handleStatusChange(quote.id, "REJECTED")}
-                          >
-                            {t.reject}
-                          </button>
-                        )}
-                        {quote.status === "APPROVED" && canManageSales && (
-                          <button
-                            className="rounded-md border border-blue-200 px-2 py-1 text-blue-700"
-                            onClick={() => handleConvert(quote.id)}
-                          >
-                            {t.convert}
-                          </button>
-                        )}
-                        {quote.convertedOrder && (
-                          <span className="text-xs text-zinc-500">
-                            SO-{quote.convertedOrder.orderNumber} ({(STATUS_LABELS[quote.convertedOrder.status]?.[lang] ?? quote.convertedOrder.status) as string})
-                          </span>
-                        )}
+                    </p>
+                    <p className="text-sm text-zinc-500">
+                      {t.validUntil}: {quote.validUntil ? new Date(quote.validUntil).toLocaleDateString(locale) : "—"}
+                    </p>
+                  </div>
+                  <div className="space-y-1 text-xs text-zinc-600">
+                    {quote.lines.map((line) => (
+                      <div key={line.id}>
+                        {line.product?.name ?? line.productId} — {t.qtyLong} {line.quantity} @{" "}
+                        {new Intl.NumberFormat(locale, { style: "currency", currency: "USD" }).format(Number(line.unitPrice))}
                       </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+                    ))}
+                  </div>
+                  <div className="flex flex-wrap gap-2 text-xs">
+                    {quote.status === "DRAFT" && (
+                      <button className="rounded-md border border-zinc-300 px-2 py-1" onClick={() => handleStatusChange(quote.id, "SENT")}>
+                        {t.markSent}
+                      </button>
+                    )}
+                    {quote.status !== "APPROVED" && quote.status !== "CONVERTED" && canManageSales && (
+                      <button
+                        className="rounded-md border border-emerald-200 px-2 py-1 text-emerald-700"
+                        onClick={() => handleStatusChange(quote.id, "APPROVED")}
+                      >
+                        {t.approve}
+                      </button>
+                    )}
+                    {quote.status !== "REJECTED" && quote.status !== "CONVERTED" && (
+                      <button
+                        className="rounded-md border border-red-200 px-2 py-1 text-red-600"
+                        onClick={() => handleStatusChange(quote.id, "REJECTED")}
+                      >
+                        {t.reject}
+                      </button>
+                    )}
+                    {quote.status === "APPROVED" && canManageSales && (
+                      <button
+                        className="rounded-md border border-blue-200 px-2 py-1 text-blue-700"
+                        onClick={() => handleConvert(quote.id)}
+                      >
+                        {t.convert}
+                      </button>
+                    )}
+                    {quote.convertedOrder && (
+                      <span className="text-xs text-zinc-500">
+                        SO-{quote.convertedOrder.orderNumber} ({(STATUS_LABELS[quote.convertedOrder.status]?.[lang] ?? quote.convertedOrder.status) as string})
+                      </span>
+                    )}
+                  </div>
+                </div>
+              </div>
+            ))}
           </div>
         )}
         <div className="mt-4 flex items-center justify-between text-sm text-zinc-600">

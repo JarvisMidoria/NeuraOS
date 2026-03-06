@@ -417,60 +417,47 @@ export function ProductsManager({ categories, customFieldDefinitions, lang }: Pr
         {loading ? (
           <p className="text-sm text-zinc-500">{t.loading}</p>
         ) : (
-          <div className="overflow-x-auto">
-            <table className="min-w-full text-left text-sm">
-              <thead>
-                <tr className="text-xs uppercase tracking-wide text-zinc-500">
-                  <th className="px-3 py-2">SKU</th>
-                  <th className="px-3 py-2">{t.name}</th>
-                  <th className="px-3 py-2">{t.category}</th>
-                  <th className="px-3 py-2">{t.unitPrice}</th>
-                  <th className="px-3 py-2">{t.lowStock}</th>
-                  <th className="px-3 py-2">{t.customFields}</th>
-                  <th className="px-3 py-2" />
-                </tr>
-              </thead>
-              <tbody>
-                {products.map((product) => (
-                  <tr key={product.id} className="border-t border-zinc-100">
-                    <td className="px-3 py-2 font-mono text-xs">{product.sku}</td>
-                    <td className="px-3 py-2">{product.name}</td>
-                    <td className="px-3 py-2">{product.category?.name ?? "—"}</td>
-                    <td className="px-3 py-2">${Number(product.unitPrice ?? 0).toFixed(2)}</td>
-                    <td className="px-3 py-2">{product.lowStockThreshold ?? "—"}</td>
-                    <td className="px-3 py-2">
-                      <div className="flex flex-wrap gap-1 text-xs text-zinc-600">
-                        {product.customFields.length ? (
-                          product.customFields.map((field) => (
-                            <span key={field.fieldId} className="rounded-full bg-zinc-100 px-2 py-0.5">
-                              {field.label}: {field.value}
-                            </span>
-                          ))
-                        ) : (
-                          <span className="text-zinc-400">{t.customValuesEmpty}</span>
-                        )}
-                      </div>
-                    </td>
-                    <td className="px-3 py-2 text-right">
-                      <div className="flex items-center justify-end gap-2 text-xs">
-                        <button
-                          className="text-zinc-600 hover:text-zinc-900"
-                          onClick={() => handleEdit(product)}
-                        >
-                          {t.editRow}
-                        </button>
-                        <button
-                          className="text-red-600 hover:text-red-800"
-                          onClick={() => handleDelete(product.id)}
-                        >
-                          {t.deleteRow}
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+          <div className="space-y-3">
+            {products.map((product) => (
+              <div key={product.id} className="rounded-2xl border border-zinc-100 p-4">
+                <div className="grid gap-3 md:grid-cols-[1fr_auto] md:items-start">
+                  <div className="space-y-2">
+                    <p className="font-mono text-xs text-zinc-500">{product.sku}</p>
+                    <p className="text-base font-semibold text-zinc-900">{product.name}</p>
+                    <div className="flex flex-wrap gap-2 text-xs text-zinc-600">
+                      <span className="rounded-full bg-zinc-100 px-2 py-1">
+                        {t.category}: {product.category?.name ?? "—"}
+                      </span>
+                      <span className="rounded-full bg-zinc-100 px-2 py-1">
+                        {t.unitPrice}: ${Number(product.unitPrice ?? 0).toFixed(2)}
+                      </span>
+                      <span className="rounded-full bg-zinc-100 px-2 py-1">
+                        {t.lowStock}: {product.lowStockThreshold ?? "—"}
+                      </span>
+                    </div>
+                    <div className="flex flex-wrap gap-1 text-xs text-zinc-600">
+                      {product.customFields.length ? (
+                        product.customFields.map((field) => (
+                          <span key={field.fieldId} className="rounded-full bg-zinc-100 px-2 py-0.5">
+                            {field.label}: {field.value}
+                          </span>
+                        ))
+                      ) : (
+                        <span className="text-zinc-400">{t.customValuesEmpty}</span>
+                      )}
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2 text-xs md:justify-end">
+                    <button className="text-zinc-600 hover:text-zinc-900" onClick={() => handleEdit(product)}>
+                      {t.editRow}
+                    </button>
+                    <button className="text-red-600 hover:text-red-800" onClick={() => handleDelete(product.id)}>
+                      {t.deleteRow}
+                    </button>
+                  </div>
+                </div>
+              </div>
+            ))}
           </div>
         )}
 

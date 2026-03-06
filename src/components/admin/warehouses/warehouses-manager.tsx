@@ -190,9 +190,9 @@ export function WarehousesManager({ lang }: { lang: "en" | "fr" }) {
         {loading ? (
           <p className="text-sm text-zinc-500">{t.loading}</p>
         ) : (
-          <div className="divide-y divide-zinc-100">
+          <div className="space-y-3">
             {warehouses.map((warehouse) => (
-              <div key={warehouse.id} className="flex items-center justify-between py-3 text-sm">
+              <div key={warehouse.id} className="flex items-center justify-between rounded-2xl border border-zinc-100 p-4 text-sm">
                 <div>
                   <p className="font-medium text-zinc-900">{warehouse.name}</p>
                   <p className="text-xs text-zinc-500">{warehouse.location ?? t.noLocation}</p>

@@ -70,6 +70,13 @@ const STATUS_LABELS: Record<string, { en: string; fr: string }> = {
   REJECTED: { en: "Rejected", fr: "Rejete" },
 };
 
+const STATUS_BADGE_CLASSES: Record<string, string> = {
+  DRAFT: "bg-slate-100 text-slate-700",
+  APPROVED: "bg-emerald-100 text-emerald-700",
+  CONFIRMED: "bg-blue-100 text-blue-700",
+  REJECTED: "bg-rose-100 text-rose-700",
+};
+
 export function SalesOrdersManager({
   clients,
   products,
@@ -391,70 +398,64 @@ export function SalesOrdersManager({
         {loading ? (
           <p className="text-sm text-zinc-500">{t.loading}</p>
         ) : (
-          <div className="overflow-x-auto">
-            <table className="min-w-full text-left text-sm">
-              <thead>
-                <tr className="text-xs uppercase tracking-wide text-zinc-500">
-                  <th className="px-3 py-2">{t.orderNumber}</th>
-                  <th className="px-3 py-2">{t.client}</th>
-                  <th className="px-3 py-2">{t.status}</th>
-                  <th className="px-3 py-2">{t.total}</th>
-                  <th className="px-3 py-2">{t.lines}</th>
-                  <th className="px-3 py-2">{t.actions}</th>
-                </tr>
-              </thead>
-              <tbody>
-                {orders.map((order) => (
-                  <tr key={order.id} className="border-t border-zinc-100">
-                    <td className="px-3 py-2 font-mono text-xs">SO-{order.orderNumber}</td>
-                    <td className="px-3 py-2">{order.client?.name ?? "—"}</td>
-                    <td className="px-3 py-2">
-                      <span className="rounded-full bg-zinc-100 px-2 py-1 text-xs font-medium">
-                        {(STATUS_LABELS[order.status]?.[lang] ?? order.status) as string}
-                      </span>
-                    </td>
-                    <td className="px-3 py-2 font-semibold">
+          <div className="space-y-3">
+            {orders.map((order) => (
+              <div key={order.id} className="rounded-2xl border border-zinc-100 p-4">
+                <div className="grid gap-3">
+                  <div className="flex flex-wrap items-center justify-between gap-2">
+                    <p className="font-mono text-xs text-zinc-500">SO-{order.orderNumber}</p>
+                    <span
+                      className={`rounded-full px-2 py-1 text-xs font-medium ${STATUS_BADGE_CLASSES[order.status] ?? "bg-zinc-100 text-zinc-700"}`}
+                    >
+                      {(STATUS_LABELS[order.status]?.[lang] ?? order.status) as string}
+                    </span>
+                  </div>
+                  <div className="grid gap-2 sm:grid-cols-2">
+                    <p className="text-sm text-zinc-700">
+                      <span className="text-zinc-500">{t.client}: </span>
+                      {order.client?.name ?? "—"}
+                    </p>
+                    <p className="text-sm text-zinc-700 sm:text-right">
+                      <span className="text-zinc-500">{t.total}: </span>
                       {new Intl.NumberFormat(locale, { style: "currency", currency: "USD" }).format(Number(order.totalAmount ?? 0))}
-                    </td>
-                    <td className="px-3 py-2 text-xs text-zinc-600">
-                      {order.lines.map((line) => (
-                        <div key={line.id}>
-                          {line.product?.name ?? line.productId} · {line.warehouse?.name ?? "—"} · {t.qty} {line.quantity}
-                        </div>
-                      ))}
-                    </td>
-                    <td className="px-3 py-2">
-                      <div className="flex flex-wrap gap-2 text-xs">
-                        {order.status === "DRAFT" && canManageSales && (
-                          <button
-                            className="rounded-md border border-emerald-200 px-2 py-1 text-emerald-700"
-                            onClick={() => handleStatusChange(order.id, "APPROVED")}
-                          >
-                            {t.approve}
-                          </button>
-                        )}
-                        {order.status === "APPROVED" && canManageSales && (
-                          <button
-                            className="rounded-md border border-blue-200 px-2 py-1 text-blue-700"
-                            onClick={() => handleStatusChange(order.id, "CONFIRMED")}
-                          >
-                            {t.confirmShip}
-                          </button>
-                        )}
-                        {order.status !== "REJECTED" && order.status !== "CONFIRMED" && (
-                          <button
-                            className="rounded-md border border-red-200 px-2 py-1 text-red-600"
-                            onClick={() => handleStatusChange(order.id, "REJECTED")}
-                          >
-                            {t.reject}
-                          </button>
-                        )}
+                    </p>
+                  </div>
+                  <div className="space-y-1 text-xs text-zinc-600">
+                    {order.lines.map((line) => (
+                      <div key={line.id}>
+                        {line.product?.name ?? line.productId} · {line.warehouse?.name ?? "—"} · {t.qty} {line.quantity}
                       </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+                    ))}
+                  </div>
+                  <div className="flex flex-wrap gap-2 text-xs">
+                    {order.status === "DRAFT" && canManageSales && (
+                      <button
+                        className="rounded-md border border-emerald-200 px-2 py-1 text-emerald-700"
+                        onClick={() => handleStatusChange(order.id, "APPROVED")}
+                      >
+                        {t.approve}
+                      </button>
+                    )}
+                    {order.status === "APPROVED" && canManageSales && (
+                      <button
+                        className="rounded-md border border-blue-200 px-2 py-1 text-blue-700"
+                        onClick={() => handleStatusChange(order.id, "CONFIRMED")}
+                      >
+                        {t.confirmShip}
+                      </button>
+                    )}
+                    {order.status !== "REJECTED" && order.status !== "CONFIRMED" && (
+                      <button
+                        className="rounded-md border border-red-200 px-2 py-1 text-red-600"
+                        onClick={() => handleStatusChange(order.id, "REJECTED")}
+                      >
+                        {t.reject}
+                      </button>
+                    )}
+                  </div>
+                </div>
+              </div>
+            ))}
           </div>
         )}
         <div className="mt-4 flex items-center justify-between text-sm text-zinc-600">
