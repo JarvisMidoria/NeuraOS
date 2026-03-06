@@ -39,6 +39,20 @@ enum NotificationSeverity {
   HIGH
 }
 
+enum SubscriptionPlan {
+  FREE
+  STARTER
+  GROWTH
+  ENTERPRISE
+}
+
+enum SubscriptionStatus {
+  TRIALING
+  ACTIVE
+  PAST_DUE
+  CANCELED
+}
+
 model Company {
   id              String                  @id @default(uuid())
   name            String
@@ -69,6 +83,7 @@ model Company {
   notifications   Notification[]
   taxRules        TaxRule[]
   stockRule       StockRule?
+  subscription    TenantSubscription?
 }
 
 model User {
@@ -578,4 +593,22 @@ model Notification {
   @@unique([companyId, fingerprint])
   @@index([companyId, createdAt])
   @@index([companyId, readAt])
+}
+
+model TenantSubscription {
+  id           String             @id @default(uuid())
+  companyId    String             @unique
+  company      Company            @relation(fields: [companyId], references: [id])
+  plan         SubscriptionPlan   @default(FREE)
+  status       SubscriptionStatus @default(TRIALING)
+  seatLimit    Int                @default(3)
+  billingEmail String?
+  startsAt     DateTime           @default(now())
+  renewsAt     DateTime?
+  canceledAt   DateTime?
+  createdAt    DateTime           @default(now())
+  updatedAt    DateTime           @updatedAt
+
+  @@index([status])
+  @@index([plan])
 }

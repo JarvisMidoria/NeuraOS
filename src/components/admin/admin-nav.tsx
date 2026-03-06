@@ -20,6 +20,7 @@ const NAV_ITEMS = [
   { href: "/admin/warehouses", en: "Warehouses", fr: "Entrepots" },
   { href: "/admin/settings", en: "Settings", fr: "Parametres" },
   { href: "/admin/audit", en: "Audit Log", fr: "Journal audit" },
+  { href: "/admin/saas", en: "SaaS", fr: "SaaS" },
 ];
 
 type AdminLang = "en" | "fr";

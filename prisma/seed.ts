@@ -9,6 +9,7 @@ async function resetDatabase() {
     prisma.rolePermission.deleteMany(),
     prisma.userRole.deleteMany(),
     prisma.notification.deleteMany(),
+    prisma.tenantSubscription.deleteMany(),
     prisma.salesOrderTaxLine.deleteMany(),
     prisma.salesOrderLine.deleteMany(),
     prisma.salesOrder.deleteMany(),
@@ -42,6 +43,17 @@ async function main() {
     data: {
       name: "Acme Manufacturing",
       domain: "acme.local",
+    },
+  });
+
+  await prisma.tenantSubscription.create({
+    data: {
+      companyId: company.id,
+      plan: "GROWTH",
+      status: "ACTIVE",
+      seatLimit: 25,
+      billingEmail: "billing@acme.local",
+      renewsAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
     },
   });
 

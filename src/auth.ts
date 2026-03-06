@@ -4,6 +4,7 @@ import type { JWT } from "next-auth/jwt";
 import Credentials from "next-auth/providers/credentials";
 import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/prisma";
+import { isSuperAdminEmail } from "@/lib/super-admin";
 
 export const authOptions: NextAuthOptions = {
   session: {
@@ -73,16 +74,18 @@ export const authOptions: NextAuthOptions = {
           companyId: user.companyId,
           roles: roleNames,
           permissions: Array.from(new Set(permissionCodes)),
+          isSuperAdmin: isSuperAdminEmail(user.email),
         };
       },
     }),
   ],
   callbacks: {
     async jwt({ token, user }) {
-      if (user && "companyId" in user && "roles" in user && "permissions" in user) {
+      if (user && "companyId" in user && "roles" in user && "permissions" in user && "isSuperAdmin" in user) {
         token.companyId = user.companyId;
         token.roles = user.roles;
         token.permissions = user.permissions;
+        token.isSuperAdmin = Boolean(user.isSuperAdmin);
       }
       return token;
     },
@@ -92,6 +95,7 @@ export const authOptions: NextAuthOptions = {
         session.user.companyId = token.companyId as string;
         session.user.roles = (token.roles as string[]) ?? [];
         session.user.permissions = (token.permissions as string[]) ?? [];
+        session.user.isSuperAdmin = Boolean(token.isSuperAdmin);
       }
       return session;
     },

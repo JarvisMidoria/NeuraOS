@@ -8,6 +8,7 @@ declare module "next-auth" {
       companyId: string;
       roles: string[];
       permissions: string[];
+      isSuperAdmin: boolean;
     };
   }
 
@@ -15,6 +16,7 @@ declare module "next-auth" {
     companyId: string;
     roles: string[];
     permissions: string[];
+    isSuperAdmin: boolean;
   }
 }
 
@@ -23,5 +25,6 @@ declare module "next-auth/jwt" {
     companyId?: string;
     roles?: string[];
     permissions?: string[];
+    isSuperAdmin?: boolean;
   }
 }
