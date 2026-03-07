@@ -20,6 +20,12 @@ type LlmSettings = {
   isEnabled: boolean;
   keyHint: string | null;
   sharedAvailable: boolean;
+  usage: {
+    period: "month";
+    consumedTokens: number;
+    monthlyLimitTokens: number | null;
+    remainingTokens: number | null;
+  };
 };
 
 type TaxRule = {
@@ -487,6 +493,30 @@ export function SettingsConsole() {
       <section className="rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm">
         <h2 className="text-lg font-semibold text-zinc-900">AI Assistant</h2>
         <p className="mt-1 text-xs text-zinc-500">Choose a simple mode: shared AI by NeuraOS, or your own provider key.</p>
+        {llmSettings ? (
+          <div className="mt-3 grid gap-2 sm:grid-cols-3">
+            <div className="rounded-md border border-zinc-200 bg-zinc-50 px-3 py-2 text-xs">
+              <p className="text-zinc-500">Tokens used ({llmSettings.usage.period})</p>
+              <p className="text-sm font-semibold text-zinc-900">{llmSettings.usage.consumedTokens.toLocaleString()}</p>
+            </div>
+            <div className="rounded-md border border-zinc-200 bg-zinc-50 px-3 py-2 text-xs">
+              <p className="text-zinc-500">Token limit</p>
+              <p className="text-sm font-semibold text-zinc-900">
+                {llmSettings.usage.monthlyLimitTokens === null
+                  ? "BYOK (your provider)"
+                  : llmSettings.usage.monthlyLimitTokens.toLocaleString()}
+              </p>
+            </div>
+            <div className="rounded-md border border-zinc-200 bg-zinc-50 px-3 py-2 text-xs">
+              <p className="text-zinc-500">Tokens left</p>
+              <p className="text-sm font-semibold text-zinc-900">
+                {llmSettings.usage.remainingTokens === null
+                  ? "N/A"
+                  : llmSettings.usage.remainingTokens.toLocaleString()}
+              </p>
+            </div>
+          </div>
+        ) : null}
         {llmSettings && !llmSettings.sharedAvailable ? (
           <div className="mt-3 rounded-md bg-amber-50 px-3 py-2 text-xs text-amber-700">
             Shared AI is not available yet on the platform. You can still use BYOK mode.

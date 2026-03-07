@@ -26,10 +26,41 @@ function hasSharedProviderConfigured() {
   return Boolean(process.env.SHARED_LLM_API_KEY?.trim());
 }
 
+function sharedMonthlyTokenLimit() {
+  const raw = Number(process.env.SHARED_LLM_MONTHLY_TOKEN_LIMIT ?? "200000");
+  if (!Number.isFinite(raw) || raw <= 0) return 200000;
+  return Math.floor(raw);
+}
+
+function tokenUsageFromMetadata(metadata: unknown) {
+  if (!metadata || typeof metadata !== "object") return 0;
+  const tokenUsage = (metadata as { tokenUsage?: { totalTokens?: unknown } }).tokenUsage;
+  const total = Number(tokenUsage?.totalTokens ?? 0);
+  return Number.isFinite(total) && total > 0 ? Math.floor(total) : 0;
+}
+
 export async function GET() {
   try {
     const session = await requireAdminSession();
     const config = await getCompanyLlmConfig(session.user.companyId);
+    const startOfMonth = new Date();
+    startOfMonth.setUTCDate(1);
+    startOfMonth.setUTCHours(0, 0, 0, 0);
+
+    const usageLogs = await prisma.auditLog.findMany({
+      where: {
+        companyId: session.user.companyId,
+        action: "LLM_ASSISTANT_QUERY",
+        entity: "llm_assistant",
+        createdAt: { gte: startOfMonth },
+      },
+      select: { metadata: true },
+      orderBy: { createdAt: "desc" },
+      take: 5000,
+    });
+    const consumedTokens = usageLogs.reduce((acc, log) => acc + tokenUsageFromMetadata(log.metadata), 0);
+    const monthlyLimitTokens = config?.accessMode === "SHARED" ? sharedMonthlyTokenLimit() : null;
+    const remainingTokens = monthlyLimitTokens === null ? null : Math.max(0, monthlyLimitTokens - consumedTokens);
 
     return NextResponse.json({
       data: {
@@ -41,6 +72,12 @@ export async function GET() {
         isEnabled: config?.isEnabled ?? false,
         keyHint: config?.keyHint ?? null,
         sharedAvailable: hasSharedProviderConfigured(),
+        usage: {
+          period: "month",
+          consumedTokens,
+          monthlyLimitTokens,
+          remainingTokens,
+        },
       },
     });
   } catch (error) {
@@ -137,6 +174,12 @@ export async function PUT(req: NextRequest) {
         isEnabled: saved.isEnabled,
         keyHint: saved.keyHint,
         sharedAvailable: hasSharedProviderConfigured(),
+        usage: {
+          period: "month",
+          consumedTokens: 0,
+          monthlyLimitTokens: saved.accessMode === "SHARED" ? sharedMonthlyTokenLimit() : null,
+          remainingTokens: saved.accessMode === "SHARED" ? sharedMonthlyTokenLimit() : null,
+        },
       },
     });
   } catch (error) {

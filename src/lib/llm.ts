@@ -18,6 +18,11 @@ type OpenAiCompatibleResponse = {
       content?: string;
     };
   }>;
+  usage?: {
+    prompt_tokens?: number;
+    completion_tokens?: number;
+    total_tokens?: number;
+  };
 };
 
 export async function getCompanyLlmConfig(companyId: string) {
@@ -141,5 +146,16 @@ export async function runCompanyLlm(input: {
     throw new ApiError(502, "LLM provider returned an empty response");
   }
 
-  return { content, model, provider, accessMode, sharedQuota };
+  return {
+    content,
+    model,
+    provider,
+    accessMode,
+    sharedQuota,
+    usage: {
+      promptTokens: payload.usage?.prompt_tokens ?? 0,
+      completionTokens: payload.usage?.completion_tokens ?? 0,
+      totalTokens: payload.usage?.total_tokens ?? 0,
+    },
+  };
 }
