@@ -75,15 +75,15 @@ body {
 
 [data-admin-theme="light"] .admin-shell {
   --admin-app-bg: #f3f5fb;
-  --admin-surface: rgba(255, 255, 255, 0.95);
+  --admin-surface: #ffffff;
   --admin-border: rgba(20, 24, 33, 0.1);
   --admin-text: #161a24;
   --admin-muted: #626b81;
-  --admin-soft-bg: rgba(20, 24, 33, 0.06);
-  --admin-input-bg: rgba(255, 255, 255, 0.94);
-  --admin-overlay: rgba(26, 34, 52, 0.12);
+  --admin-soft-bg: #edf0f7;
+  --admin-input-bg: #ffffff;
+  --admin-overlay: rgba(18, 24, 38, 0.28);
   --admin-elevated: #ffffff;
-  --admin-elevated-soft: rgba(20, 24, 33, 0.05);
+  --admin-elevated-soft: #f2f4fa;
   --admin-shadow: 0 8px 18px rgba(9, 17, 34, 0.08);
 }
 
@@ -104,6 +104,14 @@ body {
 .admin-shell .admin-mobile-drawer {
   background: color-mix(in srgb, var(--admin-app-bg) 94%, transparent);
   border-color: var(--admin-border);
+}
+
+[data-admin-theme="light"] .admin-shell .admin-topbar {
+  background: rgba(243, 245, 251, 0.96);
+}
+
+[data-admin-theme="light"] .admin-shell .admin-mobile-drawer {
+  background: #f3f5fb;
 }
 
 .admin-shell .bg-white {
