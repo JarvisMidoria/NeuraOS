@@ -8,7 +8,7 @@ import { cookies } from "next/headers";
 import { prisma } from "@/lib/prisma";
 import { isSuperAdminEmail } from "@/lib/super-admin";
 import { getSimulationCompanyId } from "@/lib/simulation-service";
-import { normalizeWorkspaceMode } from "@/lib/workspace-mode";
+import { normalizeWorkspaceMode, type WorkspaceMode } from "@/lib/workspace-mode";
 
 export const authOptions: NextAuthOptions = {
   session: {
@@ -132,7 +132,7 @@ async function getScopedSession() {
   if (!session?.user?.companyId) return session;
 
   const liveCompanyId = session.user.companyId;
-  let requestedMode = "LIVE" as const;
+  let requestedMode: WorkspaceMode = "LIVE";
   try {
     const cookieStore = await cookies();
     requestedMode = normalizeWorkspaceMode(cookieStore.get("neura_workspace_mode")?.value);
