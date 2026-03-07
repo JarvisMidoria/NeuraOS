@@ -5,6 +5,7 @@ import { useEffect, useMemo, useState } from "react";
 import { NeuraLogo } from "@/components/brand/neura-logo";
 import { AdminNav } from "@/components/admin/admin-nav";
 import { NotificationCenter } from "@/components/admin/notification-center";
+import { AiAssistantPopover } from "@/components/admin/ai-assistant-popover";
 
 export function AdminShell({ children }: { children: ReactNode }) {
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -51,7 +52,10 @@ export function AdminShell({ children }: { children: ReactNode }) {
   return (
     <div className="admin-shell min-h-screen overflow-x-hidden text-zinc-100">
       <div className="fixed right-4 top-[calc(0.75rem+env(safe-area-inset-top))] z-40 hidden lg:flex">
-        <NotificationCenter lang={lang} />
+        <div className="flex items-center gap-2">
+          <AiAssistantPopover lang={lang} />
+          <NotificationCenter lang={lang} />
+        </div>
       </div>
       <header className="admin-topbar fixed inset-x-0 top-0 z-30 border-b px-4 pb-3 pt-[calc(0.75rem+env(safe-area-inset-top))] backdrop-blur lg:hidden">
         <button
@@ -70,6 +74,7 @@ export function AdminShell({ children }: { children: ReactNode }) {
           <NeuraLogo compact href="/admin" />
         </div>
         <div className="absolute right-4 top-[calc(0.75rem+env(safe-area-inset-top))] flex items-center gap-2">
+          <AiAssistantPopover lang={lang} />
           <NotificationCenter lang={lang} />
         </div>
       </header>

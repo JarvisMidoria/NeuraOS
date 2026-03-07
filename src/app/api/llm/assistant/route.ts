@@ -9,6 +9,11 @@ export async function POST(req: NextRequest) {
     const session = await requireSession();
     const body = await req.json();
 
+    // Never allow caller-provided tenant overrides.
+    if (body.companyId !== undefined || body.tenantId !== undefined || body.userId !== undefined) {
+      throw new ApiError(400, "Tenant override fields are not allowed");
+    }
+
     const message = String(body.message ?? "").trim();
     const model = body.model ? String(body.model).trim() : undefined;
 
@@ -24,7 +29,7 @@ export async function POST(req: NextRequest) {
       message,
       modelOverride: model,
       system:
-        "You are an ERP copilot for operations (sales, purchasing, inventory, planning). Keep answers concise and actionable.",
+        "You are an ERP copilot for operations (sales, purchasing, inventory, planning). Keep answers concise and actionable. Never reference data from other tenants or organizations.",
     });
 
     await logAudit({
