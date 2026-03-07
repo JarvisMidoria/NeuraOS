@@ -217,14 +217,16 @@ export function AiAssistantPopover({ lang }: Props) {
             onClick={() => setOpen(false)}
             className="fixed inset-0 z-40 bg-[var(--admin-overlay)] backdrop-blur-[1px]"
           />
-          <div className="fixed left-1/2 top-1/2 z-50 w-[min(96vw,860px)] -translate-x-1/2 -translate-y-1/2 rounded-2xl border border-[var(--admin-border)] bg-[var(--admin-elevated)] p-4 shadow-2xl sm:p-5">
-            <div className="mx-auto flex max-h-[88vh] min-h-[68vh] w-full max-w-[820px] flex-col">
-          <div className="mb-2 flex items-center justify-between gap-2">
+          <div className="fixed inset-0 z-50 overflow-y-auto p-2 sm:p-4">
+            <div className="flex min-h-full items-start justify-center sm:items-center">
+              <div className="w-full max-w-[860px] overflow-hidden rounded-2xl border border-[var(--admin-border)] bg-[var(--admin-elevated)] p-4 shadow-2xl sm:p-5">
+                <div className="mx-auto flex h-[min(92dvh,780px)] w-full max-w-[820px] flex-col">
+          <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
             <div>
               <p className="text-sm font-semibold text-[var(--admin-text)]">{text.title}</p>
               <p className="text-[11px] text-[var(--admin-muted)]">{text.subtitle}</p>
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 self-start">
               <button
                 type="button"
                 onClick={() => setMessages([])}
@@ -362,6 +364,8 @@ export function AiAssistantPopover({ lang }: Props) {
             </button>
           </div>
         </div>
+              </div>
+            </div>
           </div>
         </>
       ) : null}
