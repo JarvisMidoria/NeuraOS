@@ -5,24 +5,34 @@ import { usePathname } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 
 const NAV_ITEMS = [
-  { href: "/admin", en: "Overview", fr: "Apercu" },
-  { href: "/admin/analytics", en: "Analytics", fr: "Analytics" },
-  { href: "/admin/notifications", en: "Notifications", fr: "Notifications" },
-  { href: "/admin/onboarding", en: "Onboarding", fr: "Onboarding" },
-  { href: "/admin/billing", en: "Billing", fr: "Facturation" },
-  { href: "/admin/documents", en: "Documents", fr: "Documents" },
-  { href: "/admin/products", en: "Products", fr: "Produits" },
-  { href: "/admin/stock", en: "Inventory", fr: "Stock" },
-  { href: "/admin/sales/quotes", en: "Quotes", fr: "Devis" },
-  { href: "/admin/sales/orders", en: "Orders", fr: "Commandes" },
-  { href: "/admin/purchases/orders", en: "Purchases", fr: "Achats" },
-  { href: "/admin/purchases/receipts", en: "Receipts", fr: "Receptions" },
-  { href: "/admin/purchases/replenishment", en: "Replenishment", fr: "Reappro" },
-  { href: "/admin/suppliers", en: "Suppliers", fr: "Fournisseurs" },
-  { href: "/admin/warehouses", en: "Warehouses", fr: "Entrepots" },
-  { href: "/admin/settings", en: "Settings", fr: "Parametres" },
-  { href: "/admin/audit", en: "Audit Log", fr: "Journal audit" },
-];
+  { key: "overview", href: "/admin", en: "Overview", fr: "Apercu" },
+  { key: "analytics", href: "/admin/analytics", en: "Analytics", fr: "Analytics" },
+  { key: "notifications", href: "/admin/notifications", en: "Notifications", fr: "Notifications" },
+  { key: "onboarding", href: "/admin/onboarding", en: "Onboarding", fr: "Onboarding" },
+  { key: "billing", href: "/admin/billing", en: "Billing", fr: "Facturation" },
+  { key: "documents", href: "/admin/documents", en: "Documents", fr: "Documents" },
+  { key: "products", href: "/admin/products", en: "Products", fr: "Produits" },
+  { key: "stock", href: "/admin/stock", en: "Inventory", fr: "Stock" },
+  { key: "quotes", href: "/admin/sales/quotes", en: "Quotes", fr: "Devis" },
+  { key: "orders", href: "/admin/sales/orders", en: "Orders", fr: "Commandes" },
+  { key: "purchases", href: "/admin/purchases/orders", en: "Purchases", fr: "Achats" },
+  { key: "receipts", href: "/admin/purchases/receipts", en: "Receipts", fr: "Receptions" },
+  { key: "replenishment", href: "/admin/purchases/replenishment", en: "Replenishment", fr: "Reappro" },
+  { key: "clients", href: "/admin/clients", en: "Clients", fr: "Clients" },
+  { key: "suppliers", href: "/admin/suppliers", en: "Suppliers", fr: "Fournisseurs" },
+  { key: "warehouses", href: "/admin/warehouses", en: "Warehouses", fr: "Entrepots" },
+  { key: "settings", href: "/admin/settings", en: "Settings", fr: "Parametres" },
+  { key: "audit", href: "/admin/audit", en: "Audit Log", fr: "Journal audit" },
+] as const;
+
+const SIMULATION_NAV_KEYS = new Set([
+  "overview",
+  "analytics",
+  "notifications",
+  "clients",
+  "quotes",
+  "suppliers",
+]);
 
 type AdminLang = "en" | "fr";
 type AdminTheme = "dark" | "light";
@@ -48,6 +58,8 @@ export function AdminNav({ onNavigate }: AdminNavProps) {
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<SearchResult[]>([]);
   const [loading, setLoading] = useState(false);
+  const [workspaceMode, setWorkspaceMode] = useState<"LIVE" | "SIMULATION">("LIVE");
+  const [canUseSimulation, setCanUseSimulation] = useState(false);
   const [lang, setLang] = useState<AdminLang>(() => {
     if (typeof window === "undefined") return "en";
     const cookieLang = document.cookie.match(/(?:^|;\s*)neura_lang=([^;]+)/)?.[1];
@@ -91,6 +103,26 @@ export function AdminNav({ onNavigate }: AdminNavProps) {
   useEffect(() => {
     document.documentElement.setAttribute("data-admin-theme", theme);
   }, [theme]);
+
+  useEffect(() => {
+    const loadWorkspace = async () => {
+      try {
+        const response = await fetch("/api/workspace/mode", { cache: "no-store" });
+        if (!response.ok) return;
+        const payload = (await response.json()) as { data?: { mode?: "LIVE" | "SIMULATION"; canUseSimulation?: boolean } };
+        if (payload.data?.mode) setWorkspaceMode(payload.data.mode);
+        if (typeof payload.data?.canUseSimulation === "boolean") setCanUseSimulation(payload.data.canUseSimulation);
+      } catch {
+        // noop
+      }
+    };
+    loadWorkspace();
+  }, []);
+
+  const navItems = useMemo(() => {
+    if (!canUseSimulation || workspaceMode === "LIVE") return NAV_ITEMS;
+    return NAV_ITEMS.filter((item) => SIMULATION_NAV_KEYS.has(item.key));
+  }, [workspaceMode, canUseSimulation]);
 
   useEffect(() => {
     const normalized = query.trim();
@@ -244,7 +276,7 @@ export function AdminNav({ onNavigate }: AdminNavProps) {
       </div>
 
       <nav className="flex flex-col gap-1">
-        {NAV_ITEMS.map((item) => {
+        {navItems.map((item) => {
           const active = isActive(pathname, item.href);
           return (
             <Link

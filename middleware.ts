@@ -19,6 +19,25 @@ export async function middleware(req: NextRequest) {
     }
   }
 
+  if (pathname.startsWith("/admin")) {
+    const isTenantAdmin = token.userKind === "TENANT_ADMIN";
+    const workspaceMode = req.cookies.get("neura_workspace_mode")?.value;
+    if (isTenantAdmin && workspaceMode === "SIMULATION") {
+      const allowedPrefixes = [
+        "/admin",
+        "/admin/analytics",
+        "/admin/notifications",
+        "/admin/clients",
+        "/admin/sales/quotes",
+        "/admin/suppliers",
+      ];
+      const allowed = allowedPrefixes.some((prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`));
+      if (!allowed) {
+        return NextResponse.redirect(new URL("/admin", req.url));
+      }
+    }
+  }
+
   return NextResponse.next();
 }
 

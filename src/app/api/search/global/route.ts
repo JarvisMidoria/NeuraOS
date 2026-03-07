@@ -23,6 +23,10 @@ const PAGE_SUGGESTIONS: Array<{
   href: string;
   keywords: string[];
 }> = [
+  { id: "page-overview", type: "page", title: "Overview", subtitle: "Company dashboard", href: "/admin", keywords: ["overview", "dashboard", "home", "apercu"] },
+  { id: "page-analytics", type: "page", title: "Analytics", subtitle: "Performance and trends", href: "/admin/analytics", keywords: ["analytics", "report", "kpi", "stats"] },
+  { id: "page-notifications", type: "page", title: "Notifications", subtitle: "Alerts and reminders", href: "/admin/notifications", keywords: ["notifications", "alert", "alerts", "notif"] },
+  { id: "page-clients", type: "page", title: "Clients", subtitle: "Customer directory", href: "/admin/clients", keywords: ["client", "clients", "customer", "customers"] },
   { id: "page-products", type: "page", title: "Products", subtitle: "Catalog and product setup", href: "/admin/products", keywords: ["product", "products", "prod", "catalog", "production"] },
   { id: "page-stock", type: "page", title: "Inventory", subtitle: "Stock and warehouse operations", href: "/admin/stock", keywords: ["stock", "inventory", "warehouse", "entrepot", "production"] },
   { id: "page-quotes", type: "page", title: "Quotes", subtitle: "Sales quotes and conversion", href: "/admin/sales/quotes", keywords: ["quote", "quotes", "devis", "proposal", "sales"] },
@@ -106,6 +110,7 @@ export async function GET(req: NextRequest) {
     }
 
     const companyId = session.user.companyId;
+    const isSimulation = session.user.workspaceMode === "SIMULATION";
     const maybeNumber = toInt(query);
     const permissions = new Set(session.user.permissions ?? []);
     const canSeeDashboard = permissions.has("VIEW_DASHBOARD");
@@ -113,11 +118,15 @@ export async function GET(req: NextRequest) {
     const canManageWarehouse = permissions.has("MANAGE_WAREHOUSE");
     const canManageSales = permissions.has("MANAGE_SALES");
     const canManagePurchasing = permissions.has("MANAGE_PURCHASING");
+    const canReadSimulationCore = isSimulation && (canManageSales || canManagePurchasing || canSeeDashboard);
 
     const terms = parseTerms(query);
     const normalizedQuery = normalize(query);
 
     const productWhere =
+      isSimulation
+        ? null
+        :
       canManageProducts || canManageWarehouse
         ? {
             companyId,
@@ -162,6 +171,9 @@ export async function GET(req: NextRequest) {
         : null;
 
     const orderWhere =
+      isSimulation
+        ? null
+        :
       canManageSales || canSeeDashboard
         ? {
             companyId,
@@ -173,6 +185,9 @@ export async function GET(req: NextRequest) {
         : null;
 
     const purchaseWhere =
+      isSimulation
+        ? null
+        :
       canManagePurchasing || canSeeDashboard
         ? {
             companyId,
@@ -244,11 +259,23 @@ export async function GET(req: NextRequest) {
     ]);
 
     const pageSuggestions = PAGE_SUGGESTIONS.filter((page) => {
+      if (isSimulation) {
+        const allowedSimulationPages = new Set([
+          "/admin",
+          "/admin/analytics",
+          "/admin/notifications",
+          "/admin/clients",
+          "/admin/sales/quotes",
+          "/admin/suppliers",
+        ]);
+        if (!allowedSimulationPages.has(page.href)) return false;
+      }
       if (page.href.includes("/products") && !(canManageProducts || canManageWarehouse || canSeeDashboard)) return false;
       if (page.href.includes("/stock") && !(canManageWarehouse || canSeeDashboard)) return false;
       if (page.href.includes("/sales") && !(canManageSales || canSeeDashboard)) return false;
       if (page.href.includes("/purchases") && !(canManagePurchasing || canSeeDashboard)) return false;
       if (page.href.includes("/suppliers") && !(canManagePurchasing || canSeeDashboard)) return false;
+      if (page.href.includes("/clients") && !canReadSimulationCore && !(canManageSales || canSeeDashboard)) return false;
       return page.keywords.some((keyword) => keyword.startsWith(normalizedQuery) || keyword.includes(normalizedQuery));
     });
 
@@ -272,7 +299,7 @@ export async function GET(req: NextRequest) {
         type: "client" as const,
         title: item.name,
         subtitle: item.email ?? "Client",
-        href: "/admin/sales/quotes",
+        href: "/admin/clients",
       })),
       ...suppliers.map((item) => ({
         id: `supplier-${item.id}`,
@@ -288,20 +315,24 @@ export async function GET(req: NextRequest) {
         subtitle: item.client.name,
         href: "/admin/sales/quotes",
       })),
-      ...orders.map((item) => ({
-        id: `order-${item.id}`,
-        type: "order" as const,
-        title: `SO-${item.orderNumber.toString().padStart(4, "0")}`,
-        subtitle: item.client.name,
-        href: "/admin/sales/orders",
-      })),
-      ...purchases.map((item) => ({
-        id: `po-${item.id}`,
-        type: "purchase" as const,
-        title: `PO-${item.poNumber.toString().padStart(4, "0")}`,
-        subtitle: item.supplier.name,
-        href: "/admin/purchases/orders",
-      })),
+      ...(isSimulation
+        ? []
+        : orders.map((item) => ({
+            id: `order-${item.id}`,
+            type: "order" as const,
+            title: `SO-${item.orderNumber.toString().padStart(4, "0")}`,
+            subtitle: item.client.name,
+            href: "/admin/sales/orders",
+          }))),
+      ...(isSimulation
+        ? []
+        : purchases.map((item) => ({
+            id: `po-${item.id}`,
+            type: "purchase" as const,
+            title: `PO-${item.poNumber.toString().padStart(4, "0")}`,
+            subtitle: item.supplier.name,
+            href: "/admin/purchases/orders",
+          }))),
     ];
 
     const deduped = new Map<string, SearchItem>();
