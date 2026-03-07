@@ -46,6 +46,12 @@ export async function GET(req: NextRequest) {
         where,
         include: {
           subscription: true,
+          llmConfig: {
+            select: {
+              isEnabled: true,
+              accessMode: true,
+            },
+          },
           users: {
             where: { kind: UserKind.TENANT_ADMIN },
             select: { id: true, email: true, name: true, isActive: true, lastLoginAt: true },
@@ -76,6 +82,7 @@ export async function GET(req: NextRequest) {
         createdAt: company.createdAt,
         updatedAt: company.updatedAt,
         subscription: company.subscription,
+        llm: company.llmConfig,
         counts: company._count,
         adminUsers: company.users.slice(0, 3),
       })),

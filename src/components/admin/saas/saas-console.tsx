@@ -16,6 +16,10 @@ type Tenant = {
   name: string;
   domain?: string | null;
   createdAt: string;
+  llm?: {
+    isEnabled: boolean;
+    accessMode: "SHARED" | "BYOK";
+  } | null;
   subscription?: Subscription | null;
   counts: {
     users: number;
@@ -89,6 +93,9 @@ export function SaasConsole() {
       cancel: "Cancel",
       deleteLogical: "Delete (logical)",
       operations: "Recent operations",
+      aiAccess: "AI access",
+      aiOn: "AI ON",
+      aiOff: "AI OFF",
     }),
     [],
   );
@@ -192,6 +199,27 @@ export function SaasConsole() {
     await updateSubscription(tenantId, { status: "CANCELED" });
   };
 
+  const toggleTenantAi = async (tenantId: string, enabled: boolean) => {
+    try {
+      setSavingId(tenantId);
+      setError(null);
+      const response = await fetch(`/api/saas/tenants/${tenantId}/ai`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ enabled }),
+      });
+      if (!response.ok) {
+        const payload = await response.json().catch(() => null);
+        throw new Error(payload?.error ?? "Failed to update AI access");
+      }
+      await load();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to update AI access");
+    } finally {
+      setSavingId(null);
+    }
+  };
+
   return (
     <div className="space-y-6">
       {error && <div className="rounded-md bg-rose-50 px-4 py-2 text-sm text-rose-700">{error}</div>}
@@ -291,6 +319,24 @@ export function SaasConsole() {
                   <span>{text.products}: {tenant.counts.products}</span>
                   <span>{text.sales}: {tenant.counts.salesOrders}</span>
                   <span>{text.purchases}: {tenant.counts.purchaseOrders}</span>
+                </div>
+
+                <div className="mt-2 flex items-center gap-2 text-xs">
+                  <span className="text-zinc-600">{text.aiAccess}:</span>
+                  <span
+                    className={`rounded-full px-2 py-0.5 font-medium ${
+                      tenant.llm?.isEnabled ? "bg-emerald-50 text-emerald-700" : "bg-zinc-100 text-zinc-600"
+                    }`}
+                  >
+                    {tenant.llm?.isEnabled ? text.aiOn : text.aiOff}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => toggleTenantAi(tenant.id, !(tenant.llm?.isEnabled ?? false))}
+                    className="rounded-md border border-zinc-300 px-2 py-1 text-xs text-zinc-700 hover:bg-zinc-50"
+                  >
+                    {tenant.llm?.isEnabled ? "Turn OFF" : "Turn ON"}
+                  </button>
                 </div>
 
                 <div className="mt-3 flex flex-wrap gap-2">
