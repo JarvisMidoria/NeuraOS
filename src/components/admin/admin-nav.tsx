@@ -275,7 +275,7 @@ export function AdminNav({ onNavigate }: AdminNavProps) {
         </div>
       </div>
 
-      <nav className="flex flex-col gap-1 pb-4">
+      <nav className="flex flex-col items-start gap-1 pb-4">
         {navItems.map((item) => {
           const active = isActive(pathname, item.href);
           return (
@@ -283,7 +283,7 @@ export function AdminNav({ onNavigate }: AdminNavProps) {
               key={item.href}
               href={item.href}
               onClick={onNavigate}
-              className={`liquid-pill px-3 py-2 text-sm transition ${
+              className={`liquid-pill w-fit max-w-full px-3 py-1.5 text-sm transition ${
                 active
                   ? "bg-[color-mix(in_srgb,var(--accent)_18%,var(--admin-soft-bg))] text-[var(--admin-text)]"
                   : "text-[var(--admin-muted)] hover:bg-[var(--admin-soft-bg)] hover:text-[var(--admin-text)]"
