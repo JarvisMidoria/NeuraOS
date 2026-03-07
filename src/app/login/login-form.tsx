@@ -38,7 +38,7 @@ export function LoginForm() {
   return (
     <form onSubmit={handleSubmit} className="w-full space-y-4 sm:space-y-5">
       {error ? (
-        <div className="rounded-xl border border-red-500/30 bg-red-500/15 px-4 py-3 text-sm text-red-200">
+        <div className="rounded-2xl border border-red-500/30 bg-red-500/15 px-4 py-3 text-sm text-red-200">
           {error}
         </div>
       ) : null}
@@ -50,7 +50,7 @@ export function LoginForm() {
           id="email"
           name="email"
           type="email"
-          className="w-full rounded-xl border border-white/15 bg-black/25 px-4 py-3 text-base text-zinc-100 placeholder:text-zinc-500 focus:border-[var(--accent)] focus:outline-none"
+          className="liquid-input w-full px-4 py-3 text-base text-zinc-100 placeholder:text-zinc-400 focus:border-[var(--accent)] focus:outline-none"
           placeholder="admin@acme.local"
           required
         />
@@ -63,7 +63,7 @@ export function LoginForm() {
           id="password"
           name="password"
           type="password"
-          className="w-full rounded-xl border border-white/15 bg-black/25 px-4 py-3 text-base text-zinc-100 placeholder:text-zinc-500 focus:border-[var(--accent)] focus:outline-none"
+          className="liquid-input w-full px-4 py-3 text-base text-zinc-100 placeholder:text-zinc-400 focus:border-[var(--accent)] focus:outline-none"
           placeholder="••••••••"
           required
         />
@@ -71,7 +71,7 @@ export function LoginForm() {
       <button
         type="submit"
         disabled={isSubmitting}
-        className="flex w-full items-center justify-center rounded-xl bg-[var(--accent)] px-4 py-3 text-sm font-medium text-white transition hover:brightness-110 disabled:opacity-70"
+        className="liquid-btn-primary flex w-full items-center justify-center px-4 py-3 text-sm font-medium text-white transition hover:brightness-110 disabled:opacity-70"
       >
         {isSubmitting ? "Signing in..." : "Sign in"}
       </button>

@@ -203,7 +203,7 @@ export function AiAssistantPopover({ lang }: Props) {
       <button
         type="button"
         onClick={() => setOpen((prev) => !prev)}
-        className="rounded-lg border border-[var(--admin-border)] p-2 text-[var(--admin-text)] hover:bg-[var(--admin-soft-bg)]"
+        className="liquid-pill p-2 text-[var(--admin-text)] hover:bg-[var(--admin-soft-bg)]"
         aria-label={text.title}
         title={text.title}
       >
@@ -237,14 +237,14 @@ export function AiAssistantPopover({ lang }: Props) {
               <button
                 type="button"
                 onClick={() => setMessages([])}
-                className="rounded border border-[var(--admin-border)] px-2 py-1 text-[11px] text-[var(--admin-muted)] hover:bg-[var(--admin-soft-bg)]"
+                className="liquid-pill px-2 py-1 text-[11px] text-[var(--admin-muted)] hover:bg-[var(--admin-soft-bg)]"
               >
                 {text.clear}
               </button>
               <button
                 type="button"
                 onClick={() => setOpen(false)}
-                className="rounded border border-[var(--admin-border)] px-2 py-1 text-[11px] text-[var(--admin-muted)] hover:bg-[var(--admin-soft-bg)]"
+                className="liquid-pill px-2 py-1 text-[11px] text-[var(--admin-muted)] hover:bg-[var(--admin-soft-bg)]"
               >
                 {text.close}
               </button>
@@ -258,7 +258,7 @@ export function AiAssistantPopover({ lang }: Props) {
                 type="button"
                 onClick={() => askAssistant(prompt.message)}
                 disabled={sending}
-                className="rounded-full border border-[var(--admin-border)] bg-[var(--admin-soft-bg)] px-3 py-1 text-xs text-[var(--admin-text)] hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
+                className="liquid-pill px-3 py-1 text-xs text-[var(--admin-text)] hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
               >
                 {prompt.label}
               </button>
@@ -353,7 +353,7 @@ export function AiAssistantPopover({ lang }: Props) {
 
           <div className="mt-2 flex items-end gap-2">
             <textarea
-              className="min-h-[92px] flex-1 resize-none rounded-lg border border-[var(--admin-border)] bg-[var(--admin-input-bg)] px-3 py-2 text-sm text-[var(--admin-text)] outline-none placeholder:text-[var(--admin-muted)]"
+              className="liquid-input min-h-[92px] flex-1 resize-none rounded-2xl px-3 py-2 text-sm text-[var(--admin-text)] outline-none placeholder:text-[var(--admin-muted)]"
               placeholder={text.placeholder}
               value={input}
               onChange={(e) => setInput(e.target.value)}
@@ -368,7 +368,7 @@ export function AiAssistantPopover({ lang }: Props) {
               type="button"
               onClick={onSend}
               disabled={sending || !input.trim()}
-              className="rounded-lg bg-[var(--accent)] px-3 py-2 text-sm font-medium text-white disabled:cursor-not-allowed disabled:opacity-40"
+              className="liquid-btn-primary px-3 py-2 text-sm font-medium text-white disabled:cursor-not-allowed disabled:opacity-40"
             >
               {text.send}
             </button>

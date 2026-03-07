@@ -80,7 +80,7 @@ export function NotificationCenter({ lang }: NotificationCenterProps) {
       <button
         type="button"
         onClick={() => setOpen((prev) => !prev)}
-        className="relative rounded-lg border border-[var(--admin-border)] p-2 text-[var(--admin-text)] hover:bg-[var(--admin-soft-bg)]"
+        className="liquid-pill relative p-2 text-[var(--admin-text)] hover:bg-[var(--admin-soft-bg)]"
         aria-label={text.title}
       >
         <svg
@@ -106,21 +106,21 @@ export function NotificationCenter({ lang }: NotificationCenterProps) {
       </button>
 
       {open && (
-        <div className="absolute right-0 z-40 mt-2 w-[min(90vw,380px)] rounded-xl border border-[var(--admin-border)] bg-[var(--admin-elevated)] p-3 shadow-2xl">
+        <div className="liquid-surface-strong absolute right-0 z-40 mt-2 w-[min(90vw,380px)] p-3">
           <div className="mb-2 flex items-center justify-between">
             <p className="text-sm font-semibold text-[var(--admin-text)]">{text.title}</p>
             <div className="flex items-center gap-2">
               <button
                 type="button"
                 onClick={() => loadNotifications(true)}
-                className="rounded border border-[var(--admin-border)] px-2 py-1 text-[11px] text-[var(--admin-muted)] hover:bg-[var(--admin-soft-bg)]"
+                className="liquid-pill px-2 py-1 text-[11px] text-[var(--admin-muted)] hover:bg-[var(--admin-soft-bg)]"
               >
                 {text.sync}
               </button>
               <button
                 type="button"
                 onClick={markAllRead}
-                className="rounded border border-[var(--admin-border)] px-2 py-1 text-[11px] text-[var(--admin-muted)] hover:bg-[var(--admin-soft-bg)]"
+                className="liquid-pill px-2 py-1 text-[11px] text-[var(--admin-muted)] hover:bg-[var(--admin-soft-bg)]"
               >
                 {text.markAll}
               </button>
@@ -133,8 +133,10 @@ export function NotificationCenter({ lang }: NotificationCenterProps) {
             {items.map((item) => {
               const content = (
                 <div
-                  className={`rounded-lg border px-3 py-2 ${
-                    item.readAt ? "border-[var(--admin-border)]" : "border-[var(--admin-border)] bg-[var(--admin-elevated-soft)]"
+                  className={`rounded-xl border px-3 py-2 ${
+                    item.readAt
+                      ? "border-[var(--admin-border)] bg-[var(--admin-elevated)]"
+                      : "border-[var(--admin-border)] bg-[var(--admin-elevated-soft)]"
                   }`}
                 >
                   <div className="flex items-center justify-between gap-3">

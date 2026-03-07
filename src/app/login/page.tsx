@@ -24,9 +24,9 @@ export default function LoginPage() {
             role-driven, and every metric stays visible in real time.
           </p>
           <div className="flex gap-2 text-xs text-zinc-500">
-            <span className="rounded-full border border-white/15 px-3 py-1">Role-based access</span>
-            <span className="rounded-full border border-white/15 px-3 py-1">Audit trail</span>
-            <span className="rounded-full border border-white/15 px-3 py-1">Realtime inventory</span>
+            <span className="liquid-pill px-3 py-1">Role-based access</span>
+            <span className="liquid-pill px-3 py-1">Audit trail</span>
+            <span className="liquid-pill px-3 py-1">Realtime inventory</span>
           </div>
         </section>
 

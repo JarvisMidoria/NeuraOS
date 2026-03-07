@@ -37,7 +37,7 @@ export function MasterShell({ children }: { children: ReactNode }) {
         <button
           type="button"
           onClick={() => setMobileOpen(true)}
-          className="absolute left-4 top-[calc(0.75rem+env(safe-area-inset-top))] rounded-lg border p-2 text-[var(--admin-text)]"
+          className="liquid-pill absolute left-4 top-[calc(0.75rem+env(safe-area-inset-top))] p-2 text-[var(--admin-text)]"
           aria-label="Menu"
         >
           <span className="flex h-4 w-4 flex-col justify-between">
@@ -79,7 +79,7 @@ export function MasterShell({ children }: { children: ReactNode }) {
           <button
             type="button"
             onClick={() => setMobileOpen(false)}
-            className="rounded-md border px-2 py-1 text-base leading-none text-[var(--admin-text)]"
+            className="liquid-pill px-2 py-1 text-base leading-none text-[var(--admin-text)]"
             aria-label="Close"
             title="Close"
           >
@@ -96,7 +96,7 @@ function LinkToNotifications() {
   return (
     <a
       href="/master/notifications"
-      className="absolute right-4 top-[calc(0.75rem+env(safe-area-inset-top))] rounded-lg border p-2 text-[var(--admin-text)]"
+      className="liquid-pill absolute right-4 top-[calc(0.75rem+env(safe-area-inset-top))] p-2 text-[var(--admin-text)]"
       aria-label="Notifications"
     >
       <BellIcon />

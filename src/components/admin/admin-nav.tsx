@@ -180,10 +180,10 @@ export function AdminNav({ onNavigate }: AdminNavProps) {
             value={query}
             onChange={(event) => setQuery(event.target.value)}
             placeholder={text.search}
-            className="w-full rounded-lg border border-[var(--admin-border)] bg-[var(--admin-input-bg)] px-3 py-2 text-sm text-[var(--admin-text)] placeholder:text-[var(--admin-muted)]"
+            className="liquid-input w-full px-3 py-2 text-sm text-[var(--admin-text)] placeholder:text-[var(--admin-muted)]"
           />
           {(query.trim().length >= 1 || loading) && (
-            <div className="absolute left-0 right-0 top-[calc(100%+0.4rem)] z-30 max-h-72 overflow-auto rounded-lg border border-[var(--admin-border)] bg-[var(--admin-drawer-bg)] p-2 shadow-2xl backdrop-blur">
+            <div className="liquid-surface-strong absolute left-0 right-0 top-[calc(100%+0.4rem)] z-30 max-h-72 overflow-auto p-2">
               {loading && <p className="px-2 py-1.5 text-xs text-[var(--admin-muted)]">{text.loading}</p>}
               {!loading && results.length === 0 && <p className="px-2 py-1.5 text-xs text-[var(--admin-muted)]">{text.noResults}</p>}
               {!loading &&
@@ -213,7 +213,7 @@ export function AdminNav({ onNavigate }: AdminNavProps) {
           <button
             type="button"
             onClick={() => setLanguage("en")}
-            className={`rounded-full border border-[var(--admin-border)] px-2 py-1 text-[10px] ${
+            className={`liquid-pill px-2 py-1 text-[10px] ${
               lang === "en"
                 ? "bg-[var(--admin-soft-bg)] text-[var(--admin-text)]"
                 : "text-[var(--admin-muted)] hover:text-[var(--admin-text)]"
@@ -224,7 +224,7 @@ export function AdminNav({ onNavigate }: AdminNavProps) {
           <button
             type="button"
             onClick={() => setLanguage("fr")}
-            className={`rounded-full border border-[var(--admin-border)] px-2 py-1 text-[10px] ${
+            className={`liquid-pill px-2 py-1 text-[10px] ${
               lang === "fr"
                 ? "bg-[var(--admin-soft-bg)] text-[var(--admin-text)]"
                 : "text-[var(--admin-muted)] hover:text-[var(--admin-text)]"
@@ -239,7 +239,7 @@ export function AdminNav({ onNavigate }: AdminNavProps) {
             onClick={() => setColorMode("dark")}
             aria-label={text.darkLabel}
             title={text.darkLabel}
-            className={`inline-flex items-center justify-center rounded-full border border-[var(--admin-border)] px-2 py-1 text-[10px] ${
+            className={`liquid-pill inline-flex items-center justify-center px-2 py-1 text-[10px] ${
               theme === "dark"
                 ? "bg-[var(--admin-soft-bg)] text-[var(--admin-text)]"
                 : "text-[var(--admin-muted)] hover:text-[var(--admin-text)]"
@@ -254,7 +254,7 @@ export function AdminNav({ onNavigate }: AdminNavProps) {
             onClick={() => setColorMode("light")}
             aria-label={text.lightLabel}
             title={text.lightLabel}
-            className={`inline-flex items-center justify-center rounded-full border border-[var(--admin-border)] px-2 py-1 text-[10px] ${
+            className={`liquid-pill inline-flex items-center justify-center px-2 py-1 text-[10px] ${
               theme === "light"
                 ? "bg-[var(--admin-soft-bg)] text-[var(--admin-text)]"
                 : "text-[var(--admin-muted)] hover:text-[var(--admin-text)]"
@@ -283,9 +283,9 @@ export function AdminNav({ onNavigate }: AdminNavProps) {
               key={item.href}
               href={item.href}
               onClick={onNavigate}
-              className={`rounded-lg px-3 py-2 text-sm transition ${
+              className={`liquid-pill px-3 py-2 text-sm transition ${
                 active
-                  ? "bg-[var(--admin-soft-bg)] text-[var(--admin-text)]"
+                  ? "bg-[color-mix(in_srgb,var(--accent)_18%,var(--admin-soft-bg))] text-[var(--admin-text)]"
                   : "text-[var(--admin-muted)] hover:bg-[var(--admin-soft-bg)] hover:text-[var(--admin-text)]"
               }`}
             >

@@ -8,7 +8,7 @@ export default function Home() {
         <NeuraLogo />
         <Link
           href="/login"
-          className="rounded-full border border-white/20 bg-white/5 px-4 py-2 text-sm text-zinc-100 transition hover:border-white/35 hover:bg-white/10"
+          className="liquid-btn-ghost px-4 py-2 text-sm text-zinc-100 transition hover:brightness-105"
         >
           Sign in
         </Link>
@@ -16,7 +16,7 @@ export default function Home() {
 
       <section className="grid flex-1 items-center gap-8 py-8 sm:gap-12 sm:py-10 lg:grid-cols-[1.15fr_0.85fr]">
         <div className="fade-up space-y-6 sm:space-y-8">
-          <div className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/5 px-3 py-1 text-xs text-zinc-300">
+          <div className="liquid-pill inline-flex items-center gap-2 px-3 py-1 text-xs text-zinc-200">
             <span className="h-2 w-2 rounded-full bg-[var(--accent)]" />
             ERP control center
           </div>
@@ -30,21 +30,21 @@ export default function Home() {
           <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap">
             <Link
               href="/login"
-              className="rounded-full bg-[var(--accent)] px-6 py-3 text-center text-sm font-medium text-white transition hover:brightness-110"
+              className="liquid-btn-primary px-6 py-3 text-center text-sm font-medium text-white transition hover:brightness-110"
             >
               Open Admin
             </Link>
             <Link
               href="https://nextjs.org/docs"
               target="_blank"
-              className="rounded-full border border-white/20 px-6 py-3 text-center text-sm font-medium text-zinc-200 transition hover:border-white/35 hover:bg-white/5"
+              className="liquid-btn-ghost px-6 py-3 text-center text-sm font-medium text-zinc-100 transition hover:brightness-105"
             >
               Platform docs
             </Link>
           </div>
         </div>
 
-        <div className="fade-up glass-panel rounded-2xl p-4 sm:p-6">
+        <div className="fade-up glass-panel rounded-3xl p-4 sm:p-6">
           <div className="mb-5 flex items-center justify-between">
             <p className="text-sm font-medium text-zinc-100">Overview</p>
             <p className="text-xs text-zinc-400">Realtime</p>
@@ -58,14 +58,14 @@ export default function Home() {
             ].map(([label, value]) => (
               <div
                 key={label}
-                className="flex items-center justify-between rounded-xl border border-white/10 bg-black/20 px-4 py-3"
+                className="liquid-surface flex items-center justify-between px-4 py-3"
               >
                 <p className="text-sm text-zinc-300">{label}</p>
                 <p className="text-sm font-semibold text-zinc-100">{value}</p>
               </div>
             ))}
           </div>
-          <div className="mt-5 rounded-xl border border-white/10 bg-black/20 p-4">
+          <div className="liquid-surface mt-5 p-4">
             <p className="text-xs uppercase tracking-wide text-zinc-400">System health</p>
             <p className="mt-2 text-sm text-zinc-200">
               Authentication, API, and audit logging are online.
