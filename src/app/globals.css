@@ -17,7 +17,7 @@
   --admin-overlay: rgba(4, 8, 16, 0.58);
   --admin-elevated: rgba(10, 15, 29, 0.88);
   --admin-elevated-soft: rgba(255, 255, 255, 0.07);
-  --admin-shadow: 0 20px 45px rgba(0, 0, 0, 0.32);
+  --admin-shadow: 0 6px 18px rgba(0, 0, 0, 0.16);
   --admin-topbar-bg: rgba(8, 12, 19, 0.94);
   --admin-drawer-bg: rgba(7, 10, 16, 0.97);
   --admin-modal-bg: rgba(12, 18, 30, 0.96);
@@ -88,7 +88,7 @@ body {
   --admin-overlay: rgba(18, 24, 38, 0.36);
   --admin-elevated: rgba(255, 255, 255, 0.84);
   --admin-elevated-soft: rgba(242, 244, 250, 0.86);
-  --admin-shadow: 0 12px 28px rgba(13, 23, 43, 0.12);
+  --admin-shadow: 0 4px 12px rgba(13, 23, 43, 0.08);
   --admin-topbar-bg: rgba(245, 248, 255, 0.96);
   --admin-drawer-bg: rgba(247, 249, 255, 0.985);
   --admin-modal-bg: rgba(250, 252, 255, 0.97);
@@ -157,6 +157,14 @@ body {
 
 .admin-shell .shadow-sm {
   box-shadow: var(--admin-shadow) !important;
+}
+
+.admin-shell .rounded-2xl {
+  border-radius: 1.25rem !important;
+}
+
+.admin-shell .rounded-xl {
+  border-radius: 1rem !important;
 }
 
 .admin-shell .bg-zinc-900 {
