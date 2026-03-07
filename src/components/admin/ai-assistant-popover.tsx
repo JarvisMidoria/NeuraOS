@@ -237,16 +237,27 @@ export function AiAssistantPopover({ lang }: Props) {
               <button
                 type="button"
                 onClick={() => setMessages([])}
-                className="liquid-pill px-2 py-1 text-[11px] text-[var(--admin-muted)] hover:bg-[var(--admin-soft-bg)]"
+                className="liquid-pill p-2 text-[var(--admin-muted)] hover:text-[var(--admin-text)]"
+                aria-label={text.clear}
+                title={text.clear}
               >
-                {text.clear}
+                <svg aria-hidden viewBox="0 0 24 24" className="h-4 w-4 fill-none stroke-current" strokeWidth="1.8">
+                  <path d="M4 7H20" />
+                  <path d="M9 7V5.5A1.5 1.5 0 0 1 10.5 4h3A1.5 1.5 0 0 1 15 5.5V7" />
+                  <path d="M7.5 7 8.2 19A1.5 1.5 0 0 0 9.7 20.4h4.6A1.5 1.5 0 0 0 15.8 19L16.5 7" />
+                </svg>
               </button>
               <button
                 type="button"
                 onClick={() => setOpen(false)}
-                className="liquid-pill px-2 py-1 text-[11px] text-[var(--admin-muted)] hover:bg-[var(--admin-soft-bg)]"
+                className="liquid-pill p-2 text-[var(--admin-muted)] hover:text-[var(--admin-text)]"
+                aria-label={text.close}
+                title={text.close}
               >
-                {text.close}
+                <svg aria-hidden viewBox="0 0 24 24" className="h-4 w-4 fill-none stroke-current" strokeWidth="1.9">
+                  <path d="M6 6L18 18" />
+                  <path d="M18 6L6 18" />
+                </svg>
               </button>
             </div>
           </div>
@@ -265,20 +276,17 @@ export function AiAssistantPopover({ lang }: Props) {
             ))}
           </div>
 
-          <div
-            ref={scrollRef}
-            className="flex-1 space-y-2 overflow-auto rounded-lg border border-[var(--admin-border)] bg-[var(--admin-elevated-soft)] p-3"
-          >
+          <div ref={scrollRef} className="flex-1 space-y-3 overflow-auto rounded-lg border border-[var(--admin-border)] bg-[var(--admin-elevated-soft)] p-3">
             {messages.length === 0 ? <p className="text-xs text-[var(--admin-muted)]">{text.empty}</p> : null}
             {messages.map((message) => (
-              <div
-                key={message.id}
-                className={`rounded-lg px-3 py-2 text-sm ${
-                  message.role === "user"
-                    ? "ml-6 bg-[var(--admin-soft-bg)] text-[var(--admin-text)] sm:ml-8"
-                    : "mr-6 bg-[color-mix(in_srgb,var(--accent)_18%,var(--admin-elevated))] text-[var(--admin-text)] sm:mr-8"
-                }`}
-              >
+              <div key={message.id} className={`flex ${message.role === "user" ? "justify-end" : "justify-start"}`}>
+                <div
+                  className={`max-w-[86%] rounded-2xl px-3 py-2 text-sm ${
+                    message.role === "user"
+                      ? "liquid-surface bg-[linear-gradient(135deg,rgba(90,149,255,0.45),rgba(84,210,255,0.3))] text-[var(--admin-text)]"
+                      : "liquid-surface bg-[linear-gradient(145deg,rgba(255,255,255,0.14),rgba(255,255,255,0.04))] text-[var(--admin-text)]"
+                  }`}
+                >
                 {message.role === "assistant" && message.structured ? (
                   <div className="space-y-2">
                     <p className="font-semibold">{message.structured.title}</p>
@@ -344,6 +352,7 @@ export function AiAssistantPopover({ lang }: Props) {
                 ) : (
                   message.content
                 )}
+                </div>
               </div>
             ))}
             {sending ? <p className="text-xs text-[var(--admin-muted)]">{text.thinking}</p> : null}
@@ -351,14 +360,14 @@ export function AiAssistantPopover({ lang }: Props) {
 
           {error ? <p className="mt-2 text-xs text-rose-300">{error}</p> : null}
 
-          <div className="mt-2 flex items-end gap-2">
-            <textarea
-              className="liquid-input min-h-[92px] flex-1 resize-none rounded-2xl px-3 py-2 text-sm text-[var(--admin-text)] outline-none placeholder:text-[var(--admin-muted)]"
+          <div className="mt-2 flex items-center gap-2">
+            <input
+              className="liquid-input h-11 flex-1 rounded-full px-4 text-sm text-[var(--admin-text)] outline-none placeholder:text-[var(--admin-muted)]"
               placeholder={text.placeholder}
               value={input}
               onChange={(e) => setInput(e.target.value)}
               onKeyDown={(e) => {
-                if (e.key === "Enter" && !e.shiftKey) {
+                if (e.key === "Enter") {
                   e.preventDefault();
                   onSend();
                 }
@@ -368,9 +377,13 @@ export function AiAssistantPopover({ lang }: Props) {
               type="button"
               onClick={onSend}
               disabled={sending || !input.trim()}
-              className="liquid-btn-primary px-3 py-2 text-sm font-medium text-white disabled:cursor-not-allowed disabled:opacity-40"
+              className="liquid-btn-primary inline-flex h-11 w-11 items-center justify-center rounded-full text-white disabled:cursor-not-allowed disabled:opacity-40"
+              aria-label={text.send}
+              title={text.send}
             >
-              {text.send}
+              <svg aria-hidden viewBox="0 0 24 24" className="h-4 w-4 fill-none stroke-current" strokeWidth="1.8">
+                <path d="M4 12L20 4L14 20L11 13L4 12Z" />
+              </svg>
             </button>
           </div>
         </div>

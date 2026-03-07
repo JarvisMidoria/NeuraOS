@@ -113,16 +113,26 @@ export function NotificationCenter({ lang }: NotificationCenterProps) {
               <button
                 type="button"
                 onClick={() => loadNotifications(true)}
-                className="liquid-pill px-2 py-1 text-[11px] text-[var(--admin-muted)] hover:bg-[var(--admin-soft-bg)]"
+                className="liquid-pill p-2 text-[var(--admin-muted)] hover:text-[var(--admin-text)]"
+                aria-label={text.sync}
+                title={text.sync}
               >
-                {text.sync}
+                <svg aria-hidden viewBox="0 0 24 24" className="h-4 w-4 fill-none stroke-current" strokeWidth="1.8">
+                  <path d="M20 12A8 8 0 1 1 17.6 6.3" />
+                  <path d="M20 4V10H14" />
+                </svg>
               </button>
               <button
                 type="button"
                 onClick={markAllRead}
-                className="liquid-pill px-2 py-1 text-[11px] text-[var(--admin-muted)] hover:bg-[var(--admin-soft-bg)]"
+                className="liquid-pill p-2 text-[var(--admin-muted)] hover:text-[var(--admin-text)]"
+                aria-label={text.markAll}
+                title={text.markAll}
               >
-                {text.markAll}
+                <svg aria-hidden viewBox="0 0 24 24" className="h-4 w-4 fill-none stroke-current" strokeWidth="1.8">
+                  <path d="M5 12L9 16L19 6" />
+                  <path d="M5 6L9 10" />
+                </svg>
               </button>
             </div>
           </div>

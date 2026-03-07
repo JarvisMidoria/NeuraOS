@@ -21,10 +21,10 @@ export function MasterNav({ onNavigate }: { onNavigate?: () => void }) {
             key={item.href}
             href={item.href}
             onClick={onNavigate}
-            className={`rounded-lg px-3 py-1.5 text-sm transition ${
+            className={`liquid-pill w-[212px] max-w-full px-3 py-1.5 text-sm transition ${
               active
-                ? "bg-[var(--admin-soft-bg)] text-[var(--admin-text)]"
-                : "text-[var(--admin-muted)] hover:bg-[var(--admin-soft-bg)] hover:text-[var(--admin-text)]"
+                ? "border-[var(--accent)] bg-[linear-gradient(135deg,rgba(102,167,255,0.36),rgba(84,210,255,0.24))] text-[var(--admin-text)]"
+                : "text-[var(--admin-muted)] hover:border-[var(--accent)] hover:bg-[color-mix(in_srgb,var(--accent)_12%,var(--admin-soft-bg))] hover:text-[var(--admin-text)]"
             }`}
           >
             {item.label}

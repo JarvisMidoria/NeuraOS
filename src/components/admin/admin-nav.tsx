@@ -209,11 +209,13 @@ export function AdminNav({ onNavigate }: AdminNavProps) {
           {query.trim().length < 1 && <p className="mt-1 text-[11px] text-[var(--admin-muted)]">{text.searchHint}</p>}
         </div>
 
-        <div className="grid grid-cols-2 gap-2">
+        <div className="flex items-center gap-2">
           <button
             type="button"
             onClick={() => setLanguage("en")}
-            className={`liquid-pill px-2 py-1 text-[10px] ${
+            aria-label={text.english}
+            title={text.english}
+            className={`liquid-pill inline-flex h-9 w-9 items-center justify-center p-0 text-[10px] ${
               lang === "en"
                 ? "bg-[var(--admin-soft-bg)] text-[var(--admin-text)]"
                 : "text-[var(--admin-muted)] hover:text-[var(--admin-text)]"
@@ -224,7 +226,9 @@ export function AdminNav({ onNavigate }: AdminNavProps) {
           <button
             type="button"
             onClick={() => setLanguage("fr")}
-            className={`liquid-pill px-2 py-1 text-[10px] ${
+            aria-label={text.french}
+            title={text.french}
+            className={`liquid-pill inline-flex h-9 w-9 items-center justify-center p-0 text-[10px] ${
               lang === "fr"
                 ? "bg-[var(--admin-soft-bg)] text-[var(--admin-text)]"
                 : "text-[var(--admin-muted)] hover:text-[var(--admin-text)]"
@@ -232,14 +236,12 @@ export function AdminNav({ onNavigate }: AdminNavProps) {
           >
             {text.french}
           </button>
-        </div>
-        <div className="grid grid-cols-2 gap-2">
           <button
             type="button"
             onClick={() => setColorMode("dark")}
             aria-label={text.darkLabel}
             title={text.darkLabel}
-            className={`liquid-pill inline-flex items-center justify-center px-2 py-1 text-[10px] ${
+            className={`liquid-pill inline-flex h-9 w-9 items-center justify-center p-0 text-[10px] ${
               theme === "dark"
                 ? "bg-[var(--admin-soft-bg)] text-[var(--admin-text)]"
                 : "text-[var(--admin-muted)] hover:text-[var(--admin-text)]"
@@ -254,7 +256,7 @@ export function AdminNav({ onNavigate }: AdminNavProps) {
             onClick={() => setColorMode("light")}
             aria-label={text.lightLabel}
             title={text.lightLabel}
-            className={`liquid-pill inline-flex items-center justify-center px-2 py-1 text-[10px] ${
+            className={`liquid-pill inline-flex h-9 w-9 items-center justify-center p-0 text-[10px] ${
               theme === "light"
                 ? "bg-[var(--admin-soft-bg)] text-[var(--admin-text)]"
                 : "text-[var(--admin-muted)] hover:text-[var(--admin-text)]"
@@ -283,10 +285,10 @@ export function AdminNav({ onNavigate }: AdminNavProps) {
               key={item.href}
               href={item.href}
               onClick={onNavigate}
-              className={`liquid-pill w-fit max-w-full px-3 py-1.5 text-sm transition ${
+              className={`liquid-pill w-[212px] max-w-full px-3 py-1.5 text-sm transition ${
                 active
-                  ? "bg-[color-mix(in_srgb,var(--accent)_18%,var(--admin-soft-bg))] text-[var(--admin-text)]"
-                  : "text-[var(--admin-muted)] hover:bg-[var(--admin-soft-bg)] hover:text-[var(--admin-text)]"
+                  ? "border-[var(--accent)] bg-[linear-gradient(135deg,rgba(102,167,255,0.36),rgba(84,210,255,0.24))] text-[var(--admin-text)]"
+                  : "text-[var(--admin-muted)] hover:border-[var(--accent)] hover:bg-[color-mix(in_srgb,var(--accent)_12%,var(--admin-soft-bg))] hover:text-[var(--admin-text)]"
               }`}
             >
               {lang === "fr" ? item.fr : item.en}

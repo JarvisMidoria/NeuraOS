@@ -305,6 +305,32 @@ body {
   backdrop-filter: blur(calc(var(--liquid-blur) - 4px));
 }
 
+.admin-shell button {
+  cursor: pointer;
+}
+
+.admin-shell button:disabled {
+  cursor: not-allowed;
+}
+
+.admin-shell .liquid-pill,
+.admin-shell .liquid-btn-primary,
+.admin-shell .liquid-btn-ghost {
+  transition:
+    background-color 180ms ease,
+    border-color 180ms ease,
+    color 180ms ease,
+    transform 180ms ease,
+    opacity 180ms ease;
+}
+
+.admin-shell .liquid-pill:hover:not(:disabled),
+.admin-shell .liquid-btn-primary:hover:not(:disabled),
+.admin-shell .liquid-btn-ghost:hover:not(:disabled) {
+  transform: translateY(-1px);
+  border-color: color-mix(in srgb, var(--accent) 55%, var(--admin-border));
+}
+
 .admin-shell .border-white\/10,
 .admin-shell .border-white\/15,
 .admin-shell .border-white\/25 {
