@@ -81,14 +81,19 @@ body {
   --admin-muted: #626b81;
   --admin-soft-bg: rgba(20, 24, 33, 0.06);
   --admin-input-bg: rgba(255, 255, 255, 0.94);
-  --admin-overlay: rgba(26, 34, 52, 0.2);
+  --admin-overlay: rgba(26, 34, 52, 0.12);
   --admin-elevated: #ffffff;
   --admin-elevated-soft: rgba(20, 24, 33, 0.05);
-  --admin-shadow: 0 14px 30px rgba(9, 17, 34, 0.12);
+  --admin-shadow: 0 8px 18px rgba(9, 17, 34, 0.08);
 }
 
 [data-admin-theme="light"] .admin-shell {
   background: #f3f5fb !important;
+}
+
+[data-admin-theme="light"] body {
+  background: #f3f5fb;
+  background-image: linear-gradient(180deg, #f7f8fc 0%, #f1f3fa 100%);
 }
 
 .admin-shell {
@@ -96,8 +101,7 @@ body {
 }
 
 .admin-shell .admin-topbar,
-.admin-shell .admin-mobile-drawer,
-.admin-shell .admin-mobile-drawer-head {
+.admin-shell .admin-mobile-drawer {
   background: color-mix(in srgb, var(--admin-app-bg) 94%, transparent);
   border-color: var(--admin-border);
 }

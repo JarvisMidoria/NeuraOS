@@ -101,7 +101,7 @@ export function AdminShell({ children }: { children: ReactNode }) {
           mobileOpen ? "translate-x-0" : "-translate-x-full"
         }`}
       >
-        <div className="admin-mobile-drawer-head sticky top-0 z-10 mb-5 flex items-center justify-between pb-3">
+        <div className="sticky top-0 z-10 mb-5 flex items-center justify-between pb-3">
           <NeuraLogo href="/admin" />
           <button
             type="button"

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 
 type AssistantMessage = {
   id: string;
@@ -33,6 +34,7 @@ export function AiAssistantPopover({ lang }: Props) {
   const [input, setInput] = useState("");
   const [messages, setMessages] = useState<AssistantMessage[]>([]);
   const [error, setError] = useState<string | null>(null);
+  const [mounted, setMounted] = useState(false);
   const scrollRef = useRef<HTMLDivElement | null>(null);
 
   const text = useMemo(() => {
@@ -113,6 +115,10 @@ export function AiAssistantPopover({ lang }: Props) {
       quickPrompts,
     };
   }, [lang]);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   useEffect(() => {
     const load = async () => {
@@ -209,15 +215,16 @@ export function AiAssistantPopover({ lang }: Props) {
         </svg>
       </button>
 
-      {open ? (
+      {open && mounted
+        ? createPortal(
         <>
           <button
             type="button"
             aria-label="Close assistant overlay"
             onClick={() => setOpen(false)}
-            className="fixed inset-0 z-40 bg-[var(--admin-overlay)] backdrop-blur-[1px]"
+            className="fixed inset-0 z-[120] bg-[var(--admin-overlay)] backdrop-blur-[1px]"
           />
-          <div className="fixed inset-0 z-50 overflow-y-auto p-2 sm:p-4">
+          <div className="fixed inset-0 z-[121] overflow-y-auto p-2 sm:p-4">
             <div className="flex min-h-full items-start justify-center sm:items-center">
               <div className="w-full max-w-[860px] overflow-hidden rounded-2xl border border-[var(--admin-border)] bg-[var(--admin-elevated)] p-4 shadow-2xl sm:p-5">
                 <div className="mx-auto flex h-[min(92dvh,780px)] w-full max-w-[820px] flex-col">
@@ -367,8 +374,10 @@ export function AiAssistantPopover({ lang }: Props) {
               </div>
             </div>
           </div>
-        </>
-      ) : null}
+        </>,
+        document.body,
+      )
+        : null}
     </div>
   );
 }
