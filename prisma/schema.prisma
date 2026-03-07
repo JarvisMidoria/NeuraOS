@@ -73,6 +73,11 @@ enum UserKind {
   TENANT_MEMBER
 }
 
+enum LlmProvider {
+  OPENAI
+  OPENAI_COMPATIBLE
+}
+
 model Company {
   id              String                  @id @default(uuid())
   name            String
@@ -103,11 +108,26 @@ model Company {
   goodsReceipts   GoodsReceipt[]
   auditLogs       AuditLog[]
   notifications   Notification[]
+  llmConfig       CompanyLlmConfig?
   billingEvents   BillingEvent[]
   taxRules        TaxRule[]
   stockRule       StockRule?
   subscription    TenantSubscription?
 
+}
+
+model CompanyLlmConfig {
+  id              String      @id @default(uuid())
+  companyId       String      @unique
+  company         Company     @relation(fields: [companyId], references: [id])
+  provider        LlmProvider @default(OPENAI)
+  baseUrl         String?
+  encryptedApiKey String
+  keyHint         String
+  defaultModel    String      @default("gpt-4o-mini")
+  isEnabled       Boolean     @default(false)
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
 }
 
 model User {

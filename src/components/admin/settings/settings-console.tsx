@@ -11,6 +11,15 @@ type CompanySettings = {
   timezone: string;
 };
 
+type LlmSettings = {
+  configured: boolean;
+  provider: "OPENAI" | "OPENAI_COMPATIBLE";
+  baseUrl: string;
+  defaultModel: string;
+  isEnabled: boolean;
+  keyHint: string | null;
+};
+
 type TaxRule = {
   id: string;
   code: string;
@@ -67,6 +76,7 @@ async function jsonOrThrow<T>(res: Response): Promise<T> {
 
 export function SettingsConsole() {
   const [company, setCompany] = useState<CompanySettings | null>(null);
+  const [llmSettings, setLlmSettings] = useState<LlmSettings | null>(null);
   const [stockRule, setStockRule] = useState<StockRule | null>(null);
   const [taxes, setTaxes] = useState<TaxRule[]>([]);
   const [permissions, setPermissions] = useState<Permission[]>([]);
@@ -83,6 +93,13 @@ export function SettingsConsole() {
     currencyCode: "USD",
     locale: "en-US",
     timezone: "UTC",
+  });
+  const [llmForm, setLlmForm] = useState({
+    provider: "OPENAI" as "OPENAI" | "OPENAI_COMPATIBLE",
+    baseUrl: "",
+    defaultModel: "gpt-4o-mini",
+    isEnabled: false,
+    apiKey: "",
   });
 
   const [taxForm, setTaxForm] = useState({ code: "", label: "", rate: "20", isDefault: false, isActive: true });
@@ -106,8 +123,9 @@ export function SettingsConsole() {
     setLoading(true);
     setError(null);
     try {
-      const [companyRes, stockRes, taxesRes, permsRes, rolesRes, usersRes, fieldsRes] = await Promise.all([
+      const [companyRes, llmRes, stockRes, taxesRes, permsRes, rolesRes, usersRes, fieldsRes] = await Promise.all([
         fetch("/api/settings/company"),
+        fetch("/api/settings/llm"),
         fetch("/api/settings/stock-rules"),
         fetch("/api/settings/taxes"),
         fetch("/api/settings/permissions"),
@@ -117,6 +135,7 @@ export function SettingsConsole() {
       ]);
 
       const companyBody = await jsonOrThrow<{ data: CompanySettings }>(companyRes);
+      const llmBody = await jsonOrThrow<{ data: LlmSettings }>(llmRes);
       const stockBody = await jsonOrThrow<{ data: StockRule }>(stockRes);
       const taxesBody = await jsonOrThrow<{ data: TaxRule[] }>(taxesRes);
       const permsBody = await jsonOrThrow<{ data: Permission[] }>(permsRes);
@@ -125,6 +144,14 @@ export function SettingsConsole() {
       const fieldsBody = await jsonOrThrow<{ data: CustomField[] }>(fieldsRes);
 
       setCompany(companyBody.data);
+      setLlmSettings(llmBody.data);
+      setLlmForm({
+        provider: llmBody.data.provider,
+        baseUrl: llmBody.data.baseUrl,
+        defaultModel: llmBody.data.defaultModel,
+        isEnabled: llmBody.data.isEnabled,
+        apiKey: "",
+      });
       setCompanyForm({
         name: companyBody.data.name,
         domain: companyBody.data.domain ?? "",
@@ -173,6 +200,52 @@ export function SettingsConsole() {
       await fetchAll();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to update company");
+    }
+  };
+
+  const updateLlm = async (event: React.FormEvent) => {
+    event.preventDefault();
+    setError(null);
+    setStatus(null);
+    try {
+      const res = await fetch("/api/settings/llm", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(llmForm),
+      });
+      await jsonOrThrow<{ data: LlmSettings }>(res);
+      setStatus("LLM provider settings updated");
+      await fetchAll();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to update LLM settings");
+    }
+  };
+
+  const testLlm = async () => {
+    setError(null);
+    setStatus(null);
+    try {
+      const res = await fetch("/api/settings/llm/test", {
+        method: "POST",
+      });
+      const body = await jsonOrThrow<{ data: { output: string; provider: string; model: string } }>(res);
+      setStatus(`LLM connection OK (${body.data.provider}/${body.data.model}): ${body.data.output}`);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to test LLM settings");
+    }
+  };
+
+  const deleteLlm = async () => {
+    if (!window.confirm("Remove LLM provider configuration?")) return;
+    setError(null);
+    setStatus(null);
+    try {
+      const res = await fetch("/api/settings/llm", { method: "DELETE" });
+      await jsonOrThrow<{ success: boolean }>(res);
+      setStatus("LLM provider settings removed");
+      await fetchAll();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to remove LLM settings");
     }
   };
 
@@ -383,6 +456,68 @@ export function SettingsConsole() {
           <input className="rounded-md border border-zinc-300 px-3 py-2 text-sm" value={companyForm.locale} onChange={(e) => setCompanyForm((p) => ({ ...p, locale: e.target.value }))} placeholder="Locale" />
           <input className="rounded-md border border-zinc-300 px-3 py-2 text-sm md:col-span-2" value={companyForm.timezone} onChange={(e) => setCompanyForm((p) => ({ ...p, timezone: e.target.value }))} placeholder="Timezone" />
           <button className="w-fit rounded-md bg-zinc-900 px-4 py-2 text-sm font-medium text-white">Save company settings</button>
+        </form>
+      </section>
+
+      <section className="rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm">
+        <h2 className="text-lg font-semibold text-zinc-900">LLM Provider</h2>
+        <p className="mt-1 text-xs text-zinc-500">
+          Connect OpenAI or any OpenAI-compatible provider (OpenRouter, Groq, Together, etc). API keys are encrypted at rest.
+        </p>
+        <form onSubmit={updateLlm} className="mt-4 grid gap-3 md:grid-cols-2">
+          <select
+            className="rounded-md border border-zinc-300 px-3 py-2 text-sm"
+            value={llmForm.provider}
+            onChange={(e) =>
+              setLlmForm((p) => ({ ...p, provider: e.target.value as "OPENAI" | "OPENAI_COMPATIBLE" }))
+            }
+          >
+            <option value="OPENAI">OpenAI</option>
+            <option value="OPENAI_COMPATIBLE">OpenAI-compatible</option>
+          </select>
+          <input
+            className="rounded-md border border-zinc-300 px-3 py-2 text-sm"
+            value={llmForm.defaultModel}
+            onChange={(e) => setLlmForm((p) => ({ ...p, defaultModel: e.target.value }))}
+            placeholder="Default model (e.g. gpt-4o-mini)"
+          />
+          <input
+            className="rounded-md border border-zinc-300 px-3 py-2 text-sm md:col-span-2"
+            value={llmForm.baseUrl}
+            onChange={(e) => setLlmForm((p) => ({ ...p, baseUrl: e.target.value }))}
+            placeholder="Base URL (required for OPENAI_COMPATIBLE, ex: https://openrouter.ai/api/v1)"
+          />
+          <input
+            className="rounded-md border border-zinc-300 px-3 py-2 text-sm md:col-span-2"
+            value={llmForm.apiKey}
+            onChange={(e) => setLlmForm((p) => ({ ...p, apiKey: e.target.value }))}
+            placeholder={llmSettings?.keyHint ? `Current key: ${llmSettings.keyHint} (leave blank to keep)` : "API key"}
+          />
+          <label className="inline-flex items-center gap-2 text-sm text-zinc-700">
+            <input
+              type="checkbox"
+              checked={llmForm.isEnabled}
+              onChange={(e) => setLlmForm((p) => ({ ...p, isEnabled: e.target.checked }))}
+            />
+            Enable provider
+          </label>
+          <div className="flex flex-wrap gap-2">
+            <button className="w-fit rounded-md bg-zinc-900 px-4 py-2 text-sm font-medium text-white">Save LLM settings</button>
+            <button
+              type="button"
+              className="rounded-md border border-zinc-300 px-4 py-2 text-sm font-medium text-zinc-700"
+              onClick={testLlm}
+            >
+              Test connection
+            </button>
+            <button
+              type="button"
+              className="rounded-md border border-red-200 px-4 py-2 text-sm font-medium text-red-600"
+              onClick={deleteLlm}
+            >
+              Remove config
+            </button>
+          </div>
         </form>
       </section>
 
