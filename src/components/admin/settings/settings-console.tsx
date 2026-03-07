@@ -180,6 +180,13 @@ export function SettingsConsole() {
     fetchAll();
   }, [fetchAll]);
 
+  useEffect(() => {
+    if (!llmSettings || llmSettings.sharedAvailable) return;
+    setLlmForm((prev) =>
+      prev.accessMode === "SHARED" && prev.isEnabled ? { ...prev, isEnabled: false } : prev,
+    );
+  }, [llmSettings]);
+
   const roleOptions = useMemo(
     () =>
       roles.map((role) => ({
@@ -188,6 +195,7 @@ export function SettingsConsole() {
       })),
     [roles],
   );
+  const sharedUnavailable = Boolean(llmSettings && !llmSettings.sharedAvailable);
 
   const updateCompany = async (event: React.FormEvent) => {
     event.preventDefault();
@@ -492,6 +500,7 @@ export function SettingsConsole() {
                 name="llm-mode"
                 checked={llmForm.accessMode === "SHARED"}
                 onChange={() => setLlmForm((p) => ({ ...p, accessMode: "SHARED" }))}
+                disabled={sharedUnavailable}
               />
               <span>
                 <span className="block font-medium text-zinc-900">NeuraOS Shared AI</span>
@@ -549,11 +558,22 @@ export function SettingsConsole() {
               type="checkbox"
               checked={llmForm.isEnabled}
               onChange={(e) => setLlmForm((p) => ({ ...p, isEnabled: e.target.checked }))}
+              disabled={sharedUnavailable && llmForm.accessMode === "SHARED"}
             />
             Enable provider
           </label>
+          {sharedUnavailable && llmForm.accessMode === "SHARED" ? (
+            <p className="md:col-span-2 text-xs text-amber-600">
+              Shared AI cannot be enabled yet. Switch to BYOK, or ask platform admin to set `SHARED_LLM_API_KEY`.
+            </p>
+          ) : null}
           <div className="flex flex-wrap gap-2">
-            <button className="w-fit rounded-md bg-zinc-900 px-4 py-2 text-sm font-medium text-white">Save AI settings</button>
+            <button
+              disabled={sharedUnavailable && llmForm.accessMode === "SHARED" && llmForm.isEnabled}
+              className="w-fit rounded-md bg-zinc-900 px-4 py-2 text-sm font-medium text-white disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              Save AI settings
+            </button>
             <button
               type="button"
               className="rounded-md border border-zinc-300 px-4 py-2 text-sm font-medium text-zinc-700"
