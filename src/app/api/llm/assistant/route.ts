@@ -6,6 +6,60 @@ import { getDashboardSnapshot } from "@/lib/dashboard-service";
 import { runCompanyLlm } from "@/lib/llm";
 import { prisma } from "@/lib/prisma";
 
+type StructuredAssistantItem = {
+  label: string;
+  detail: string;
+  href?: string;
+};
+
+type StructuredAssistantResponse = {
+  title: string;
+  summary: string;
+  priorities: StructuredAssistantItem[];
+  insights: StructuredAssistantItem[];
+  actions: StructuredAssistantItem[];
+};
+
+function safeString(value: unknown, fallback = "") {
+  if (typeof value !== "string") return fallback;
+  return value.trim();
+}
+
+function safeHref(value: unknown) {
+  const href = safeString(value);
+  if (!href.startsWith("/admin")) return undefined;
+  return href;
+}
+
+function toStructuredItem(value: unknown): StructuredAssistantItem | null {
+  if (!value || typeof value !== "object") return null;
+  const item = value as Record<string, unknown>;
+  const label = safeString(item.label);
+  const detail = safeString(item.detail);
+  if (!label || !detail) return null;
+  return { label, detail, href: safeHref(item.href) };
+}
+
+function parseStructuredResponse(raw: string): StructuredAssistantResponse | null {
+  const trimmed = raw.trim();
+  const withoutFence = trimmed.replace(/^```(?:json)?\s*/i, "").replace(/\s*```$/, "");
+  try {
+    const parsed = JSON.parse(withoutFence) as Record<string, unknown>;
+    const priorities = Array.isArray(parsed.priorities) ? parsed.priorities.map(toStructuredItem).filter(Boolean) : [];
+    const insights = Array.isArray(parsed.insights) ? parsed.insights.map(toStructuredItem).filter(Boolean) : [];
+    const actions = Array.isArray(parsed.actions) ? parsed.actions.map(toStructuredItem).filter(Boolean) : [];
+    return {
+      title: safeString(parsed.title, "Operational summary"),
+      summary: safeString(parsed.summary, withoutFence.slice(0, 300)),
+      priorities: priorities as StructuredAssistantItem[],
+      insights: insights as StructuredAssistantItem[],
+      actions: actions as StructuredAssistantItem[],
+    };
+  } catch {
+    return null;
+  }
+}
+
 export async function POST(req: NextRequest) {
   try {
     const session = await requireSession();
@@ -174,15 +228,31 @@ export async function POST(req: NextRequest) {
       salesOrders: salesOrders.map((o) => ({ ...o, totalAmount: o.totalAmount.toString() })),
       purchaseOrders: purchaseOrders.map((o) => ({ ...o, totalAmount: o.totalAmount.toString() })),
       goodsReceipts,
+      availableLinks: [
+        ...snapshot.latestDocuments.map((d) => ({ label: `${d.type} ${d.code}`, href: d.href })),
+        ...snapshot.operationalTodo.map((t) => ({ label: t.label, href: t.href })),
+      ],
     };
 
     const result = await runCompanyLlm({
       companyId: session.user.companyId,
-      message: `Tenant ERP context (JSON):\n${JSON.stringify(snapshotContext)}\n\nUser question:\n${message}`,
+      message:
+        `Tenant ERP context (JSON):\n${JSON.stringify(snapshotContext)}\n\n` +
+        "Output STRICT JSON only with this shape (no markdown, no prose outside JSON):\n" +
+        JSON.stringify({
+          title: "string",
+          summary: "string",
+          priorities: [{ label: "string", detail: "string", href: "/admin/..." }],
+          insights: [{ label: "string", detail: "string", href: "/admin/..." }],
+          actions: [{ label: "string", detail: "string", href: "/admin/..." }],
+        }) +
+        "\nIf a link is unknown, omit href.\n\n" +
+        `User question:\n${message}`,
       modelOverride: model,
       system:
         "You are an ERP copilot for operations (sales, purchasing, inventory, planning). Answer only from the provided tenant context in this request and user question. If information is missing, say what is missing. Never reference other tenants or organizations.",
     });
+    const structured = parseStructuredResponse(result.content);
 
     await logAudit({
       companyId: session.user.companyId,
@@ -196,6 +266,7 @@ export async function POST(req: NextRequest) {
         accessMode: result.accessMode,
         sharedQuota: result.sharedQuota ?? undefined,
         tokenUsage: result.usage,
+        structured: Boolean(structured),
         promptSize: message.length,
         contextTimestamp: snapshot.timestamp,
       },
@@ -209,6 +280,14 @@ export async function POST(req: NextRequest) {
         accessMode: result.accessMode,
         sharedQuota: result.sharedQuota,
         usage: result.usage,
+        structured:
+          structured ?? {
+            title: "Assistant",
+            summary: result.content,
+            priorities: [],
+            insights: [],
+            actions: [],
+          },
       },
     });
   } catch (error) {

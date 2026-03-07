@@ -6,6 +6,13 @@ type AssistantMessage = {
   id: string;
   role: "user" | "assistant";
   content: string;
+  structured?: {
+    title: string;
+    summary: string;
+    priorities: Array<{ label: string; detail: string; href?: string }>;
+    insights: Array<{ label: string; detail: string; href?: string }>;
+    actions: Array<{ label: string; detail: string; href?: string }>;
+  };
 };
 
 type Props = {
@@ -94,6 +101,10 @@ export function AiAssistantPopover({ lang }: Props) {
       send: lang === "fr" ? "Envoyer" : "Send",
       close: lang === "fr" ? "Fermer" : "Close",
       clear: lang === "fr" ? "Effacer" : "Clear",
+      priorities: lang === "fr" ? "Priorités" : "Priorities",
+      insights: lang === "fr" ? "Insights" : "Insights",
+      actions: lang === "fr" ? "Actions" : "Actions",
+      open: lang === "fr" ? "Ouvrir" : "Open",
       empty:
         lang === "fr"
           ? "Choisis un template rapide ou pose une question personnalisée."
@@ -142,7 +153,19 @@ export function AiAssistantPopover({ lang }: Props) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ message: trimmed }),
       });
-      const payload = (await response.json()) as { data?: { output?: string }; error?: string };
+      const payload = (await response.json()) as {
+        data?: {
+          output?: string;
+          structured?: {
+            title: string;
+            summary: string;
+            priorities: Array<{ label: string; detail: string; href?: string }>;
+            insights: Array<{ label: string; detail: string; href?: string }>;
+            actions: Array<{ label: string; detail: string; href?: string }>;
+          };
+        };
+        error?: string;
+      };
       if (!response.ok) {
         throw new Error(payload.error ?? "Request failed");
       }
@@ -150,6 +173,7 @@ export function AiAssistantPopover({ lang }: Props) {
         id: `a-${Date.now()}`,
         role: "assistant",
         content: payload.data?.output ?? "",
+        structured: payload.data?.structured,
       };
       setMessages((prev) => [...prev, assistantMsg]);
     } catch (err) {
@@ -186,7 +210,15 @@ export function AiAssistantPopover({ lang }: Props) {
       </button>
 
       {open ? (
-        <div className="absolute right-0 z-40 mt-2 w-[min(94vw,460px)] rounded-xl border border-white/10 bg-[#0a0f1d] p-3 shadow-2xl">
+        <>
+          <button
+            type="button"
+            aria-label="Close assistant overlay"
+            onClick={() => setOpen(false)}
+            className="fixed inset-0 z-40 bg-black/55 backdrop-blur-[1px]"
+          />
+          <div className="fixed left-1/2 top-1/2 z-50 w-[min(96vw,860px)] -translate-x-1/2 -translate-y-1/2 rounded-2xl border border-white/10 bg-[#0a0f1d] p-4 shadow-2xl sm:p-5">
+            <div className="mx-auto flex max-h-[88vh] min-h-[68vh] w-full max-w-[820px] flex-col">
           <div className="mb-2 flex items-center justify-between gap-2">
             <div>
               <p className="text-sm font-semibold text-zinc-100">{text.title}</p>
@@ -224,7 +256,7 @@ export function AiAssistantPopover({ lang }: Props) {
             ))}
           </div>
 
-          <div ref={scrollRef} className="max-h-72 space-y-2 overflow-auto rounded-lg border border-white/10 p-2">
+          <div ref={scrollRef} className="flex-1 space-y-2 overflow-auto rounded-lg border border-white/10 p-3">
             {messages.length === 0 ? <p className="text-xs text-zinc-500">{text.empty}</p> : null}
             {messages.map((message) => (
               <div
@@ -233,7 +265,71 @@ export function AiAssistantPopover({ lang }: Props) {
                   message.role === "user" ? "ml-8 bg-white/10 text-zinc-100" : "mr-8 bg-indigo-500/15 text-indigo-100"
                 }`}
               >
-                {message.content}
+                {message.role === "assistant" && message.structured ? (
+                  <div className="space-y-2">
+                    <p className="font-semibold">{message.structured.title}</p>
+                    <p className="text-sm text-indigo-100/90">{message.structured.summary}</p>
+
+                    {message.structured.priorities.length > 0 ? (
+                      <div>
+                        <p className="mb-1 text-xs font-semibold uppercase tracking-wide text-indigo-200">{text.priorities}</p>
+                        <div className="space-y-1">
+                          {message.structured.priorities.map((item, index) => (
+                            <div key={`p-${message.id}-${index}`} className="rounded-md bg-black/20 px-2 py-1">
+                              <p className="text-sm font-medium">{item.label}</p>
+                              <p className="text-xs text-indigo-100/80">{item.detail}</p>
+                              {item.href ? (
+                                <a className="mt-1 inline-block text-xs underline" href={item.href}>
+                                  {text.open}
+                                </a>
+                              ) : null}
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    ) : null}
+
+                    {message.structured.insights.length > 0 ? (
+                      <div>
+                        <p className="mb-1 text-xs font-semibold uppercase tracking-wide text-indigo-200">{text.insights}</p>
+                        <div className="space-y-1">
+                          {message.structured.insights.map((item, index) => (
+                            <div key={`i-${message.id}-${index}`} className="rounded-md bg-black/20 px-2 py-1">
+                              <p className="text-sm font-medium">{item.label}</p>
+                              <p className="text-xs text-indigo-100/80">{item.detail}</p>
+                              {item.href ? (
+                                <a className="mt-1 inline-block text-xs underline" href={item.href}>
+                                  {text.open}
+                                </a>
+                              ) : null}
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    ) : null}
+
+                    {message.structured.actions.length > 0 ? (
+                      <div>
+                        <p className="mb-1 text-xs font-semibold uppercase tracking-wide text-indigo-200">{text.actions}</p>
+                        <div className="space-y-1">
+                          {message.structured.actions.map((item, index) => (
+                            <div key={`a-${message.id}-${index}`} className="rounded-md bg-black/20 px-2 py-1">
+                              <p className="text-sm font-medium">{item.label}</p>
+                              <p className="text-xs text-indigo-100/80">{item.detail}</p>
+                              {item.href ? (
+                                <a className="mt-1 inline-block text-xs underline" href={item.href}>
+                                  {text.open}
+                                </a>
+                              ) : null}
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    ) : null}
+                  </div>
+                ) : (
+                  message.content
+                )}
               </div>
             ))}
             {sending ? <p className="text-xs text-zinc-400">{text.thinking}</p> : null}
@@ -243,7 +339,7 @@ export function AiAssistantPopover({ lang }: Props) {
 
           <div className="mt-2 flex items-end gap-2">
             <textarea
-              className="min-h-[74px] flex-1 resize-none rounded-lg border border-white/10 bg-transparent px-3 py-2 text-sm text-zinc-100 outline-none placeholder:text-zinc-500"
+              className="min-h-[92px] flex-1 resize-none rounded-lg border border-white/10 bg-transparent px-3 py-2 text-sm text-zinc-100 outline-none placeholder:text-zinc-500"
               placeholder={text.placeholder}
               value={input}
               onChange={(e) => setInput(e.target.value)}
@@ -264,6 +360,8 @@ export function AiAssistantPopover({ lang }: Props) {
             </button>
           </div>
         </div>
+          </div>
+        </>
       ) : null}
     </div>
   );
