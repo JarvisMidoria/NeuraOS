@@ -18,6 +18,10 @@
   --admin-elevated: rgba(10, 15, 29, 0.88);
   --admin-elevated-soft: rgba(255, 255, 255, 0.07);
   --admin-shadow: 0 20px 45px rgba(0, 0, 0, 0.32);
+  --admin-topbar-bg: rgba(8, 12, 19, 0.94);
+  --admin-drawer-bg: rgba(7, 10, 16, 0.97);
+  --admin-modal-bg: rgba(12, 18, 30, 0.96);
+  --admin-modal-border: rgba(255, 255, 255, 0.18);
 }
 
 @theme inline {
@@ -85,6 +89,10 @@ body {
   --admin-elevated: rgba(255, 255, 255, 0.84);
   --admin-elevated-soft: rgba(242, 244, 250, 0.86);
   --admin-shadow: 0 12px 28px rgba(13, 23, 43, 0.12);
+  --admin-topbar-bg: rgba(245, 248, 255, 0.96);
+  --admin-drawer-bg: rgba(247, 249, 255, 0.985);
+  --admin-modal-bg: rgba(250, 252, 255, 0.97);
+  --admin-modal-border: rgba(15, 23, 42, 0.16);
 }
 
 [data-admin-theme="light"] .admin-shell {
@@ -106,18 +114,14 @@ body {
 
 .admin-shell .admin-topbar,
 .admin-shell .admin-mobile-drawer {
-  background: color-mix(in srgb, var(--admin-app-bg) 94%, transparent);
+  background: var(--admin-topbar-bg);
+  box-shadow: var(--admin-shadow);
   border-color: var(--admin-border);
-}
-
-[data-admin-theme="light"] .admin-shell .admin-topbar {
-  background: rgba(243, 245, 251, 0.9);
   backdrop-filter: blur(16px);
 }
 
-[data-admin-theme="light"] .admin-shell .admin-mobile-drawer {
-  background: rgba(243, 245, 251, 0.94);
-  backdrop-filter: blur(14px);
+.admin-shell .admin-mobile-drawer {
+  background: var(--admin-drawer-bg);
 }
 
 .admin-shell .bg-white {
@@ -135,12 +139,12 @@ body {
 }
 
 .admin-shell .text-zinc-100,
-.admin-shell .text-zinc-200,
-.admin-shell .text-zinc-300,
-.admin-shell .text-zinc-400 {
+.admin-shell .text-zinc-200 {
   color: var(--admin-text) !important;
 }
 
+.admin-shell .text-zinc-300,
+.admin-shell .text-zinc-400,
 .admin-shell .text-zinc-700,
 .admin-shell .text-zinc-600,
 .admin-shell .text-zinc-500 {
@@ -189,6 +193,18 @@ body {
 
 .admin-shell .hover\:bg-zinc-50:hover {
   background: rgba(124, 140, 255, 0.12) !important;
+}
+
+.admin-modal-overlay {
+  background: color-mix(in srgb, var(--admin-overlay) 90%, transparent);
+  backdrop-filter: blur(5px);
+}
+
+.admin-modal {
+  background: var(--admin-modal-bg);
+  border: 1px solid var(--admin-modal-border);
+  box-shadow: 0 26px 70px rgba(0, 0, 0, 0.35);
+  backdrop-filter: blur(20px) saturate(130%);
 }
 
 .admin-shell .border-white\/10,

@@ -183,7 +183,7 @@ export function AdminNav({ onNavigate }: AdminNavProps) {
             className="w-full rounded-lg border border-[var(--admin-border)] bg-[var(--admin-input-bg)] px-3 py-2 text-sm text-[var(--admin-text)] placeholder:text-[var(--admin-muted)]"
           />
           {(query.trim().length >= 1 || loading) && (
-            <div className="absolute left-0 right-0 top-[calc(100%+0.4rem)] z-20 max-h-72 overflow-auto rounded-lg border border-[var(--admin-border)] bg-[var(--admin-surface)] p-2 shadow-2xl">
+            <div className="absolute left-0 right-0 top-[calc(100%+0.4rem)] z-30 max-h-72 overflow-auto rounded-lg border border-[var(--admin-border)] bg-[var(--admin-drawer-bg)] p-2 shadow-2xl backdrop-blur">
               {loading && <p className="px-2 py-1.5 text-xs text-[var(--admin-muted)]">{text.loading}</p>}
               {!loading && results.length === 0 && <p className="px-2 py-1.5 text-xs text-[var(--admin-muted)]">{text.noResults}</p>}
               {!loading &&
@@ -275,7 +275,7 @@ export function AdminNav({ onNavigate }: AdminNavProps) {
         </div>
       </div>
 
-      <nav className="flex flex-col gap-1">
+      <nav className="flex flex-col gap-1 pb-4">
         {navItems.map((item) => {
           const active = isActive(pathname, item.href);
           return (

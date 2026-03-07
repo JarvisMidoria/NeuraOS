@@ -33,7 +33,7 @@ export function MasterShell({ children }: { children: ReactNode }) {
 
   return (
     <div className="admin-shell min-h-screen overflow-x-hidden text-[var(--admin-text)]">
-      <header className="admin-topbar fixed inset-x-0 top-0 z-30 border-b px-4 pb-3 pt-[calc(0.75rem+env(safe-area-inset-top))] backdrop-blur lg:hidden">
+      <header className="admin-topbar fixed inset-x-0 top-0 z-40 border-b px-4 pb-3 pt-[calc(0.75rem+env(safe-area-inset-top))] lg:hidden">
         <button
           type="button"
           onClick={() => setMobileOpen(true)}
@@ -74,7 +74,7 @@ export function MasterShell({ children }: { children: ReactNode }) {
           mobileOpen ? "translate-x-0" : "-translate-x-full"
         }`}
       >
-        <div className="sticky top-0 z-10 mb-5 flex items-center justify-between pb-3">
+        <div className="sticky top-0 z-10 mb-5 flex items-center justify-between border-b border-[var(--admin-border)] bg-[var(--admin-drawer-bg)] pb-3 pt-1 backdrop-blur">
           <NeuraLogo href="/master" />
           <button
             type="button"

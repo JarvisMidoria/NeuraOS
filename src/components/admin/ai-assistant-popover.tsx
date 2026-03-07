@@ -222,12 +222,12 @@ export function AiAssistantPopover({ lang }: Props) {
             type="button"
             aria-label="Close assistant overlay"
             onClick={() => setOpen(false)}
-            className="fixed inset-0 z-[120] bg-[var(--admin-overlay)] backdrop-blur-[4px]"
+            className="admin-modal-overlay fixed inset-0 z-[190]"
           />
-          <div className="fixed inset-0 z-[121] overflow-y-auto p-2 sm:p-4">
+          <div className="fixed inset-0 z-[200] overflow-y-auto p-2 sm:p-4">
             <div className="flex min-h-full items-start justify-center sm:items-center">
-              <div className="w-full max-w-[860px] overflow-hidden rounded-2xl border border-[var(--admin-border)] bg-[var(--admin-elevated)] p-4 shadow-2xl backdrop-blur-2xl sm:p-5">
-                <div className="mx-auto flex h-[min(92dvh,780px)] w-full max-w-[820px] flex-col">
+              <div className="admin-modal w-full max-w-[980px] overflow-hidden rounded-2xl p-4 sm:p-5">
+                <div className="mx-auto flex h-[min(88dvh,760px)] w-full max-w-[920px] flex-col">
           <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
             <div>
               <p className="text-sm font-semibold text-[var(--admin-text)]">{text.title}</p>
@@ -267,7 +267,7 @@ export function AiAssistantPopover({ lang }: Props) {
 
           <div
             ref={scrollRef}
-            className="flex-1 space-y-2 overflow-auto rounded-lg border border-[var(--admin-border)] bg-[var(--admin-elevated-soft)] p-3 backdrop-blur-md"
+            className="flex-1 space-y-2 overflow-auto rounded-lg border border-[var(--admin-border)] bg-[var(--admin-elevated-soft)] p-3"
           >
             {messages.length === 0 ? <p className="text-xs text-[var(--admin-muted)]">{text.empty}</p> : null}
             {messages.map((message) => (
@@ -275,8 +275,8 @@ export function AiAssistantPopover({ lang }: Props) {
                 key={message.id}
                 className={`rounded-lg px-3 py-2 text-sm ${
                   message.role === "user"
-                    ? "ml-8 bg-[var(--admin-soft-bg)] text-[var(--admin-text)]"
-                    : "mr-8 bg-[color-mix(in_srgb,var(--accent)_20%,var(--admin-surface))] text-[var(--admin-text)]"
+                    ? "ml-6 bg-[var(--admin-soft-bg)] text-[var(--admin-text)] sm:ml-8"
+                    : "mr-6 bg-[color-mix(in_srgb,var(--accent)_18%,var(--admin-elevated))] text-[var(--admin-text)] sm:mr-8"
                 }`}
               >
                 {message.role === "assistant" && message.structured ? (
@@ -353,7 +353,7 @@ export function AiAssistantPopover({ lang }: Props) {
 
           <div className="mt-2 flex items-end gap-2">
             <textarea
-              className="min-h-[92px] flex-1 resize-none rounded-lg border border-[var(--admin-border)] bg-transparent px-3 py-2 text-sm text-[var(--admin-text)] outline-none placeholder:text-[var(--admin-muted)]"
+              className="min-h-[92px] flex-1 resize-none rounded-lg border border-[var(--admin-border)] bg-[var(--admin-input-bg)] px-3 py-2 text-sm text-[var(--admin-text)] outline-none placeholder:text-[var(--admin-muted)]"
               placeholder={text.placeholder}
               value={input}
               onChange={(e) => setInput(e.target.value)}
