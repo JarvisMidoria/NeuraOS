@@ -494,26 +494,53 @@ export function SettingsConsole() {
         <h2 className="text-lg font-semibold text-zinc-900">AI Assistant</h2>
         <p className="mt-1 text-xs text-zinc-500">Choose a simple mode: shared AI by NeuraOS, or your own provider key.</p>
         {llmSettings ? (
-          <div className="mt-3 grid gap-2 sm:grid-cols-3">
-            <div className="rounded-md border border-zinc-200 bg-zinc-50 px-3 py-2 text-xs">
-              <p className="text-zinc-500">Tokens used ({llmSettings.usage.period})</p>
-              <p className="text-sm font-semibold text-zinc-900">{llmSettings.usage.consumedTokens.toLocaleString()}</p>
-            </div>
-            <div className="rounded-md border border-zinc-200 bg-zinc-50 px-3 py-2 text-xs">
-              <p className="text-zinc-500">Token limit</p>
-              <p className="text-sm font-semibold text-zinc-900">
-                {llmSettings.usage.monthlyLimitTokens === null
-                  ? "BYOK (your provider)"
-                  : llmSettings.usage.monthlyLimitTokens.toLocaleString()}
-              </p>
-            </div>
-            <div className="rounded-md border border-zinc-200 bg-zinc-50 px-3 py-2 text-xs">
-              <p className="text-zinc-500">Tokens left</p>
-              <p className="text-sm font-semibold text-zinc-900">
-                {llmSettings.usage.remainingTokens === null
-                  ? "N/A"
-                  : llmSettings.usage.remainingTokens.toLocaleString()}
-              </p>
+          <div className="mt-3 space-y-3">
+            {llmSettings.usage.monthlyLimitTokens !== null ? (
+              (() => {
+                const limit = llmSettings.usage.monthlyLimitTokens;
+                const consumed = llmSettings.usage.consumedTokens;
+                const usedPct = limit > 0 ? Math.min(100, Math.round((consumed / limit) * 100)) : 0;
+                const barClass =
+                  usedPct >= 90
+                    ? "bg-rose-500"
+                    : usedPct >= 70
+                      ? "bg-amber-500"
+                      : "bg-emerald-500";
+                return (
+                  <div className="rounded-md border border-zinc-200 bg-zinc-50 px-3 py-3 text-xs">
+                    <div className="mb-1 flex items-center justify-between">
+                      <p className="text-zinc-600">Monthly token usage</p>
+                      <p className="font-semibold text-zinc-900">{usedPct}%</p>
+                    </div>
+                    <div className="h-2 w-full overflow-hidden rounded-full bg-zinc-200">
+                      <div className={`h-full rounded-full transition-all ${barClass}`} style={{ width: `${usedPct}%` }} />
+                    </div>
+                  </div>
+                );
+              })()
+            ) : null}
+
+            <div className="grid gap-2 sm:grid-cols-3">
+              <div className="rounded-md border border-zinc-200 bg-zinc-50 px-3 py-2 text-xs">
+                <p className="text-zinc-500">Tokens used ({llmSettings.usage.period})</p>
+                <p className="text-sm font-semibold text-zinc-900">{llmSettings.usage.consumedTokens.toLocaleString()}</p>
+              </div>
+              <div className="rounded-md border border-zinc-200 bg-zinc-50 px-3 py-2 text-xs">
+                <p className="text-zinc-500">Token limit</p>
+                <p className="text-sm font-semibold text-zinc-900">
+                  {llmSettings.usage.monthlyLimitTokens === null
+                    ? "BYOK (your provider)"
+                    : llmSettings.usage.monthlyLimitTokens.toLocaleString()}
+                </p>
+              </div>
+              <div className="rounded-md border border-zinc-200 bg-zinc-50 px-3 py-2 text-xs">
+                <p className="text-zinc-500">Tokens left</p>
+                <p className="text-sm font-semibold text-zinc-900">
+                  {llmSettings.usage.remainingTokens === null
+                    ? "N/A"
+                    : llmSettings.usage.remainingTokens.toLocaleString()}
+                </p>
+              </div>
             </div>
           </div>
         ) : null}
