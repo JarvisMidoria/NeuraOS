@@ -114,6 +114,7 @@ model Company {
   auditLogs       AuditLog[]
   notifications   Notification[]
   llmConfig       CompanyLlmConfig?
+  messagingConfig CompanyMessagingConfig?
   billingEvents   BillingEvent[]
   taxRules        TaxRule[]
   stockRule       StockRule?
@@ -121,6 +122,25 @@ model Company {
   liveWorkspace   CompanyWorkspace?       @relation("LiveWorkspace")
   simulationWorkspace CompanyWorkspace?   @relation("SimulationWorkspace")
 
+}
+
+model CompanyMessagingConfig {
+  id                          String   @id @default(uuid())
+  companyId                   String   @unique
+  company                     Company  @relation(fields: [companyId], references: [id])
+  whatsappEnabled             Boolean  @default(false)
+  whatsappPhoneNumber         String?
+  whatsappBusinessAccountId   String?
+  whatsappAccessTokenEncrypted String?
+  whatsappAccessTokenHint     String?
+  telegramEnabled             Boolean  @default(false)
+  telegramBotUsername         String?
+  telegramBotTokenEncrypted   String?
+  telegramBotTokenHint        String?
+  createdAt                   DateTime @default(now())
+  updatedAt                   DateTime @updatedAt
+
+  @@index([companyId])
 }
 
 model CompanyWorkspace {

@@ -28,6 +28,16 @@ type LlmSettings = {
   };
 };
 
+type MessagingSettings = {
+  whatsappEnabled: boolean;
+  whatsappPhoneNumber: string;
+  whatsappBusinessAccountId: string;
+  whatsappAccessTokenHint: string | null;
+  telegramEnabled: boolean;
+  telegramBotUsername: string;
+  telegramBotTokenHint: string | null;
+};
+
 type TaxRule = {
   id: string;
   code: string;
@@ -85,6 +95,7 @@ async function jsonOrThrow<T>(res: Response): Promise<T> {
 export function SettingsConsole() {
   const [company, setCompany] = useState<CompanySettings | null>(null);
   const [llmSettings, setLlmSettings] = useState<LlmSettings | null>(null);
+  const [messagingSettings, setMessagingSettings] = useState<MessagingSettings | null>(null);
   const [stockRule, setStockRule] = useState<StockRule | null>(null);
   const [taxes, setTaxes] = useState<TaxRule[]>([]);
   const [permissions, setPermissions] = useState<Permission[]>([]);
@@ -110,6 +121,15 @@ export function SettingsConsole() {
     isEnabled: false,
     apiKey: "",
   });
+  const [messagingForm, setMessagingForm] = useState({
+    whatsappEnabled: false,
+    whatsappPhoneNumber: "",
+    whatsappBusinessAccountId: "",
+    whatsappAccessToken: "",
+    telegramEnabled: false,
+    telegramBotUsername: "",
+    telegramBotToken: "",
+  });
 
   const [taxForm, setTaxForm] = useState({ code: "", label: "", rate: "20", isDefault: false, isActive: true });
   const [roleForm, setRoleForm] = useState({ name: "", description: "", permissionIds: [] as string[] });
@@ -132,9 +152,10 @@ export function SettingsConsole() {
     setLoading(true);
     setError(null);
     try {
-      const [companyRes, llmRes, stockRes, taxesRes, permsRes, rolesRes, usersRes, fieldsRes] = await Promise.all([
+      const [companyRes, llmRes, messagingRes, stockRes, taxesRes, permsRes, rolesRes, usersRes, fieldsRes] = await Promise.all([
         fetch("/api/settings/company"),
         fetch("/api/settings/llm"),
+        fetch("/api/settings/messaging"),
         fetch("/api/settings/stock-rules"),
         fetch("/api/settings/taxes"),
         fetch("/api/settings/permissions"),
@@ -145,6 +166,7 @@ export function SettingsConsole() {
 
       const companyBody = await jsonOrThrow<{ data: CompanySettings }>(companyRes);
       const llmBody = await jsonOrThrow<{ data: LlmSettings }>(llmRes);
+      const messagingBody = await jsonOrThrow<{ data: MessagingSettings }>(messagingRes);
       const stockBody = await jsonOrThrow<{ data: StockRule }>(stockRes);
       const taxesBody = await jsonOrThrow<{ data: TaxRule[] }>(taxesRes);
       const permsBody = await jsonOrThrow<{ data: Permission[] }>(permsRes);
@@ -161,6 +183,16 @@ export function SettingsConsole() {
         defaultModel: llmBody.data.defaultModel,
         isEnabled: llmBody.data.isEnabled,
         apiKey: "",
+      });
+      setMessagingSettings(messagingBody.data);
+      setMessagingForm({
+        whatsappEnabled: messagingBody.data.whatsappEnabled,
+        whatsappPhoneNumber: messagingBody.data.whatsappPhoneNumber,
+        whatsappBusinessAccountId: messagingBody.data.whatsappBusinessAccountId,
+        whatsappAccessToken: "",
+        telegramEnabled: messagingBody.data.telegramEnabled,
+        telegramBotUsername: messagingBody.data.telegramBotUsername,
+        telegramBotToken: "",
       });
       setCompanyForm({
         name: companyBody.data.name,
@@ -236,6 +268,24 @@ export function SettingsConsole() {
       await fetchAll();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to update LLM settings");
+    }
+  };
+
+  const updateMessaging = async (event: React.FormEvent) => {
+    event.preventDefault();
+    setError(null);
+    setStatus(null);
+    try {
+      const res = await fetch("/api/settings/messaging", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(messagingForm),
+      });
+      await jsonOrThrow<{ data: MessagingSettings }>(res);
+      setStatus("Messaging settings updated");
+      await fetchAll();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to update messaging settings");
     }
   };
 
@@ -646,6 +696,74 @@ export function SettingsConsole() {
               Remove config
             </button>
           </div>
+        </form>
+      </section>
+
+      <section className="rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm">
+        <h2 className="text-lg font-semibold text-zinc-900">WhatsApp & Telegram</h2>
+        <p className="mt-1 text-xs text-zinc-500">Configure tenant channels for copilot messaging integrations.</p>
+        <form onSubmit={updateMessaging} className="mt-4 grid gap-3 md:grid-cols-2">
+          <label className="inline-flex items-center gap-2 text-sm text-zinc-700">
+            <input
+              type="checkbox"
+              checked={messagingForm.whatsappEnabled}
+              onChange={(e) => setMessagingForm((p) => ({ ...p, whatsappEnabled: e.target.checked }))}
+            />
+            Enable WhatsApp
+          </label>
+          <div />
+          <input
+            className="rounded-md border border-zinc-300 px-3 py-2 text-sm"
+            value={messagingForm.whatsappPhoneNumber}
+            onChange={(e) => setMessagingForm((p) => ({ ...p, whatsappPhoneNumber: e.target.value }))}
+            placeholder="WhatsApp phone number (E.164)"
+          />
+          <input
+            className="rounded-md border border-zinc-300 px-3 py-2 text-sm"
+            value={messagingForm.whatsappBusinessAccountId}
+            onChange={(e) => setMessagingForm((p) => ({ ...p, whatsappBusinessAccountId: e.target.value }))}
+            placeholder="WhatsApp Business Account ID"
+          />
+          <input
+            className="rounded-md border border-zinc-300 px-3 py-2 text-sm md:col-span-2"
+            value={messagingForm.whatsappAccessToken}
+            onChange={(e) => setMessagingForm((p) => ({ ...p, whatsappAccessToken: e.target.value }))}
+            placeholder={
+              messagingSettings?.whatsappAccessTokenHint
+                ? `Current WhatsApp token: ${messagingSettings.whatsappAccessTokenHint} (leave blank to keep)`
+                : "WhatsApp access token"
+            }
+          />
+
+          <label className="inline-flex items-center gap-2 text-sm text-zinc-700">
+            <input
+              type="checkbox"
+              checked={messagingForm.telegramEnabled}
+              onChange={(e) => setMessagingForm((p) => ({ ...p, telegramEnabled: e.target.checked }))}
+            />
+            Enable Telegram
+          </label>
+          <div />
+          <input
+            className="rounded-md border border-zinc-300 px-3 py-2 text-sm"
+            value={messagingForm.telegramBotUsername}
+            onChange={(e) => setMessagingForm((p) => ({ ...p, telegramBotUsername: e.target.value }))}
+            placeholder="Telegram bot username (without @)"
+          />
+          <div />
+          <input
+            className="rounded-md border border-zinc-300 px-3 py-2 text-sm md:col-span-2"
+            value={messagingForm.telegramBotToken}
+            onChange={(e) => setMessagingForm((p) => ({ ...p, telegramBotToken: e.target.value }))}
+            placeholder={
+              messagingSettings?.telegramBotTokenHint
+                ? `Current Telegram token: ${messagingSettings.telegramBotTokenHint} (leave blank to keep)`
+                : "Telegram bot token"
+            }
+          />
+          <button className="w-fit rounded-md bg-zinc-900 px-4 py-2 text-sm font-medium text-white">
+            Save messaging settings
+          </button>
         </form>
       </section>
 
