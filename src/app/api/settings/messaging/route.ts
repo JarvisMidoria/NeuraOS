@@ -2,8 +2,9 @@ import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 import { handleApiError } from "@/lib/api-helpers";
 import { prisma } from "@/lib/prisma";
-import { encryptSecret, maskSecret } from "@/lib/secrets";
+import { decryptSecret, encryptSecret, maskSecret } from "@/lib/secrets";
 import { requireAdminSession } from "@/lib/settings-api";
+import { setTelegramWebhook } from "@/lib/telegram";
 
 export async function GET() {
   try {
@@ -56,6 +57,7 @@ export async function PUT(req: NextRequest) {
     const existing = await prisma.companyMessagingConfig.findUnique({
       where: { companyId: session.user.companyId },
       select: {
+        telegramBotTokenEncrypted: true,
         whatsappAccessTokenHint: true,
         telegramBotTokenHint: true,
       },
@@ -97,15 +99,27 @@ export async function PUT(req: NextRequest) {
         telegramBotTokenHint,
       },
       select: {
+        companyId: true,
         whatsappEnabled: true,
         whatsappPhoneNumber: true,
         whatsappBusinessAccountId: true,
         whatsappAccessTokenHint: true,
         telegramEnabled: true,
         telegramBotUsername: true,
+        telegramBotTokenEncrypted: true,
         telegramBotTokenHint: true,
       },
     });
+
+    if (saved.telegramEnabled) {
+      const encryptedToken = saved.telegramBotTokenEncrypted ?? existing?.telegramBotTokenEncrypted;
+      if (encryptedToken) {
+        await setTelegramWebhook({
+          companyId: saved.companyId,
+          botToken: decryptSecret(encryptedToken),
+        });
+      }
+    }
 
     return NextResponse.json({
       data: {
