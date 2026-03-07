@@ -13,20 +13,20 @@
   --liquid-rim: rgba(255, 255, 255, 0.22);
   --liquid-blur: 18px;
   --admin-app-bg: #080b12;
-  --admin-surface: rgba(20, 28, 44, 0.62);
-  --admin-border: rgba(255, 255, 255, 0.13);
+  --admin-surface: rgba(11, 18, 34, 0.82);
+  --admin-border: rgba(255, 255, 255, 0.18);
   --admin-text: #f3f5fb;
   --admin-muted: #a0a7bb;
-  --admin-soft-bg: rgba(255, 255, 255, 0.12);
-  --admin-input-bg: rgba(15, 23, 36, 0.58);
-  --admin-overlay: rgba(4, 8, 16, 0.58);
-  --admin-elevated: rgba(13, 20, 34, 0.9);
-  --admin-elevated-soft: rgba(255, 255, 255, 0.1);
-  --admin-shadow: 0 10px 24px rgba(2, 10, 24, 0.24);
-  --admin-topbar-bg: rgba(9, 14, 24, 0.8);
-  --admin-drawer-bg: rgba(10, 16, 29, 0.86);
-  --admin-modal-bg: rgba(16, 24, 40, 0.95);
-  --admin-modal-border: rgba(255, 255, 255, 0.18);
+  --admin-soft-bg: rgba(20, 29, 52, 0.78);
+  --admin-input-bg: rgba(10, 18, 34, 0.86);
+  --admin-overlay: rgba(3, 8, 18, 0.7);
+  --admin-elevated: rgba(10, 18, 34, 0.96);
+  --admin-elevated-soft: rgba(20, 30, 54, 0.7);
+  --admin-shadow: none;
+  --admin-topbar-bg: rgba(7, 14, 28, 0.95);
+  --admin-drawer-bg: rgba(7, 14, 28, 0.97);
+  --admin-modal-bg: rgba(10, 18, 34, 0.94);
+  --admin-modal-border: rgba(255, 255, 255, 0.2);
 }
 
 @theme inline {
@@ -66,9 +66,7 @@ body {
     linear-gradient(145deg, rgba(255, 255, 255, 0.2), rgba(255, 255, 255, 0.05)),
     var(--surface);
   border: 1px solid var(--surface-border);
-  box-shadow:
-    0 20px 50px rgba(0, 0, 0, 0.25),
-    inset 0 1px 0 var(--liquid-highlight);
+  box-shadow: inset 0 1px 0 var(--liquid-highlight);
   backdrop-filter: blur(var(--liquid-blur)) saturate(130%);
 }
 
@@ -98,7 +96,7 @@ body {
   --admin-overlay: rgba(18, 24, 38, 0.36);
   --admin-elevated: rgba(255, 255, 255, 0.9);
   --admin-elevated-soft: rgba(245, 248, 255, 0.92);
-  --admin-shadow: 0 10px 24px rgba(31, 51, 92, 0.12);
+  --admin-shadow: none;
   --admin-topbar-bg: rgba(242, 247, 255, 0.82);
   --admin-drawer-bg: rgba(244, 248, 255, 0.9);
   --admin-modal-bg: rgba(248, 251, 255, 0.97);
@@ -145,9 +143,7 @@ body {
   background:
     linear-gradient(155deg, rgba(255, 255, 255, 0.22), rgba(255, 255, 255, 0.06)),
     var(--admin-surface) !important;
-  box-shadow:
-    var(--admin-shadow),
-    inset 0 1px 0 var(--liquid-highlight) !important;
+  box-shadow: inset 0 1px 0 var(--liquid-highlight) !important;
   backdrop-filter: blur(var(--liquid-blur)) saturate(132%);
   -webkit-backdrop-filter: blur(var(--liquid-blur)) saturate(132%);
 }
@@ -182,9 +178,7 @@ body {
 }
 
 .admin-shell .shadow-sm {
-  box-shadow:
-    var(--admin-shadow),
-    inset 0 1px 0 var(--liquid-highlight) !important;
+  box-shadow: inset 0 1px 0 var(--liquid-highlight) !important;
 }
 
 .admin-shell .rounded-2xl {
@@ -198,9 +192,7 @@ body {
 .admin-shell .bg-zinc-900 {
   background:
     linear-gradient(125deg, color-mix(in srgb, var(--accent) 92%, white), color-mix(in srgb, var(--accent-2) 85%, var(--accent))) !important;
-  box-shadow:
-    0 8px 20px color-mix(in srgb, var(--accent) 26%, transparent),
-    inset 0 1px 0 rgba(255, 255, 255, 0.36) !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.36) !important;
 }
 
 .admin-shell input,
@@ -248,7 +240,7 @@ body {
 .admin-modal {
   background: var(--admin-modal-bg);
   border: 1px solid var(--admin-modal-border);
-  box-shadow: 0 26px 70px rgba(0, 0, 0, 0.35);
+  box-shadow: none;
   backdrop-filter: blur(20px) saturate(135%);
   -webkit-backdrop-filter: blur(20px) saturate(135%);
 }
@@ -259,7 +251,7 @@ body {
     var(--admin-surface);
   border: 1px solid var(--admin-border);
   border-radius: 1.2rem;
-  box-shadow: var(--admin-shadow), inset 0 1px 0 var(--liquid-highlight);
+  box-shadow: inset 0 1px 0 var(--liquid-highlight);
   backdrop-filter: blur(var(--liquid-blur)) saturate(132%);
 }
 
@@ -269,7 +261,7 @@ body {
     var(--admin-modal-bg);
   border: 1px solid var(--admin-modal-border);
   border-radius: 1.2rem;
-  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.28), inset 0 1px 0 var(--liquid-highlight);
+  box-shadow: inset 0 1px 0 var(--liquid-highlight);
   backdrop-filter: blur(calc(var(--liquid-blur) + 2px)) saturate(138%);
 }
 
@@ -288,7 +280,7 @@ body {
   border: 1px solid color-mix(in srgb, var(--accent) 45%, white);
   background: linear-gradient(125deg, var(--accent), var(--accent-2));
   color: white;
-  box-shadow: 0 10px 22px color-mix(in srgb, var(--accent) 30%, transparent), inset 0 1px 0 rgba(255, 255, 255, 0.4);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.4);
 }
 
 .liquid-btn-ghost {

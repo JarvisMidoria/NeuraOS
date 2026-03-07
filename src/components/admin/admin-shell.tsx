@@ -81,7 +81,7 @@ export function AdminShell({ children }: { children: ReactNode }) {
         </div>
       </header>
 
-      <div className="mx-auto grid min-h-[calc(100vh-57px)] w-full max-w-[1400px] grid-cols-1 pt-[calc(57px+env(safe-area-inset-top))] lg:min-h-screen lg:grid-cols-[280px_1fr] lg:pt-0">
+      <div className="mx-auto grid min-h-[calc(100vh-57px)] w-full max-w-[1400px] grid-cols-1 pt-[calc(57px+env(safe-area-inset-top))] lg:min-h-screen lg:grid-cols-[240px_1fr] lg:pt-0">
         <aside className="hidden border-r border-[var(--admin-border)] px-5 py-6 lg:block">
           <div className="mb-8 flex items-center justify-center">
             <NeuraLogo href="/admin" />
