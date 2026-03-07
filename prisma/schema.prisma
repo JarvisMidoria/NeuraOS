@@ -53,6 +53,20 @@ enum SubscriptionStatus {
   CANCELED
 }
 
+enum BillingEventType {
+  CHECKOUT_COMPLETED
+  SUBSCRIPTION_UPDATED
+  SUBSCRIPTION_CANCELED
+  INVOICE_PAID
+  INVOICE_PAYMENT_FAILED
+}
+
+enum BillingEventStatus {
+  INFO
+  SUCCEEDED
+  FAILED
+}
+
 enum UserKind {
   MASTER
   TENANT_ADMIN
@@ -89,6 +103,7 @@ model Company {
   goodsReceipts   GoodsReceipt[]
   auditLogs       AuditLog[]
   notifications   Notification[]
+  billingEvents   BillingEvent[]
   taxRules        TaxRule[]
   stockRule       StockRule?
   subscription    TenantSubscription?
@@ -632,4 +647,28 @@ model TenantSubscription {
 
   @@index([status])
   @@index([plan])
+}
+
+model BillingEvent {
+  id                   String             @id @default(uuid())
+  companyId            String
+  company              Company            @relation(fields: [companyId], references: [id])
+  stripeEventId        String?            @unique
+  stripeCustomerId     String?
+  stripeSubscriptionId String?
+  stripeInvoiceId      String?
+  type                 BillingEventType
+  status               BillingEventStatus @default(INFO)
+  plan                 SubscriptionPlan?
+  amount               Decimal?           @db.Decimal(14, 2)
+  currencyCode         String?
+  occurredAt           DateTime
+  metadata             Json?
+  createdAt            DateTime           @default(now())
+
+  @@index([companyId, occurredAt])
+  @@index([type, occurredAt])
+  @@index([status, occurredAt])
+  @@index([stripeSubscriptionId])
+  @@index([stripeCustomerId])
 }

@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
-import type { Prisma, SubscriptionPlan } from "@prisma/client";
+import type { SubscriptionPlan } from "@prisma/client";
+import { BillingEventStatus, BillingEventType } from "@prisma/client";
 import { handleApiError } from "@/lib/api-helpers";
 import { planMonthlyAmount } from "@/lib/billing-plans";
 import { prisma } from "@/lib/prisma";
@@ -36,26 +37,6 @@ function parsePlanFilter(raw: string | null): "ALL" | SubscriptionPlan {
   return "ALL";
 }
 
-function sumEstimatedRevenueByPlan(items: Array<{ plan: SubscriptionPlan; status: string }>) {
-  return items
-    .filter((item) => item.status === "ACTIVE" || item.status === "TRIALING")
-    .reduce((sum, item) => sum + planMonthlyAmount(item.plan), 0);
-}
-
-function extractPlanFromAudit(metadata: Prisma.JsonValue | null): SubscriptionPlan | null {
-  if (!metadata || typeof metadata !== "object" || Array.isArray(metadata)) return null;
-  const obj = metadata as Record<string, unknown>;
-
-  const direct = obj.subscriptionPlan;
-  if (direct === "FREE" || direct === "STARTER" || direct === "GROWTH" || direct === "ENTERPRISE") return direct;
-
-  const data = obj.data;
-  if (!data || typeof data !== "object" || Array.isArray(data)) return null;
-  const nested = (data as Record<string, unknown>).plan;
-  if (nested === "FREE" || nested === "STARTER" || nested === "GROWTH" || nested === "ENTERPRISE") return nested;
-  return null;
-}
-
 export async function GET(req: Request) {
   try {
     await requireSuperAdminSession();
@@ -67,39 +48,57 @@ export async function GET(req: Request) {
 
     const subscriptionWhere = planFilter === "ALL" ? {} : { plan: planFilter };
 
-    const [subscriptions, alerts, latestSubscriptions, auditEvents, chartEvents] = await Promise.all([
-      prisma.tenantSubscription.findMany({
-        where: subscriptionWhere,
-        select: { plan: true, status: true },
-      }),
-      prisma.tenantSubscription.findMany({
-        where: { status: "PAST_DUE" },
-        include: { company: { select: { id: true, name: true } } },
-        orderBy: { updatedAt: "desc" },
-        take: 10,
-      }),
-      prisma.tenantSubscription.findMany({
-        where: subscriptionWhere,
-        include: { company: { select: { id: true, name: true } } },
-        orderBy: { createdAt: "desc" },
-        take: 10,
-      }),
-      prisma.auditLog.findMany({
-        where: {
-          action: { in: ["TENANT_BOOTSTRAP", "TENANT_SUBSCRIPTION_UPDATE"] },
-          createdAt: { gte: rangeStart },
-        },
-        select: { id: true, createdAt: true, action: true, metadata: true, company: { select: { name: true } } },
-        orderBy: { createdAt: "desc" },
-      }),
-      prisma.auditLog.findMany({
-        where: {
-          action: { in: ["TENANT_BOOTSTRAP", "TENANT_SUBSCRIPTION_UPDATE"] },
-          createdAt: { gte: new Date(Date.UTC(new Date().getUTCFullYear(), new Date().getUTCMonth() - 5, 1)) },
-        },
-        select: { createdAt: true, metadata: true },
-      }),
-    ]);
+    const [subscriptions, alerts, latestSubscriptions, paidEventsInRange, paidEventsForChart, latestPaidRows] =
+      await Promise.all([
+        prisma.tenantSubscription.findMany({
+          where: subscriptionWhere,
+          select: { plan: true, status: true },
+        }),
+        prisma.tenantSubscription.findMany({
+          where: { status: "PAST_DUE" },
+          include: { company: { select: { id: true, name: true } } },
+          orderBy: { updatedAt: "desc" },
+          take: 10,
+        }),
+        prisma.tenantSubscription.findMany({
+          where: subscriptionWhere,
+          include: { company: { select: { id: true, name: true } } },
+          orderBy: { createdAt: "desc" },
+          take: 10,
+        }),
+        prisma.billingEvent.findMany({
+          where: {
+            type: BillingEventType.INVOICE_PAID,
+            status: BillingEventStatus.SUCCEEDED,
+            occurredAt: { gte: rangeStart },
+            ...(planFilter === "ALL" ? {} : { plan: planFilter }),
+          },
+          select: { amount: true },
+        }),
+        prisma.billingEvent.findMany({
+          where: {
+            type: BillingEventType.INVOICE_PAID,
+            status: BillingEventStatus.SUCCEEDED,
+            occurredAt: {
+              gte: new Date(Date.UTC(new Date().getUTCFullYear(), new Date().getUTCMonth() - 5, 1)),
+            },
+            ...(planFilter === "ALL" ? {} : { plan: planFilter }),
+          },
+          select: { occurredAt: true, amount: true },
+        }),
+        prisma.billingEvent.findMany({
+          where: {
+            type: BillingEventType.INVOICE_PAID,
+            status: BillingEventStatus.SUCCEEDED,
+            ...(planFilter === "ALL" ? {} : { plan: planFilter }),
+          },
+          include: {
+            company: { select: { id: true, name: true } },
+          },
+          orderBy: { occurredAt: "desc" },
+          take: 50,
+        }),
+      ]);
 
     const byPlan = {
       FREE: subscriptions.filter((s) => s.plan === "FREE").length,
@@ -108,13 +107,11 @@ export async function GET(req: Request) {
       ENTERPRISE: subscriptions.filter((s) => s.plan === "ENTERPRISE").length,
     };
 
-    const activeRevenue = sumEstimatedRevenueByPlan(subscriptions);
+    const activeMrr = subscriptions
+      .filter((s) => s.status === "ACTIVE" || s.status === "TRIALING")
+      .reduce((sum, s) => sum + planMonthlyAmount(s.plan), 0);
 
-    const revenueInRange = auditEvents.reduce((sum, event) => {
-      const plan = extractPlanFromAudit(event.metadata);
-      if (!plan) return sum;
-      return sum + planMonthlyAmount(plan);
-    }, 0);
+    const revenueInRange = paidEventsInRange.reduce((sum, event) => sum + Number(event.amount ?? 0), 0);
 
     const now = new Date();
     const chartMap = new Map<string, number>();
@@ -124,18 +121,43 @@ export async function GET(req: Request) {
       chartMap.set(key, 0);
     }
 
-    chartEvents.forEach((event) => {
-      const plan = extractPlanFromAudit(event.metadata);
-      if (!plan) return;
-      const month = new Date(Date.UTC(event.createdAt.getUTCFullYear(), event.createdAt.getUTCMonth(), 1)).toISOString();
-      chartMap.set(month, (chartMap.get(month) ?? 0) + planMonthlyAmount(plan));
+    paidEventsForChart.forEach((event) => {
+      const month = new Date(Date.UTC(event.occurredAt.getUTCFullYear(), event.occurredAt.getUTCMonth(), 1)).toISOString();
+      chartMap.set(month, (chartMap.get(month) ?? 0) + Number(event.amount ?? 0));
     });
 
     const chart = Array.from(chartMap.entries()).map(([iso, amount]) => ({
       iso,
       month: new Date(iso).toLocaleString("en", { month: "short" }),
-      amount,
+      amount: Number(amount.toFixed(2)),
     }));
+
+    const latestMap = new Map<string, { id: string; companyName: string; plan: string; amount: number; createdAt: Date }>();
+    for (const row of latestPaidRows) {
+      if (latestMap.has(row.companyId)) continue;
+      latestMap.set(row.companyId, {
+        id: row.companyId,
+        companyName: row.company.name,
+        plan: row.plan ?? "FREE",
+        amount: Number(row.amount ?? 0),
+        createdAt: row.occurredAt,
+      });
+      if (latestMap.size >= 10) break;
+    }
+
+    const latestCustomers =
+      latestMap.size > 0
+        ? Array.from(latestMap.values()).map((item) => ({
+            ...item,
+            createdAt: item.createdAt,
+          }))
+        : latestSubscriptions.map((sub) => ({
+            id: sub.companyId,
+            companyName: sub.company.name,
+            plan: sub.plan,
+            amount: planMonthlyAmount(sub.plan),
+            createdAt: sub.createdAt,
+          }));
 
     return NextResponse.json(
       {
@@ -146,8 +168,8 @@ export async function GET(req: Request) {
           },
           revenue: {
             range: revenueRange,
-            amount: revenueInRange,
-            activeMrr: activeRevenue,
+            amount: Number(revenueInRange.toFixed(2)),
+            activeMrr,
           },
           alerts: alerts.map((sub) => ({
             id: sub.companyId,
@@ -159,13 +181,7 @@ export async function GET(req: Request) {
             updatedAt: sub.updatedAt,
           })),
           chart,
-          latestCustomers: latestSubscriptions.map((sub) => ({
-            id: sub.companyId,
-            companyName: sub.company.name,
-            plan: sub.plan,
-            amount: planMonthlyAmount(sub.plan),
-            createdAt: sub.createdAt,
-          })),
+          latestCustomers,
         },
       },
       { headers: { "Cache-Control": "private, max-age=15, stale-while-revalidate=45" } },
