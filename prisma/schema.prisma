@@ -78,6 +78,11 @@ enum LlmProvider {
   OPENAI_COMPATIBLE
 }
 
+enum LlmAccessMode {
+  SHARED
+  BYOK
+}
+
 model Company {
   id              String                  @id @default(uuid())
   name            String
@@ -120,10 +125,11 @@ model CompanyLlmConfig {
   id              String      @id @default(uuid())
   companyId       String      @unique
   company         Company     @relation(fields: [companyId], references: [id])
+  accessMode      LlmAccessMode @default(SHARED)
   provider        LlmProvider @default(OPENAI)
   baseUrl         String?
-  encryptedApiKey String
-  keyHint         String
+  encryptedApiKey String?
+  keyHint         String?
   defaultModel    String      @default("gpt-4o-mini")
   isEnabled       Boolean     @default(false)
   createdAt       DateTime    @default(now())

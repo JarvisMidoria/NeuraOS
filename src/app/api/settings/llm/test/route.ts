@@ -23,10 +23,20 @@ export async function POST() {
       metadata: {
         provider: result.provider,
         model: result.model,
+        accessMode: result.accessMode,
       },
     });
 
-    return NextResponse.json({ data: { ok: true, provider: result.provider, model: result.model, output: result.content } });
+    return NextResponse.json({
+      data: {
+        ok: true,
+        provider: result.provider,
+        model: result.model,
+        output: result.content,
+        accessMode: result.accessMode,
+        sharedQuota: result.sharedQuota,
+      },
+    });
   } catch (error) {
     return handleApiError(error);
   }

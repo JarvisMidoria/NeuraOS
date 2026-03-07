@@ -36,6 +36,8 @@ export async function POST(req: NextRequest) {
       metadata: {
         model: result.model,
         provider: result.provider,
+        accessMode: result.accessMode,
+        sharedQuota: result.sharedQuota ?? undefined,
         promptSize: message.length,
       },
     });
@@ -45,6 +47,8 @@ export async function POST(req: NextRequest) {
         output: result.content,
         provider: result.provider,
         model: result.model,
+        accessMode: result.accessMode,
+        sharedQuota: result.sharedQuota,
       },
     });
   } catch (error) {

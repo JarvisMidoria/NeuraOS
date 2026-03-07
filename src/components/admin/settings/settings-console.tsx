@@ -13,11 +13,13 @@ type CompanySettings = {
 
 type LlmSettings = {
   configured: boolean;
+  accessMode: "SHARED" | "BYOK";
   provider: "OPENAI" | "OPENAI_COMPATIBLE";
   baseUrl: string;
   defaultModel: string;
   isEnabled: boolean;
   keyHint: string | null;
+  sharedAvailable: boolean;
 };
 
 type TaxRule = {
@@ -95,6 +97,7 @@ export function SettingsConsole() {
     timezone: "UTC",
   });
   const [llmForm, setLlmForm] = useState({
+    accessMode: "SHARED" as "SHARED" | "BYOK",
     provider: "OPENAI" as "OPENAI" | "OPENAI_COMPATIBLE",
     baseUrl: "",
     defaultModel: "gpt-4o-mini",
@@ -146,6 +149,7 @@ export function SettingsConsole() {
       setCompany(companyBody.data);
       setLlmSettings(llmBody.data);
       setLlmForm({
+        accessMode: llmBody.data.accessMode,
         provider: llmBody.data.provider,
         baseUrl: llmBody.data.baseUrl,
         defaultModel: llmBody.data.defaultModel,
@@ -228,8 +232,21 @@ export function SettingsConsole() {
       const res = await fetch("/api/settings/llm/test", {
         method: "POST",
       });
-      const body = await jsonOrThrow<{ data: { output: string; provider: string; model: string } }>(res);
-      setStatus(`LLM connection OK (${body.data.provider}/${body.data.model}): ${body.data.output}`);
+      const body = await jsonOrThrow<{
+        data: {
+          output: string;
+          provider: string;
+          model: string;
+          accessMode: "SHARED" | "BYOK";
+          sharedQuota?: { used: number; limit: number } | null;
+        };
+      }>(res);
+      const quotaPart = body.data.sharedQuota
+        ? ` · shared quota ${body.data.sharedQuota.used}/${body.data.sharedQuota.limit}`
+        : "";
+      setStatus(
+        `LLM connection OK (${body.data.accessMode} ${body.data.provider}/${body.data.model})${quotaPart}: ${body.data.output}`,
+      );
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to test LLM settings");
     }
@@ -460,17 +477,48 @@ export function SettingsConsole() {
       </section>
 
       <section className="rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm">
-        <h2 className="text-lg font-semibold text-zinc-900">LLM Provider</h2>
-        <p className="mt-1 text-xs text-zinc-500">
-          Connect OpenAI or any OpenAI-compatible provider (OpenRouter, Groq, Together, etc). API keys are encrypted at rest.
-        </p>
+        <h2 className="text-lg font-semibold text-zinc-900">AI Assistant</h2>
+        <p className="mt-1 text-xs text-zinc-500">Choose a simple mode: shared AI by NeuraOS, or your own provider key.</p>
+        {llmSettings && !llmSettings.sharedAvailable ? (
+          <div className="mt-3 rounded-md bg-amber-50 px-3 py-2 text-xs text-amber-700">
+            Shared AI is not available yet on the platform. You can still use BYOK mode.
+          </div>
+        ) : null}
         <form onSubmit={updateLlm} className="mt-4 grid gap-3 md:grid-cols-2">
+          <div className="md:col-span-2 grid gap-2 sm:grid-cols-2">
+            <label className="flex items-start gap-2 rounded-md border border-zinc-300 px-3 py-2 text-sm">
+              <input
+                type="radio"
+                name="llm-mode"
+                checked={llmForm.accessMode === "SHARED"}
+                onChange={() => setLlmForm((p) => ({ ...p, accessMode: "SHARED" }))}
+              />
+              <span>
+                <span className="block font-medium text-zinc-900">NeuraOS Shared AI</span>
+                <span className="block text-xs text-zinc-500">Plug-and-play. No API key required.</span>
+              </span>
+            </label>
+            <label className="flex items-start gap-2 rounded-md border border-zinc-300 px-3 py-2 text-sm">
+              <input
+                type="radio"
+                name="llm-mode"
+                checked={llmForm.accessMode === "BYOK"}
+                onChange={() => setLlmForm((p) => ({ ...p, accessMode: "BYOK" }))}
+              />
+              <span>
+                <span className="block font-medium text-zinc-900">Bring Your Own Key</span>
+                <span className="block text-xs text-zinc-500">Connect OpenAI/OpenRouter/Groq/Together…</span>
+              </span>
+            </label>
+          </div>
+
           <select
             className="rounded-md border border-zinc-300 px-3 py-2 text-sm"
             value={llmForm.provider}
             onChange={(e) =>
               setLlmForm((p) => ({ ...p, provider: e.target.value as "OPENAI" | "OPENAI_COMPATIBLE" }))
             }
+            disabled={llmForm.accessMode !== "BYOK"}
           >
             <option value="OPENAI">OpenAI</option>
             <option value="OPENAI_COMPATIBLE">OpenAI-compatible</option>
@@ -480,18 +528,21 @@ export function SettingsConsole() {
             value={llmForm.defaultModel}
             onChange={(e) => setLlmForm((p) => ({ ...p, defaultModel: e.target.value }))}
             placeholder="Default model (e.g. gpt-4o-mini)"
+            disabled={llmForm.accessMode !== "BYOK"}
           />
           <input
             className="rounded-md border border-zinc-300 px-3 py-2 text-sm md:col-span-2"
             value={llmForm.baseUrl}
             onChange={(e) => setLlmForm((p) => ({ ...p, baseUrl: e.target.value }))}
             placeholder="Base URL (required for OPENAI_COMPATIBLE, ex: https://openrouter.ai/api/v1)"
+            disabled={llmForm.accessMode !== "BYOK"}
           />
           <input
             className="rounded-md border border-zinc-300 px-3 py-2 text-sm md:col-span-2"
             value={llmForm.apiKey}
             onChange={(e) => setLlmForm((p) => ({ ...p, apiKey: e.target.value }))}
             placeholder={llmSettings?.keyHint ? `Current key: ${llmSettings.keyHint} (leave blank to keep)` : "API key"}
+            disabled={llmForm.accessMode !== "BYOK"}
           />
           <label className="inline-flex items-center gap-2 text-sm text-zinc-700">
             <input
@@ -502,7 +553,7 @@ export function SettingsConsole() {
             Enable provider
           </label>
           <div className="flex flex-wrap gap-2">
-            <button className="w-fit rounded-md bg-zinc-900 px-4 py-2 text-sm font-medium text-white">Save LLM settings</button>
+            <button className="w-fit rounded-md bg-zinc-900 px-4 py-2 text-sm font-medium text-white">Save AI settings</button>
             <button
               type="button"
               className="rounded-md border border-zinc-300 px-4 py-2 text-sm font-medium text-zinc-700"

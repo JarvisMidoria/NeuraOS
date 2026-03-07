@@ -1,5 +1,5 @@
 import type { NextRequest } from "next/server";
-import { LlmProvider } from "@prisma/client";
+import { LlmAccessMode, LlmProvider } from "@prisma/client";
 import { NextResponse } from "next/server";
 import { ApiError, handleApiError } from "@/lib/api-helpers";
 import { logAudit } from "@/lib/audit";
@@ -15,6 +15,17 @@ function parseProvider(raw: unknown): LlmProvider {
   throw new ApiError(400, "Unsupported provider");
 }
 
+function parseAccessMode(raw: unknown): LlmAccessMode {
+  const value = String(raw ?? "SHARED").trim().toUpperCase();
+  if (value === "SHARED") return "SHARED";
+  if (value === "BYOK") return "BYOK";
+  throw new ApiError(400, "Unsupported access mode");
+}
+
+function hasSharedProviderConfigured() {
+  return Boolean(process.env.SHARED_LLM_API_KEY?.trim());
+}
+
 export async function GET() {
   try {
     const session = await requireAdminSession();
@@ -23,11 +34,13 @@ export async function GET() {
     return NextResponse.json({
       data: {
         configured: Boolean(config),
+        accessMode: config?.accessMode ?? "SHARED",
         provider: config?.provider ?? "OPENAI",
         baseUrl: config?.baseUrl ?? "",
         defaultModel: config?.defaultModel ?? DEFAULT_LLM_MODEL,
         isEnabled: config?.isEnabled ?? false,
         keyHint: config?.keyHint ?? null,
+        sharedAvailable: hasSharedProviderConfigured(),
       },
     });
   } catch (error) {
@@ -40,6 +53,7 @@ export async function PUT(req: NextRequest) {
     const session = await requireAdminSession();
     const body = await req.json();
 
+    const accessMode = parseAccessMode(body.accessMode);
     const provider = parseProvider(body.provider);
     const defaultModel = String(body.defaultModel ?? DEFAULT_LLM_MODEL).trim();
     const baseUrl = body.baseUrl ? String(body.baseUrl).trim() : null;
@@ -50,13 +64,19 @@ export async function PUT(req: NextRequest) {
       throw new ApiError(400, "defaultModel is required");
     }
 
-    const existing = await getCompanyLlmConfig(session.user.companyId);
-    if (!existing && !apiKeyRaw) {
-      throw new ApiError(400, "apiKey is required for initial setup");
+    if (accessMode === "SHARED" && isEnabled && !hasSharedProviderConfigured()) {
+      throw new ApiError(400, "Shared AI is not available yet. Ask platform admin to configure SHARED_LLM_API_KEY.");
     }
 
-    if (isEnabled && !existing && !apiKeyRaw) {
-      throw new ApiError(400, "apiKey is required before enabling");
+    const existing = await getCompanyLlmConfig(session.user.companyId);
+
+    if (accessMode === "BYOK") {
+      if (!existing?.keyHint && !apiKeyRaw) {
+        throw new ApiError(400, "apiKey is required for BYOK mode setup");
+      }
+      if (isEnabled && !existing?.keyHint && !apiKeyRaw) {
+        throw new ApiError(400, "apiKey is required before enabling BYOK mode");
+      }
     }
 
     const encryptedApiKey = apiKeyRaw ? encryptSecret(apiKeyRaw) : undefined;
@@ -66,14 +86,16 @@ export async function PUT(req: NextRequest) {
       where: { companyId: session.user.companyId },
       create: {
         companyId: session.user.companyId,
+        accessMode,
         provider,
         baseUrl: provider === "OPENAI" ? null : baseUrl,
         defaultModel,
         isEnabled,
-        encryptedApiKey: encryptedApiKey ?? "",
-        keyHint: keyHint ?? "",
+        encryptedApiKey: encryptedApiKey,
+        keyHint,
       },
       update: {
+        accessMode,
         provider,
         baseUrl: provider === "OPENAI" ? null : baseUrl,
         defaultModel,
@@ -82,6 +104,7 @@ export async function PUT(req: NextRequest) {
         ...(keyHint ? { keyHint } : {}),
       },
       select: {
+        accessMode: true,
         provider: true,
         baseUrl: true,
         defaultModel: true,
@@ -90,10 +113,6 @@ export async function PUT(req: NextRequest) {
       },
     });
 
-    if (!saved.keyHint) {
-      throw new ApiError(400, "apiKey must be provided at least once");
-    }
-
     await logAudit({
       companyId: session.user.companyId,
       userId: session.user.id,
@@ -101,6 +120,7 @@ export async function PUT(req: NextRequest) {
       entity: "company_llm_config",
       entityId: session.user.companyId,
       metadata: {
+        accessMode: saved.accessMode,
         provider: saved.provider,
         isEnabled: saved.isEnabled,
         hasNewKey: Boolean(apiKeyRaw),
@@ -110,11 +130,13 @@ export async function PUT(req: NextRequest) {
     return NextResponse.json({
       data: {
         configured: true,
+        accessMode: saved.accessMode,
         provider: saved.provider,
         baseUrl: saved.baseUrl ?? "",
         defaultModel: saved.defaultModel,
         isEnabled: saved.isEnabled,
         keyHint: saved.keyHint,
+        sharedAvailable: hasSharedProviderConfigured(),
       },
     });
   } catch (error) {
