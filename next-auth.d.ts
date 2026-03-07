@@ -7,6 +7,8 @@ declare module "next-auth" {
     user: DefaultSession["user"] & {
       id: string;
       companyId: string;
+      liveCompanyId?: string;
+      workspaceMode?: "LIVE" | "SIMULATION";
       roles: string[];
       permissions: string[];
       isSuperAdmin: boolean;
@@ -17,6 +19,8 @@ declare module "next-auth" {
 
   interface User {
     companyId: string;
+    liveCompanyId?: string;
+    workspaceMode?: "LIVE" | "SIMULATION";
     roles: string[];
     permissions: string[];
     isSuperAdmin: boolean;

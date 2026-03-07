@@ -5,9 +5,10 @@ import { prisma } from "@/lib/prisma";
 export async function GET() {
   try {
     const session = await requireSession();
+    const configCompanyId = session.user.liveCompanyId ?? session.user.companyId;
 
     const config = await prisma.companyLlmConfig.findUnique({
-      where: { companyId: session.user.companyId },
+      where: { companyId: configCompanyId },
       select: { isEnabled: true, accessMode: true },
     });
 

@@ -6,6 +6,7 @@ import { NeuraLogo } from "@/components/brand/neura-logo";
 import { AdminNav } from "@/components/admin/admin-nav";
 import { NotificationCenter } from "@/components/admin/notification-center";
 import { AiAssistantPopover } from "@/components/admin/ai-assistant-popover";
+import { WorkspaceModeToggle } from "@/components/admin/workspace-mode-toggle";
 
 export function AdminShell({ children }: { children: ReactNode }) {
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -53,6 +54,7 @@ export function AdminShell({ children }: { children: ReactNode }) {
     <div className="admin-shell min-h-screen overflow-x-hidden text-[var(--admin-text)]">
       <div className="fixed right-4 top-[calc(0.75rem+env(safe-area-inset-top))] z-40 hidden lg:flex">
         <div className="flex items-center gap-2">
+          <WorkspaceModeToggle lang={lang} />
           <AiAssistantPopover lang={lang} />
           <NotificationCenter lang={lang} />
         </div>
@@ -112,6 +114,9 @@ export function AdminShell({ children }: { children: ReactNode }) {
           >
             ×
           </button>
+        </div>
+        <div className="mb-3">
+          <WorkspaceModeToggle lang={lang} />
         </div>
         <AdminNav onNavigate={() => setMobileOpen(false)} />
       </aside>

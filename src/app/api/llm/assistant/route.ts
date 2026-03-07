@@ -63,6 +63,8 @@ function parseStructuredResponse(raw: string): StructuredAssistantResponse | nul
 export async function POST(req: NextRequest) {
   try {
     const session = await requireSession();
+    const scopedCompanyId = session.user.companyId;
+    const configCompanyId = session.user.liveCompanyId ?? session.user.companyId;
     const body = await req.json();
 
     // Never allow caller-provided tenant overrides.
@@ -80,7 +82,7 @@ export async function POST(req: NextRequest) {
       throw new ApiError(400, "message is too long (max 4000 chars)");
     }
 
-    const snapshot = await getDashboardSnapshot(session.user.companyId);
+    const snapshot = await getDashboardSnapshot(scopedCompanyId);
     const [
       company,
       clients,
@@ -94,7 +96,7 @@ export async function POST(req: NextRequest) {
       goodsReceipts,
     ] = await Promise.all([
       prisma.company.findUnique({
-        where: { id: session.user.companyId },
+        where: { id: scopedCompanyId },
         select: {
           id: true,
           name: true,
@@ -105,25 +107,25 @@ export async function POST(req: NextRequest) {
         },
       }),
       prisma.client.findMany({
-        where: { companyId: session.user.companyId },
+        where: { companyId: scopedCompanyId },
         select: { id: true, name: true, email: true, phone: true, address: true, createdAt: true },
         orderBy: { createdAt: "desc" },
         take: 80,
       }),
       prisma.supplier.findMany({
-        where: { companyId: session.user.companyId },
+        where: { companyId: scopedCompanyId },
         select: { id: true, name: true, email: true, phone: true, address: true, createdAt: true },
         orderBy: { createdAt: "desc" },
         take: 80,
       }),
       prisma.warehouse.findMany({
-        where: { companyId: session.user.companyId },
+        where: { companyId: scopedCompanyId },
         select: { id: true, name: true, location: true, createdAt: true },
         orderBy: { createdAt: "desc" },
         take: 50,
       }),
       prisma.product.findMany({
-        where: { companyId: session.user.companyId },
+        where: { companyId: scopedCompanyId },
         select: {
           id: true,
           sku: true,
@@ -139,13 +141,13 @@ export async function POST(req: NextRequest) {
         take: 120,
       }),
       prisma.user.findMany({
-        where: { companyId: session.user.companyId },
+        where: { companyId: scopedCompanyId },
         select: { id: true, name: true, email: true, isActive: true, kind: true, lastLoginAt: true },
         orderBy: { createdAt: "desc" },
         take: 80,
       }),
       prisma.salesQuote.findMany({
-        where: { companyId: session.user.companyId },
+        where: { companyId: scopedCompanyId },
         select: {
           id: true,
           quoteNumber: true,
@@ -159,7 +161,7 @@ export async function POST(req: NextRequest) {
         take: 80,
       }),
       prisma.salesOrder.findMany({
-        where: { companyId: session.user.companyId },
+        where: { companyId: scopedCompanyId },
         select: {
           id: true,
           orderNumber: true,
@@ -172,7 +174,7 @@ export async function POST(req: NextRequest) {
         take: 80,
       }),
       prisma.purchaseOrder.findMany({
-        where: { companyId: session.user.companyId },
+        where: { companyId: scopedCompanyId },
         select: {
           id: true,
           poNumber: true,
@@ -186,7 +188,7 @@ export async function POST(req: NextRequest) {
         take: 80,
       }),
       prisma.goodsReceipt.findMany({
-        where: { companyId: session.user.companyId },
+        where: { companyId: scopedCompanyId },
         select: {
           id: true,
           receiptNumber: true,
@@ -235,7 +237,7 @@ export async function POST(req: NextRequest) {
     };
 
     const result = await runCompanyLlm({
-      companyId: session.user.companyId,
+      companyId: configCompanyId,
       message:
         `Tenant ERP context (JSON):\n${JSON.stringify(snapshotContext)}\n\n` +
         "Output STRICT JSON only with this shape (no markdown, no prose outside JSON):\n" +
@@ -255,11 +257,11 @@ export async function POST(req: NextRequest) {
     const structured = parseStructuredResponse(result.content);
 
     await logAudit({
-      companyId: session.user.companyId,
+      companyId: scopedCompanyId,
       userId: session.user.id,
       action: "LLM_ASSISTANT_QUERY",
       entity: "llm_assistant",
-      entityId: session.user.companyId,
+      entityId: scopedCompanyId,
       metadata: {
         model: result.model,
         provider: result.provider,

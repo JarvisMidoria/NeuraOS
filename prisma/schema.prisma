@@ -118,7 +118,22 @@ model Company {
   taxRules        TaxRule[]
   stockRule       StockRule?
   subscription    TenantSubscription?
+  liveWorkspace   CompanyWorkspace?       @relation("LiveWorkspace")
+  simulationWorkspace CompanyWorkspace?   @relation("SimulationWorkspace")
 
+}
+
+model CompanyWorkspace {
+  id                  String   @id @default(uuid())
+  companyId           String   @unique
+  simulationCompanyId String   @unique
+  company             Company  @relation("LiveWorkspace", fields: [companyId], references: [id])
+  simulationCompany   Company  @relation("SimulationWorkspace", fields: [simulationCompanyId], references: [id])
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+
+  @@index([companyId])
+  @@index([simulationCompanyId])
 }
 
 model CompanyLlmConfig {

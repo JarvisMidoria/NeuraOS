@@ -4,8 +4,11 @@ import type { JWT } from "next-auth/jwt";
 import { UserKind } from "@prisma/client";
 import Credentials from "next-auth/providers/credentials";
 import bcrypt from "bcryptjs";
+import { cookies } from "next/headers";
 import { prisma } from "@/lib/prisma";
 import { isSuperAdminEmail } from "@/lib/super-admin";
+import { getSimulationCompanyId } from "@/lib/simulation-service";
+import { normalizeWorkspaceMode } from "@/lib/workspace-mode";
 
 export const authOptions: NextAuthOptions = {
   session: {
@@ -121,5 +124,38 @@ export const authOptions: NextAuthOptions = {
 };
 
 export function auth() {
-  return getServerSession(authOptions);
+  return getScopedSession();
+}
+
+async function getScopedSession() {
+  const session = await getServerSession(authOptions);
+  if (!session?.user?.companyId) return session;
+
+  const liveCompanyId = session.user.companyId;
+  let requestedMode = "LIVE" as const;
+  try {
+    const cookieStore = await cookies();
+    requestedMode = normalizeWorkspaceMode(cookieStore.get("neura_workspace_mode")?.value);
+  } catch {
+    requestedMode = "LIVE";
+  }
+
+  const canUseSimulation = session.user.userKind === UserKind.TENANT_ADMIN;
+  if (!canUseSimulation || requestedMode !== "SIMULATION") {
+    session.user.liveCompanyId = liveCompanyId;
+    session.user.workspaceMode = "LIVE";
+    return session;
+  }
+
+  const simulationCompanyId = await getSimulationCompanyId(liveCompanyId);
+  if (!simulationCompanyId) {
+    session.user.liveCompanyId = liveCompanyId;
+    session.user.workspaceMode = "LIVE";
+    return session;
+  }
+
+  session.user.liveCompanyId = liveCompanyId;
+  session.user.workspaceMode = "SIMULATION";
+  session.user.companyId = simulationCompanyId;
+  return session;
 }
