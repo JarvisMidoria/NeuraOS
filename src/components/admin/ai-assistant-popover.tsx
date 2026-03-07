@@ -222,11 +222,11 @@ export function AiAssistantPopover({ lang }: Props) {
             type="button"
             aria-label="Close assistant overlay"
             onClick={() => setOpen(false)}
-            className="fixed inset-0 z-[120] bg-[var(--admin-overlay)] backdrop-blur-[1px]"
+            className="fixed inset-0 z-[120] bg-[var(--admin-overlay)] backdrop-blur-[4px]"
           />
           <div className="fixed inset-0 z-[121] overflow-y-auto p-2 sm:p-4">
             <div className="flex min-h-full items-start justify-center sm:items-center">
-              <div className="w-full max-w-[860px] overflow-hidden rounded-2xl border border-[var(--admin-border)] bg-[var(--admin-elevated)] p-4 shadow-2xl sm:p-5">
+              <div className="w-full max-w-[860px] overflow-hidden rounded-2xl border border-[var(--admin-border)] bg-[var(--admin-elevated)] p-4 shadow-2xl backdrop-blur-2xl sm:p-5">
                 <div className="mx-auto flex h-[min(92dvh,780px)] w-full max-w-[820px] flex-col">
           <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
             <div>
@@ -265,7 +265,10 @@ export function AiAssistantPopover({ lang }: Props) {
             ))}
           </div>
 
-          <div ref={scrollRef} className="flex-1 space-y-2 overflow-auto rounded-lg border border-[var(--admin-border)] p-3">
+          <div
+            ref={scrollRef}
+            className="flex-1 space-y-2 overflow-auto rounded-lg border border-[var(--admin-border)] bg-[var(--admin-elevated-soft)] p-3 backdrop-blur-md"
+          >
             {messages.length === 0 ? <p className="text-xs text-[var(--admin-muted)]">{text.empty}</p> : null}
             {messages.map((message) => (
               <div
