@@ -197,7 +197,7 @@ export function AiAssistantPopover({ lang }: Props) {
       <button
         type="button"
         onClick={() => setOpen((prev) => !prev)}
-        className="rounded-lg border border-white/15 p-2 text-zinc-200 hover:bg-white/10"
+        className="rounded-lg border border-[var(--admin-border)] p-2 text-[var(--admin-text)] hover:bg-[var(--admin-soft-bg)]"
         aria-label={text.title}
         title={text.title}
       >
@@ -215,27 +215,27 @@ export function AiAssistantPopover({ lang }: Props) {
             type="button"
             aria-label="Close assistant overlay"
             onClick={() => setOpen(false)}
-            className="fixed inset-0 z-40 bg-black/55 backdrop-blur-[1px]"
+            className="fixed inset-0 z-40 bg-[var(--admin-overlay)] backdrop-blur-[1px]"
           />
-          <div className="fixed left-1/2 top-1/2 z-50 w-[min(96vw,860px)] -translate-x-1/2 -translate-y-1/2 rounded-2xl border border-white/10 bg-[#0a0f1d] p-4 shadow-2xl sm:p-5">
+          <div className="fixed left-1/2 top-1/2 z-50 w-[min(96vw,860px)] -translate-x-1/2 -translate-y-1/2 rounded-2xl border border-[var(--admin-border)] bg-[var(--admin-elevated)] p-4 shadow-2xl sm:p-5">
             <div className="mx-auto flex max-h-[88vh] min-h-[68vh] w-full max-w-[820px] flex-col">
           <div className="mb-2 flex items-center justify-between gap-2">
             <div>
-              <p className="text-sm font-semibold text-zinc-100">{text.title}</p>
-              <p className="text-[11px] text-zinc-400">{text.subtitle}</p>
+              <p className="text-sm font-semibold text-[var(--admin-text)]">{text.title}</p>
+              <p className="text-[11px] text-[var(--admin-muted)]">{text.subtitle}</p>
             </div>
             <div className="flex items-center gap-2">
               <button
                 type="button"
                 onClick={() => setMessages([])}
-                className="rounded border border-white/15 px-2 py-1 text-[11px] text-zinc-300 hover:bg-white/10"
+                className="rounded border border-[var(--admin-border)] px-2 py-1 text-[11px] text-[var(--admin-muted)] hover:bg-[var(--admin-soft-bg)]"
               >
                 {text.clear}
               </button>
               <button
                 type="button"
                 onClick={() => setOpen(false)}
-                className="rounded border border-white/15 px-2 py-1 text-[11px] text-zinc-300 hover:bg-white/10"
+                className="rounded border border-[var(--admin-border)] px-2 py-1 text-[11px] text-[var(--admin-muted)] hover:bg-[var(--admin-soft-bg)]"
               >
                 {text.close}
               </button>
@@ -249,35 +249,37 @@ export function AiAssistantPopover({ lang }: Props) {
                 type="button"
                 onClick={() => askAssistant(prompt.message)}
                 disabled={sending}
-                className="rounded-full border border-indigo-300/30 bg-indigo-500/10 px-3 py-1 text-xs text-indigo-100 hover:bg-indigo-500/20 disabled:cursor-not-allowed disabled:opacity-50"
+                className="rounded-full border border-[var(--admin-border)] bg-[var(--admin-soft-bg)] px-3 py-1 text-xs text-[var(--admin-text)] hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
               >
                 {prompt.label}
               </button>
             ))}
           </div>
 
-          <div ref={scrollRef} className="flex-1 space-y-2 overflow-auto rounded-lg border border-white/10 p-3">
-            {messages.length === 0 ? <p className="text-xs text-zinc-500">{text.empty}</p> : null}
+          <div ref={scrollRef} className="flex-1 space-y-2 overflow-auto rounded-lg border border-[var(--admin-border)] p-3">
+            {messages.length === 0 ? <p className="text-xs text-[var(--admin-muted)]">{text.empty}</p> : null}
             {messages.map((message) => (
               <div
                 key={message.id}
                 className={`rounded-lg px-3 py-2 text-sm ${
-                  message.role === "user" ? "ml-8 bg-white/10 text-zinc-100" : "mr-8 bg-indigo-500/15 text-indigo-100"
+                  message.role === "user"
+                    ? "ml-8 bg-[var(--admin-soft-bg)] text-[var(--admin-text)]"
+                    : "mr-8 bg-[color-mix(in_srgb,var(--accent)_20%,var(--admin-surface))] text-[var(--admin-text)]"
                 }`}
               >
                 {message.role === "assistant" && message.structured ? (
                   <div className="space-y-2">
                     <p className="font-semibold">{message.structured.title}</p>
-                    <p className="text-sm text-indigo-100/90">{message.structured.summary}</p>
+                    <p className="text-sm text-[var(--admin-muted)]">{message.structured.summary}</p>
 
                     {message.structured.priorities.length > 0 ? (
                       <div>
-                        <p className="mb-1 text-xs font-semibold uppercase tracking-wide text-indigo-200">{text.priorities}</p>
+                        <p className="mb-1 text-xs font-semibold uppercase tracking-wide text-[var(--admin-muted)]">{text.priorities}</p>
                         <div className="space-y-1">
                           {message.structured.priorities.map((item, index) => (
-                            <div key={`p-${message.id}-${index}`} className="rounded-md bg-black/20 px-2 py-1">
+                            <div key={`p-${message.id}-${index}`} className="rounded-md bg-[var(--admin-elevated-soft)] px-2 py-1">
                               <p className="text-sm font-medium">{item.label}</p>
-                              <p className="text-xs text-indigo-100/80">{item.detail}</p>
+                              <p className="text-xs text-[var(--admin-muted)]">{item.detail}</p>
                               {item.href ? (
                                 <a className="mt-1 inline-block text-xs underline" href={item.href}>
                                   {text.open}
@@ -291,12 +293,12 @@ export function AiAssistantPopover({ lang }: Props) {
 
                     {message.structured.insights.length > 0 ? (
                       <div>
-                        <p className="mb-1 text-xs font-semibold uppercase tracking-wide text-indigo-200">{text.insights}</p>
+                        <p className="mb-1 text-xs font-semibold uppercase tracking-wide text-[var(--admin-muted)]">{text.insights}</p>
                         <div className="space-y-1">
                           {message.structured.insights.map((item, index) => (
-                            <div key={`i-${message.id}-${index}`} className="rounded-md bg-black/20 px-2 py-1">
+                            <div key={`i-${message.id}-${index}`} className="rounded-md bg-[var(--admin-elevated-soft)] px-2 py-1">
                               <p className="text-sm font-medium">{item.label}</p>
-                              <p className="text-xs text-indigo-100/80">{item.detail}</p>
+                              <p className="text-xs text-[var(--admin-muted)]">{item.detail}</p>
                               {item.href ? (
                                 <a className="mt-1 inline-block text-xs underline" href={item.href}>
                                   {text.open}
@@ -310,12 +312,12 @@ export function AiAssistantPopover({ lang }: Props) {
 
                     {message.structured.actions.length > 0 ? (
                       <div>
-                        <p className="mb-1 text-xs font-semibold uppercase tracking-wide text-indigo-200">{text.actions}</p>
+                        <p className="mb-1 text-xs font-semibold uppercase tracking-wide text-[var(--admin-muted)]">{text.actions}</p>
                         <div className="space-y-1">
                           {message.structured.actions.map((item, index) => (
-                            <div key={`a-${message.id}-${index}`} className="rounded-md bg-black/20 px-2 py-1">
+                            <div key={`a-${message.id}-${index}`} className="rounded-md bg-[var(--admin-elevated-soft)] px-2 py-1">
                               <p className="text-sm font-medium">{item.label}</p>
-                              <p className="text-xs text-indigo-100/80">{item.detail}</p>
+                              <p className="text-xs text-[var(--admin-muted)]">{item.detail}</p>
                               {item.href ? (
                                 <a className="mt-1 inline-block text-xs underline" href={item.href}>
                                   {text.open}
@@ -332,14 +334,14 @@ export function AiAssistantPopover({ lang }: Props) {
                 )}
               </div>
             ))}
-            {sending ? <p className="text-xs text-zinc-400">{text.thinking}</p> : null}
+            {sending ? <p className="text-xs text-[var(--admin-muted)]">{text.thinking}</p> : null}
           </div>
 
           {error ? <p className="mt-2 text-xs text-rose-300">{error}</p> : null}
 
           <div className="mt-2 flex items-end gap-2">
             <textarea
-              className="min-h-[92px] flex-1 resize-none rounded-lg border border-white/10 bg-transparent px-3 py-2 text-sm text-zinc-100 outline-none placeholder:text-zinc-500"
+              className="min-h-[92px] flex-1 resize-none rounded-lg border border-[var(--admin-border)] bg-transparent px-3 py-2 text-sm text-[var(--admin-text)] outline-none placeholder:text-[var(--admin-muted)]"
               placeholder={text.placeholder}
               value={input}
               onChange={(e) => setInput(e.target.value)}
@@ -354,7 +356,7 @@ export function AiAssistantPopover({ lang }: Props) {
               type="button"
               onClick={onSend}
               disabled={sending || !input.trim()}
-              className="rounded-lg bg-white/90 px-3 py-2 text-sm font-medium text-zinc-900 disabled:cursor-not-allowed disabled:opacity-40"
+              className="rounded-lg bg-[var(--accent)] px-3 py-2 text-sm font-medium text-white disabled:cursor-not-allowed disabled:opacity-40"
             >
               {text.send}
             </button>

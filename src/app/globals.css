@@ -65,6 +65,9 @@ body {
   --admin-muted: #a0a7bb;
   --admin-soft-bg: rgba(255, 255, 255, 0.08);
   --admin-input-bg: rgba(5, 7, 11, 0.35);
+  --admin-overlay: rgba(4, 8, 16, 0.62);
+  --admin-elevated: #0a0f1d;
+  --admin-elevated-soft: rgba(255, 255, 255, 0.06);
   --admin-shadow: 0 20px 45px rgba(0, 0, 0, 0.32);
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
@@ -78,6 +81,9 @@ body {
   --admin-muted: #626b81;
   --admin-soft-bg: rgba(20, 24, 33, 0.06);
   --admin-input-bg: rgba(255, 255, 255, 0.94);
+  --admin-overlay: rgba(26, 34, 52, 0.2);
+  --admin-elevated: #ffffff;
+  --admin-elevated-soft: rgba(20, 24, 33, 0.05);
   --admin-shadow: 0 14px 30px rgba(9, 17, 34, 0.12);
 }
 
@@ -107,6 +113,13 @@ body {
 }
 
 .admin-shell .text-zinc-900 {
+  color: var(--admin-text) !important;
+}
+
+.admin-shell .text-zinc-100,
+.admin-shell .text-zinc-200,
+.admin-shell .text-zinc-300,
+.admin-shell .text-zinc-400 {
   color: var(--admin-text) !important;
 }
 
@@ -158,6 +171,17 @@ body {
 
 .admin-shell .hover\:bg-zinc-50:hover {
   background: rgba(124, 140, 255, 0.12) !important;
+}
+
+.admin-shell .border-white\/10,
+.admin-shell .border-white\/15,
+.admin-shell .border-white\/25 {
+  border-color: var(--admin-border) !important;
+}
+
+.admin-shell .bg-white\/5,
+.admin-shell .bg-white\/10 {
+  background: var(--admin-elevated-soft) !important;
 }
 
 .admin-shell .overflow-x-auto {

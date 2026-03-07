@@ -1,8 +1,46 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
-import { ensurePermissions, handleApiError, requireSession } from "@/lib/api-helpers";
+import { handleApiError, requireSession } from "@/lib/api-helpers";
 import { perfLog, perfNow } from "@/lib/perf";
 import { prisma } from "@/lib/prisma";
+
+type SearchItemType = "product" | "client" | "supplier" | "quote" | "order" | "purchase" | "page";
+
+type SearchItem = {
+  id: string;
+  type: SearchItemType;
+  title: string;
+  subtitle: string;
+  href: string;
+  score: number;
+};
+
+const PAGE_SUGGESTIONS: Array<{
+  id: string;
+  type: SearchItemType;
+  title: string;
+  subtitle: string;
+  href: string;
+  keywords: string[];
+}> = [
+  { id: "page-products", type: "page", title: "Products", subtitle: "Catalog and product setup", href: "/admin/products", keywords: ["product", "products", "prod", "catalog", "production"] },
+  { id: "page-stock", type: "page", title: "Inventory", subtitle: "Stock and warehouse operations", href: "/admin/stock", keywords: ["stock", "inventory", "warehouse", "entrepot", "production"] },
+  { id: "page-quotes", type: "page", title: "Quotes", subtitle: "Sales quotes and conversion", href: "/admin/sales/quotes", keywords: ["quote", "quotes", "devis", "proposal", "sales"] },
+  { id: "page-orders", type: "page", title: "Orders", subtitle: "Sales orders and fulfilment", href: "/admin/sales/orders", keywords: ["order", "orders", "commande", "commandes", "fulfilment"] },
+  { id: "page-purchases", type: "page", title: "Purchases", subtitle: "Purchase orders and receipts", href: "/admin/purchases/orders", keywords: ["purchase", "purchases", "procurement", "achat", "po"] },
+  { id: "page-suppliers", type: "page", title: "Suppliers", subtitle: "Supplier management", href: "/admin/suppliers", keywords: ["supplier", "suppliers", "vendor", "fournisseur"] },
+  { id: "page-documents", type: "page", title: "Documents", subtitle: "Quotes, orders and PDFs", href: "/admin/documents", keywords: ["documents", "document", "pdf", "invoice"] },
+];
+
+const TYPE_KEYWORDS: Record<SearchItemType, string[]> = {
+  product: ["product", "products", "prod", "production", "sku", "catalog", "item"],
+  client: ["client", "clients", "customer", "customers", "crm"],
+  supplier: ["supplier", "suppliers", "vendor", "vendors", "fournisseur", "achat"],
+  quote: ["quote", "quotes", "devis", "proposal", "rfq"],
+  order: ["order", "orders", "commande", "commandes", "so", "sales"],
+  purchase: ["purchase", "purchases", "procurement", "po", "achat", "achats"],
+  page: ["page", "section", "go", "open"],
+};
 
 function clampQuery(raw: string) {
   return raw.trim().slice(0, 80);
@@ -13,149 +51,279 @@ function toInt(value: string) {
   return Number.isFinite(parsed) ? Math.max(0, Math.trunc(parsed)) : null;
 }
 
+function normalize(value: string) {
+  return value
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .trim();
+}
+
+function parseTerms(query: string) {
+  const normalized = normalize(query);
+  const terms = normalized.split(/\s+/).filter(Boolean);
+  return Array.from(new Set([normalized, ...terms])).slice(0, 6);
+}
+
+function scoreText(value: string, query: string) {
+  const text = normalize(value);
+  if (!text) return 0;
+  if (text === query) return 120;
+  if (text.startsWith(query)) return 90;
+  if (text.includes(query)) return 48;
+  const words = text.split(/\s+/);
+  if (words.some((word) => word.startsWith(query))) return 40;
+  return 0;
+}
+
+function scoreTypeHint(type: SearchItemType, query: string) {
+  const words = TYPE_KEYWORDS[type] ?? [];
+  let score = 0;
+  for (const keyword of words) {
+    if (keyword === query) score = Math.max(score, 55);
+    else if (keyword.startsWith(query)) score = Math.max(score, 35);
+  }
+  return score;
+}
+
+function rankItem(item: Omit<SearchItem, "score">, query: string) {
+  return (
+    scoreText(item.title, query) +
+    Math.floor(scoreText(item.subtitle, query) * 0.65) +
+    scoreTypeHint(item.type, query)
+  );
+}
+
 export async function GET(req: NextRequest) {
   const startedAt = perfNow();
   try {
     const session = await requireSession();
-    ensurePermissions(session, ["VIEW_DASHBOARD"]);
 
     const url = new URL(req.url);
     const query = clampQuery(url.searchParams.get("query") ?? "");
-    if (query.length < 2) {
+    if (query.length < 1) {
       return NextResponse.json({ data: [] });
     }
 
     const companyId = session.user.companyId;
     const maybeNumber = toInt(query);
+    const permissions = new Set(session.user.permissions ?? []);
+    const canSeeDashboard = permissions.has("VIEW_DASHBOARD");
+    const canManageProducts = permissions.has("MANAGE_PRODUCTS");
+    const canManageWarehouse = permissions.has("MANAGE_WAREHOUSE");
+    const canManageSales = permissions.has("MANAGE_SALES");
+    const canManagePurchasing = permissions.has("MANAGE_PURCHASING");
+
+    const terms = parseTerms(query);
+    const normalizedQuery = normalize(query);
+
+    const productWhere =
+      canManageProducts || canManageWarehouse
+        ? {
+            companyId,
+            OR: terms.flatMap((term) => [
+              { sku: { contains: term, mode: "insensitive" as const } },
+              { name: { contains: term, mode: "insensitive" as const } },
+            ]),
+          }
+        : null;
+
+    const clientWhere =
+      canManageSales || canSeeDashboard
+        ? {
+            companyId,
+            OR: terms.flatMap((term) => [
+              { name: { contains: term, mode: "insensitive" as const } },
+              { email: { contains: term, mode: "insensitive" as const } },
+            ]),
+          }
+        : null;
+
+    const supplierWhere =
+      canManagePurchasing || canSeeDashboard
+        ? {
+            companyId,
+            OR: terms.flatMap((term) => [
+              { name: { contains: term, mode: "insensitive" as const } },
+              { email: { contains: term, mode: "insensitive" as const } },
+            ]),
+          }
+        : null;
+
+    const quoteWhere =
+      canManageSales || canSeeDashboard
+        ? {
+            companyId,
+            OR: [
+              ...(maybeNumber !== null ? [{ quoteNumber: maybeNumber }] : []),
+              ...terms.map((term) => ({ client: { name: { contains: term, mode: "insensitive" as const } } })),
+            ],
+          }
+        : null;
+
+    const orderWhere =
+      canManageSales || canSeeDashboard
+        ? {
+            companyId,
+            OR: [
+              ...(maybeNumber !== null ? [{ orderNumber: maybeNumber }] : []),
+              ...terms.map((term) => ({ client: { name: { contains: term, mode: "insensitive" as const } } })),
+            ],
+          }
+        : null;
+
+    const purchaseWhere =
+      canManagePurchasing || canSeeDashboard
+        ? {
+            companyId,
+            OR: [
+              ...(maybeNumber !== null ? [{ poNumber: maybeNumber }] : []),
+              ...terms.map((term) => ({ supplier: { name: { contains: term, mode: "insensitive" as const } } })),
+            ],
+          }
+        : null;
 
     const [products, clients, suppliers, quotes, orders, purchases] = await Promise.all([
-      prisma.product.findMany({
-        where: {
-          companyId,
-          OR: [
-            { sku: { contains: query, mode: "insensitive" } },
-            { name: { contains: query, mode: "insensitive" } },
-          ],
-        },
-        select: { id: true, sku: true, name: true },
-        take: 6,
-      }),
-      prisma.client.findMany({
-        where: {
-          companyId,
-          OR: [
-            { name: { contains: query, mode: "insensitive" } },
-            { email: { contains: query, mode: "insensitive" } },
-          ],
-        },
-        select: { id: true, name: true, email: true },
-        take: 6,
-      }),
-      prisma.supplier.findMany({
-        where: {
-          companyId,
-          OR: [
-            { name: { contains: query, mode: "insensitive" } },
-            { email: { contains: query, mode: "insensitive" } },
-          ],
-        },
-        select: { id: true, name: true, email: true },
-        take: 6,
-      }),
-      prisma.salesQuote.findMany({
-        where: {
-          companyId,
-          OR: [
-            ...(maybeNumber !== null ? [{ quoteNumber: maybeNumber }] : []),
-            { client: { name: { contains: query, mode: "insensitive" } } },
-          ],
-        },
-        select: {
-          id: true,
-          quoteNumber: true,
-          client: { select: { name: true } },
-        },
-        take: 6,
-        orderBy: { quoteDate: "desc" },
-      }),
-      prisma.salesOrder.findMany({
-        where: {
-          companyId,
-          OR: [
-            ...(maybeNumber !== null ? [{ orderNumber: maybeNumber }] : []),
-            { client: { name: { contains: query, mode: "insensitive" } } },
-          ],
-        },
-        select: {
-          id: true,
-          orderNumber: true,
-          client: { select: { name: true } },
-        },
-        take: 6,
-        orderBy: { orderDate: "desc" },
-      }),
-      prisma.purchaseOrder.findMany({
-        where: {
-          companyId,
-          OR: [
-            ...(maybeNumber !== null ? [{ poNumber: maybeNumber }] : []),
-            { supplier: { name: { contains: query, mode: "insensitive" } } },
-          ],
-        },
-        select: {
-          id: true,
-          poNumber: true,
-          supplier: { select: { name: true } },
-        },
-        take: 6,
-        orderBy: { orderDate: "desc" },
-      }),
+      productWhere
+        ? prisma.product.findMany({
+            where: productWhere,
+            select: { id: true, sku: true, name: true },
+            take: 8,
+          })
+        : Promise.resolve([]),
+      clientWhere
+        ? prisma.client.findMany({
+            where: clientWhere,
+            select: { id: true, name: true, email: true },
+            take: 8,
+          })
+        : Promise.resolve([]),
+      supplierWhere
+        ? prisma.supplier.findMany({
+            where: supplierWhere,
+            select: { id: true, name: true, email: true },
+            take: 8,
+          })
+        : Promise.resolve([]),
+      quoteWhere
+        ? prisma.salesQuote.findMany({
+            where: quoteWhere,
+            select: {
+              id: true,
+              quoteNumber: true,
+              client: { select: { name: true } },
+            },
+            take: 8,
+            orderBy: { quoteDate: "desc" },
+          })
+        : Promise.resolve([]),
+      orderWhere
+        ? prisma.salesOrder.findMany({
+            where: orderWhere,
+            select: {
+              id: true,
+              orderNumber: true,
+              client: { select: { name: true } },
+            },
+            take: 8,
+            orderBy: { orderDate: "desc" },
+          })
+        : Promise.resolve([]),
+      purchaseWhere
+        ? prisma.purchaseOrder.findMany({
+            where: purchaseWhere,
+            select: {
+              id: true,
+              poNumber: true,
+              supplier: { select: { name: true } },
+            },
+            take: 8,
+            orderBy: { orderDate: "desc" },
+          })
+        : Promise.resolve([]),
     ]);
 
-    const data = [
+    const pageSuggestions = PAGE_SUGGESTIONS.filter((page) => {
+      if (page.href.includes("/products") && !(canManageProducts || canManageWarehouse || canSeeDashboard)) return false;
+      if (page.href.includes("/stock") && !(canManageWarehouse || canSeeDashboard)) return false;
+      if (page.href.includes("/sales") && !(canManageSales || canSeeDashboard)) return false;
+      if (page.href.includes("/purchases") && !(canManagePurchasing || canSeeDashboard)) return false;
+      if (page.href.includes("/suppliers") && !(canManagePurchasing || canSeeDashboard)) return false;
+      return page.keywords.some((keyword) => keyword.startsWith(normalizedQuery) || keyword.includes(normalizedQuery));
+    });
+
+    const candidates: Array<Omit<SearchItem, "score">> = [
+      ...pageSuggestions.map((page) => ({
+        id: page.id,
+        type: page.type,
+        title: page.title,
+        subtitle: page.subtitle,
+        href: page.href,
+      })),
       ...products.map((item) => ({
         id: `product-${item.id}`,
-        type: "product",
+        type: "product" as const,
         title: `${item.sku} · ${item.name}`,
         subtitle: "Product",
         href: "/admin/products",
       })),
       ...clients.map((item) => ({
         id: `client-${item.id}`,
-        type: "client",
+        type: "client" as const,
         title: item.name,
         subtitle: item.email ?? "Client",
         href: "/admin/sales/quotes",
       })),
       ...suppliers.map((item) => ({
         id: `supplier-${item.id}`,
-        type: "supplier",
+        type: "supplier" as const,
         title: item.name,
         subtitle: item.email ?? "Supplier",
         href: "/admin/suppliers",
       })),
       ...quotes.map((item) => ({
         id: `quote-${item.id}`,
-        type: "quote",
+        type: "quote" as const,
         title: `Q-${item.quoteNumber.toString().padStart(4, "0")}`,
         subtitle: item.client.name,
         href: "/admin/sales/quotes",
       })),
       ...orders.map((item) => ({
         id: `order-${item.id}`,
-        type: "order",
+        type: "order" as const,
         title: `SO-${item.orderNumber.toString().padStart(4, "0")}`,
         subtitle: item.client.name,
         href: "/admin/sales/orders",
       })),
       ...purchases.map((item) => ({
         id: `po-${item.id}`,
-        type: "purchase",
+        type: "purchase" as const,
         title: `PO-${item.poNumber.toString().padStart(4, "0")}`,
         subtitle: item.supplier.name,
         href: "/admin/purchases/orders",
       })),
-    ].slice(0, 24);
+    ];
+
+    const deduped = new Map<string, SearchItem>();
+    for (const item of candidates) {
+      const score = rankItem(item, normalizedQuery);
+      if (score <= 0) continue;
+      const existing = deduped.get(item.id);
+      if (!existing || score > existing.score) {
+        deduped.set(item.id, { ...item, score });
+      }
+    }
+
+    const data = [...deduped.values()]
+      .sort((a, b) => b.score - a.score || a.title.localeCompare(b.title))
+      .slice(0, 24)
+      .map((item) => ({
+        id: item.id,
+        type: item.type,
+        title: item.title,
+        subtitle: item.subtitle,
+        href: item.href,
+      }));
 
     return NextResponse.json(
       { data },

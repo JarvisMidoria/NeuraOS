@@ -32,7 +32,7 @@ type AdminNavProps = {
 
 type SearchResult = {
   id: string;
-  type: "product" | "client" | "supplier" | "quote" | "order" | "purchase";
+  type: "product" | "client" | "supplier" | "quote" | "order" | "purchase" | "page";
   title: string;
   subtitle: string;
   href: string;
@@ -64,7 +64,10 @@ export function AdminNav({ onNavigate }: AdminNavProps) {
   const text = useMemo(
     () => ({
       search: lang === "fr" ? "Recherche globale..." : "Global search...",
-      searchHint: lang === "fr" ? "Produits, clients, devis, commandes..." : "Products, clients, quotes, orders...",
+      searchHint:
+        lang === "fr"
+          ? "Tape ex: prod, devis, commandes, fournisseurs..."
+          : "Type e.g. prod, quotes, orders, suppliers...",
       noResults: lang === "fr" ? "Aucun resultat" : "No results",
       loading: lang === "fr" ? "Recherche..." : "Searching...",
       english: "EN",
@@ -76,6 +79,7 @@ export function AdminNav({ onNavigate }: AdminNavProps) {
   );
 
   const typeLabels: Record<SearchResult["type"], string> = {
+    page: lang === "fr" ? "Page" : "Page",
     product: lang === "fr" ? "Produit" : "Product",
     client: lang === "fr" ? "Client" : "Client",
     supplier: lang === "fr" ? "Fournisseur" : "Supplier",
@@ -90,7 +94,7 @@ export function AdminNav({ onNavigate }: AdminNavProps) {
 
   useEffect(() => {
     const normalized = query.trim();
-    if (normalized.length < 2) {
+    if (normalized.length < 1) {
       setResults([]);
       setLoading(false);
       return;
@@ -146,7 +150,7 @@ export function AdminNav({ onNavigate }: AdminNavProps) {
             placeholder={text.search}
             className="w-full rounded-lg border border-[var(--admin-border)] bg-[var(--admin-input-bg)] px-3 py-2 text-sm text-[var(--admin-text)] placeholder:text-[var(--admin-muted)]"
           />
-          {(query.trim().length >= 2 || loading) && (
+          {(query.trim().length >= 1 || loading) && (
             <div className="absolute left-0 right-0 top-[calc(100%+0.4rem)] z-20 max-h-72 overflow-auto rounded-lg border border-[var(--admin-border)] bg-[var(--admin-surface)] p-2 shadow-2xl">
               {loading && <p className="px-2 py-1.5 text-xs text-[var(--admin-muted)]">{text.loading}</p>}
               {!loading && results.length === 0 && <p className="px-2 py-1.5 text-xs text-[var(--admin-muted)]">{text.noResults}</p>}
@@ -170,7 +174,7 @@ export function AdminNav({ onNavigate }: AdminNavProps) {
                 ))}
             </div>
           )}
-          {query.trim().length < 2 && <p className="mt-1 text-[11px] text-[var(--admin-muted)]">{text.searchHint}</p>}
+          {query.trim().length < 1 && <p className="mt-1 text-[11px] text-[var(--admin-muted)]">{text.searchHint}</p>}
         </div>
 
         <div className="grid grid-cols-2 gap-2">

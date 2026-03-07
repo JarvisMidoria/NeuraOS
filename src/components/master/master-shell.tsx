@@ -32,7 +32,7 @@ export function MasterShell({ children }: { children: ReactNode }) {
   }, [mobileOpen]);
 
   return (
-    <div className="admin-shell min-h-screen overflow-x-hidden text-zinc-100">
+    <div className="admin-shell min-h-screen overflow-x-hidden text-[var(--admin-text)]">
       <header className="admin-topbar fixed inset-x-0 top-0 z-30 border-b px-4 pb-3 pt-[calc(0.75rem+env(safe-area-inset-top))] backdrop-blur lg:hidden">
         <button
           type="button"
@@ -53,7 +53,7 @@ export function MasterShell({ children }: { children: ReactNode }) {
       </header>
 
       <div className="mx-auto grid min-h-[calc(100vh-57px)] w-full max-w-[1400px] grid-cols-1 pt-[calc(57px+env(safe-area-inset-top))] lg:min-h-screen lg:grid-cols-[260px_1fr] lg:pt-0">
-        <aside className="hidden border-r border-white/10 px-5 py-6 lg:block">
+        <aside className="hidden border-r border-[var(--admin-border)] px-5 py-6 lg:block">
           <div className="mb-8 flex items-center justify-center">
             <NeuraLogo href="/master" />
           </div>
@@ -64,7 +64,7 @@ export function MasterShell({ children }: { children: ReactNode }) {
       </div>
 
       <div
-        className={`fixed inset-0 z-40 bg-black/55 transition ${
+        className={`fixed inset-0 z-40 bg-[var(--admin-overlay)] transition ${
           mobileOpen ? "pointer-events-auto opacity-100" : "pointer-events-none opacity-0"
         } lg:hidden`}
         onClick={() => setMobileOpen(false)}

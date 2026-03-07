@@ -80,7 +80,7 @@ export function NotificationCenter({ lang }: NotificationCenterProps) {
       <button
         type="button"
         onClick={() => setOpen((prev) => !prev)}
-        className="relative rounded-lg border border-white/15 p-2 text-zinc-200 hover:bg-white/10"
+        className="relative rounded-lg border border-[var(--admin-border)] p-2 text-[var(--admin-text)] hover:bg-[var(--admin-soft-bg)]"
         aria-label={text.title}
       >
         <svg
@@ -106,21 +106,21 @@ export function NotificationCenter({ lang }: NotificationCenterProps) {
       </button>
 
       {open && (
-        <div className="absolute right-0 z-40 mt-2 w-[min(90vw,380px)] rounded-xl border border-white/10 bg-[#0a0f1d] p-3 shadow-2xl">
+        <div className="absolute right-0 z-40 mt-2 w-[min(90vw,380px)] rounded-xl border border-[var(--admin-border)] bg-[var(--admin-elevated)] p-3 shadow-2xl">
           <div className="mb-2 flex items-center justify-between">
-            <p className="text-sm font-semibold text-zinc-100">{text.title}</p>
+            <p className="text-sm font-semibold text-[var(--admin-text)]">{text.title}</p>
             <div className="flex items-center gap-2">
               <button
                 type="button"
                 onClick={() => loadNotifications(true)}
-                className="rounded border border-white/15 px-2 py-1 text-[11px] text-zinc-300 hover:bg-white/10"
+                className="rounded border border-[var(--admin-border)] px-2 py-1 text-[11px] text-[var(--admin-muted)] hover:bg-[var(--admin-soft-bg)]"
               >
                 {text.sync}
               </button>
               <button
                 type="button"
                 onClick={markAllRead}
-                className="rounded border border-white/15 px-2 py-1 text-[11px] text-zinc-300 hover:bg-white/10"
+                className="rounded border border-[var(--admin-border)] px-2 py-1 text-[11px] text-[var(--admin-muted)] hover:bg-[var(--admin-soft-bg)]"
               >
                 {text.markAll}
               </button>
@@ -128,18 +128,22 @@ export function NotificationCenter({ lang }: NotificationCenterProps) {
           </div>
 
           <div className="max-h-80 space-y-2 overflow-auto">
-            {loading && <p className="text-xs text-zinc-400">{text.loading}</p>}
-            {!loading && items.length === 0 && <p className="text-xs text-zinc-400">{text.empty}</p>}
+            {loading && <p className="text-xs text-[var(--admin-muted)]">{text.loading}</p>}
+            {!loading && items.length === 0 && <p className="text-xs text-[var(--admin-muted)]">{text.empty}</p>}
             {items.map((item) => {
               const content = (
-                <div className={`rounded-lg border px-3 py-2 ${item.readAt ? "border-white/10" : "border-white/25 bg-white/5"}`}>
+                <div
+                  className={`rounded-lg border px-3 py-2 ${
+                    item.readAt ? "border-[var(--admin-border)]" : "border-[var(--admin-border)] bg-[var(--admin-elevated-soft)]"
+                  }`}
+                >
                   <div className="flex items-center justify-between gap-3">
-                    <p className="text-sm font-semibold text-zinc-100">{item.title}</p>
+                    <p className="text-sm font-semibold text-[var(--admin-text)]">{item.title}</p>
                     <span className={`h-2.5 w-2.5 rounded-full ${SEVERITY_CLASS[item.severity]}`} />
                   </div>
-                  <p className="mt-1 text-xs text-zinc-400">{item.message}</p>
+                  <p className="mt-1 text-xs text-[var(--admin-muted)]">{item.message}</p>
                   <div className="mt-2 flex items-center justify-between">
-                    <span className="text-[11px] text-zinc-500">
+                    <span className="text-[11px] text-[var(--admin-muted)]">
                       {new Date(item.createdAt).toLocaleString(lang === "fr" ? "fr-FR" : "en-US")}
                     </span>
                     {!item.readAt && (
@@ -150,7 +154,7 @@ export function NotificationCenter({ lang }: NotificationCenterProps) {
                           event.stopPropagation();
                           markOneRead(item.id);
                         }}
-                        className="text-[11px] text-zinc-300 hover:text-zinc-100"
+                        className="text-[11px] text-[var(--admin-muted)] hover:text-[var(--admin-text)]"
                       >
                         ✓
                       </button>

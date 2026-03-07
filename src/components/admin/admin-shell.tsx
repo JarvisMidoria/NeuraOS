@@ -50,7 +50,7 @@ export function AdminShell({ children }: { children: ReactNode }) {
   );
 
   return (
-    <div className="admin-shell min-h-screen overflow-x-hidden text-zinc-100">
+    <div className="admin-shell min-h-screen overflow-x-hidden text-[var(--admin-text)]">
       <div className="fixed right-4 top-[calc(0.75rem+env(safe-area-inset-top))] z-40 hidden lg:flex">
         <div className="flex items-center gap-2">
           <AiAssistantPopover lang={lang} />
@@ -80,7 +80,7 @@ export function AdminShell({ children }: { children: ReactNode }) {
       </header>
 
       <div className="mx-auto grid min-h-[calc(100vh-57px)] w-full max-w-[1400px] grid-cols-1 pt-[calc(57px+env(safe-area-inset-top))] lg:min-h-screen lg:grid-cols-[280px_1fr] lg:pt-0">
-        <aside className="hidden border-r border-white/10 px-5 py-6 lg:block">
+        <aside className="hidden border-r border-[var(--admin-border)] px-5 py-6 lg:block">
           <div className="mb-8 flex items-center justify-center">
             <NeuraLogo href="/admin" />
           </div>
@@ -91,7 +91,7 @@ export function AdminShell({ children }: { children: ReactNode }) {
       </div>
 
       <div
-        className={`fixed inset-0 z-40 bg-black/55 transition ${
+        className={`fixed inset-0 z-40 bg-[var(--admin-overlay)] transition ${
           mobileOpen ? "pointer-events-auto opacity-100" : "pointer-events-none opacity-0"
         } lg:hidden`}
         onClick={() => setMobileOpen(false)}
