@@ -33,6 +33,15 @@ type JobsResponse = {
   pageSize: number;
 };
 
+async function parseApiJson<T>(res: Response): Promise<T> {
+  const contentType = (res.headers.get("content-type") ?? "").toLowerCase();
+  if (!contentType.includes("application/json")) {
+    const raw = await res.text().catch(() => "");
+    throw new Error(raw.includes("<!DOCTYPE") ? "API returned HTML. Redeploy required or endpoint unavailable." : "Invalid API response format.");
+  }
+  return (await res.json()) as T;
+}
+
 export function ImportCenter({ lang }: { lang: "en" | "fr" }) {
   const [jobs, setJobs] = useState<IngestionJob[]>([]);
   const [loading, setLoading] = useState(false);
@@ -75,7 +84,7 @@ export function ImportCenter({ lang }: { lang: "en" | "fr" }) {
     setError(null);
     try {
       const res = await fetch("/api/ingestion/jobs?page=1&pageSize=30", { cache: "no-store" });
-      const body = (await res.json()) as JobsResponse & { error?: string };
+      const body = await parseApiJson<JobsResponse & { error?: string }>(res);
       if (!res.ok) throw new Error(body.error ?? "Failed to load jobs");
       setJobs(body.data ?? []);
     } catch (err) {
@@ -100,7 +109,7 @@ export function ImportCenter({ lang }: { lang: "en" | "fr" }) {
           method: "POST",
           body: form,
         });
-        const body = (await res.json()) as { data?: IngestionJob; error?: string };
+        const body = await parseApiJson<{ data?: IngestionJob; error?: string }>(res);
         if (!res.ok) throw new Error(body.error ?? "Import failed");
 
         setStatus(
@@ -124,7 +133,7 @@ export function ImportCenter({ lang }: { lang: "en" | "fr" }) {
       setStatus(null);
       try {
         const res = await fetch(`/api/ingestion/jobs/${jobId}/apply`, { method: "POST" });
-        const body = (await res.json()) as { error?: string };
+        const body = await parseApiJson<{ error?: string }>(res);
         if (!res.ok) throw new Error(body.error ?? "Apply failed");
         setStatus(lang === "fr" ? `Import applique: ${jobId}` : `Import applied: ${jobId}`);
         await fetchJobs();
