@@ -20,6 +20,10 @@ import { getNextOrderNumber, getNextQuoteNumber } from "@/lib/sales/sequencing";
 import { getCurrentStock } from "@/lib/stock-service";
 
 const DECIMAL_ZERO = new Prisma.Decimal(0);
+const DATE_PATTERNS = [
+  /^(\d{4})[-/](\d{1,2})[-/](\d{1,2})$/, // YYYY-MM-DD or YYYY/MM/DD
+  /^(\d{1,2})[-/](\d{1,2})[-/](\d{4})$/, // DD/MM/YYYY (preferred for slash) or DD-MM-YYYY
+] as const;
 
 type RecordRow = Record<string, string>;
 
@@ -248,6 +252,59 @@ function groupBy<T>(values: T[], keyFn: (value: T) => string) {
 
 function normalizeStatus(value: string): string {
   return normalizeKey(value).toUpperCase();
+}
+
+function normalizeNumericInput(value: string | undefined, fallback = "0") {
+  const raw = (value ?? "").trim();
+  if (!raw) return fallback;
+
+  // Keep digits, sign and separators, then normalize locale formats:
+  // "1 234,56", "1.234,56", "$1,234.56", "1234,56" => "1234.56"
+  let cleaned = raw.replace(/[^\d,.\-+]/g, "");
+  const hasComma = cleaned.includes(",");
+  const hasDot = cleaned.includes(".");
+
+  if (hasComma && hasDot) {
+    // Assume the last separator is decimal; strip the other as thousand separator.
+    const lastComma = cleaned.lastIndexOf(",");
+    const lastDot = cleaned.lastIndexOf(".");
+    if (lastComma > lastDot) {
+      cleaned = cleaned.replace(/\./g, "").replace(/,/g, ".");
+    } else {
+      cleaned = cleaned.replace(/,/g, "");
+    }
+  } else if (hasComma && !hasDot) {
+    cleaned = cleaned.replace(/,/g, ".");
+  } else {
+    cleaned = cleaned.replace(/,/g, "");
+  }
+
+  // Keep a single leading sign and single decimal dot.
+  const sign = cleaned.startsWith("-") ? "-" : cleaned.startsWith("+") ? "+" : "";
+  const unsigned = cleaned.replace(/^[+-]/, "");
+  const [intPart, ...rest] = unsigned.split(".");
+  const normalized = `${sign}${intPart || "0"}${rest.length ? `.${rest.join("")}` : ""}`;
+  return normalized;
+}
+
+function collectNormalizationHints(rows: RecordRow[]) {
+  let commaDecimalCount = 0;
+  let dateCount = 0;
+
+  for (const row of rows.slice(0, 300)) {
+    for (const [key, value] of Object.entries(row)) {
+      const trimmed = value?.trim();
+      if (!trimmed) continue;
+
+      const isNumericField = /(price|amount|total|tax|rate|qty|quantity|stock|threshold)/i.test(key);
+      if (isNumericField && /,\d{1,6}$/.test(trimmed)) commaDecimalCount += 1;
+
+      const isDateField = /(date|valid|expiry|expected)/i.test(key);
+      if (isDateField && /^\d{1,2}[/-]\d{1,2}[/-]\d{4}$/.test(trimmed)) dateCount += 1;
+    }
+  }
+
+  return { commaDecimalCount, dateCount };
 }
 
 async function tryAiDocTypeAndHeaderMap(
@@ -548,6 +605,7 @@ export async function createIngestionPreview(input: {
   }
 
   const headers = rows.length ? Object.keys(rows[0]) : [];
+  const normalizationHints = collectNormalizationHints(rows);
   let docType = inferDocTypeByHeaders(input.fileName, headers);
   let confidence = docType === IngestionDocType.UNKNOWN ? 0.35 : 0.72;
 
@@ -577,6 +635,16 @@ export async function createIngestionPreview(input: {
   }
   if (!rows.length) {
     warnings.push("No structured rows detected. Try CSV/XLSX with header row.");
+  }
+  if (normalizationHints.commaDecimalCount > 0) {
+    warnings.push(
+      `Detected ${normalizationHints.commaDecimalCount} decimal values using comma separator. They will be auto-normalized.`,
+    );
+  }
+  if (normalizationHints.dateCount > 0) {
+    warnings.push(
+      `Detected ${normalizationHints.dateCount} dates in DD/MM/YYYY-like format. They will be auto-normalized.`,
+    );
   }
   if (!actions.length) {
     warnings.push("No actionable records detected from the uploaded content.");
@@ -671,13 +739,49 @@ export async function createIngestionJob(input: {
 }
 
 function parseDecimal(input: string | undefined, fallback = "0") {
-  const safe = (input ?? "").trim() || fallback;
+  const safe = normalizeNumericInput(input, fallback);
   return new Prisma.Decimal(safe);
 }
 
 function parseDateOrNull(input: string | undefined) {
-  if (!input?.trim()) return null;
-  const d = new Date(input);
+  const raw = input?.trim();
+  if (!raw) return null;
+
+  // 1) Explicit, locale-tolerant parsing (supports DD/MM/YYYY safely)
+  for (const pattern of DATE_PATTERNS) {
+    const match = raw.match(pattern);
+    if (!match) continue;
+
+    let year: number;
+    let month: number;
+    let day: number;
+
+    if (pattern === DATE_PATTERNS[0]) {
+      year = Number(match[1]);
+      month = Number(match[2]);
+      day = Number(match[3]);
+    } else {
+      // Slash/hyphen with trailing year is interpreted as DD/MM/YYYY.
+      day = Number(match[1]);
+      month = Number(match[2]);
+      year = Number(match[3]);
+    }
+
+    if (month < 1 || month > 12 || day < 1 || day > 31) return null;
+    const date = new Date(Date.UTC(year, month - 1, day));
+    // Guard against invalid rollovers (e.g. 31/02/2026)
+    if (
+      date.getUTCFullYear() !== year ||
+      date.getUTCMonth() !== month - 1 ||
+      date.getUTCDate() !== day
+    ) {
+      return null;
+    }
+    return date;
+  }
+
+  // 2) Fallback for ISO timestamps and uncommon valid formats
+  const d = new Date(raw);
   if (Number.isNaN(d.getTime())) return null;
   return d;
 }
@@ -842,9 +946,9 @@ export async function applyIngestionJob(input: {
               return {
                 productId,
                 warehouseId,
-                quantity: line.quantity || "1",
-                unitPrice: line.unitPrice || "0",
-                taxes: line.taxRate ? [{ rate: line.taxRate, label: "VAT" }] : [],
+                quantity: normalizeNumericInput(line.quantity, "1"),
+                unitPrice: normalizeNumericInput(line.unitPrice, "0"),
+                taxes: line.taxRate ? [{ rate: normalizeNumericInput(line.taxRate, "0"), label: "VAT" }] : [],
               };
             });
 
@@ -904,9 +1008,9 @@ export async function applyIngestionJob(input: {
               return {
                 productId,
                 warehouseId,
-                quantity: line.quantity || "1",
-                unitPrice: line.unitPrice || "0",
-                taxes: line.taxRate ? [{ rate: line.taxRate, label: "VAT" }] : [],
+                quantity: normalizeNumericInput(line.quantity, "1"),
+                unitPrice: normalizeNumericInput(line.unitPrice, "0"),
+                taxes: line.taxRate ? [{ rate: normalizeNumericInput(line.taxRate, "0"), label: "VAT" }] : [],
               };
             });
 
@@ -995,9 +1099,9 @@ export async function applyIngestionJob(input: {
               const productId = await resolveProductId(tx, input.companyId, line.sku, line.productName);
               return {
                 productId,
-                quantity: line.quantity || "1",
-                unitPrice: line.unitPrice || "0",
-                taxes: line.taxRate ? [{ rate: line.taxRate, label: "VAT" }] : [],
+                quantity: normalizeNumericInput(line.quantity, "1"),
+                unitPrice: normalizeNumericInput(line.unitPrice, "0"),
+                taxes: line.taxRate ? [{ rate: normalizeNumericInput(line.taxRate, "0"), label: "VAT" }] : [],
               };
             });
 
