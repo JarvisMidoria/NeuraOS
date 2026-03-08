@@ -29,10 +29,13 @@ type LlmSettings = {
 };
 
 type MessagingSettings = {
+  companyId: string;
   whatsappEnabled: boolean;
   whatsappPhoneNumber: string;
   whatsappBusinessAccountId: string;
   whatsappAccessTokenHint: string | null;
+  whatsappWebhookUrl: string;
+  whatsappVerifyToken: string;
   telegramEnabled: boolean;
   telegramBotUsername: string;
   telegramBotTokenHint: string | null;
@@ -733,6 +736,18 @@ export function SettingsConsole() {
                 ? `Current WhatsApp token: ${messagingSettings.whatsappAccessTokenHint} (leave blank to keep)`
                 : "WhatsApp access token"
             }
+          />
+          <input
+            className="rounded-md border border-zinc-300 px-3 py-2 text-xs md:col-span-2"
+            value={messagingSettings?.whatsappWebhookUrl ?? ""}
+            readOnly
+            placeholder="WhatsApp webhook URL"
+          />
+          <input
+            className="rounded-md border border-zinc-300 px-3 py-2 text-xs md:col-span-2"
+            value={messagingSettings?.whatsappVerifyToken ?? ""}
+            readOnly
+            placeholder="WhatsApp verify token"
           />
 
           <label className="inline-flex items-center gap-2 text-sm text-zinc-700">

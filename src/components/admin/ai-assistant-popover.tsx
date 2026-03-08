@@ -31,11 +31,13 @@ export function AiAssistantPopover({ lang }: Props) {
   const [open, setOpen] = useState(false);
   const [loadingStatus, setLoadingStatus] = useState(true);
   const [sending, setSending] = useState(false);
+  const [uploading, setUploading] = useState(false);
   const [input, setInput] = useState("");
   const [messages, setMessages] = useState<AssistantMessage[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [mounted, setMounted] = useState(false);
   const scrollRef = useRef<HTMLDivElement | null>(null);
+  const uploadRef = useRef<HTMLInputElement | null>(null);
 
   const text = useMemo(() => {
     const quickPrompts: QuickPrompt[] =
@@ -101,6 +103,8 @@ export function AiAssistantPopover({ lang }: Props) {
           ? "Ex: Fais-moi un plan pour sécuriser le stock sur 14 jours"
           : "Ex: Build me a 14-day stock safety plan",
       send: lang === "fr" ? "Envoyer" : "Send",
+      upload: lang === "fr" ? "Importer un fichier" : "Upload file",
+      importing: lang === "fr" ? "Import..." : "Importing...",
       close: lang === "fr" ? "Fermer" : "Close",
       clear: lang === "fr" ? "Effacer" : "Clear",
       priorities: lang === "fr" ? "Priorités" : "Priorities",
@@ -194,6 +198,85 @@ export function AiAssistantPopover({ lang }: Props) {
     if (!message || sending) return;
     setInput("");
     await askAssistant(message);
+  };
+
+  const uploadToIngestion = async (file: File) => {
+    if (uploading || sending) return;
+    setError(null);
+    setUploading(true);
+
+    const userMsg: AssistantMessage = {
+      id: `u-file-${Date.now()}`,
+      role: "user",
+      content:
+        lang === "fr"
+          ? `Importer fichier: ${file.name}`
+          : `Import file: ${file.name}`,
+    };
+    setMessages((prev) => [...prev, userMsg]);
+
+    try {
+      const form = new FormData();
+      form.set("file", file);
+      form.set("source", "COPILOT_CHAT");
+      form.set("autoApply", "true");
+
+      const response = await fetch("/api/ingestion/jobs", {
+        method: "POST",
+        body: form,
+      });
+      const payload = (await response.json()) as {
+        data?: {
+          id?: string;
+          status?: string;
+          docType?: string;
+          actions?: Array<{ status?: string }>;
+          analysis?: { warnings?: string[] };
+        };
+        error?: string;
+      };
+
+      if (!response.ok) {
+        throw new Error(payload.error ?? "Import failed");
+      }
+
+      const actions = payload.data?.actions ?? [];
+      const applied = actions.filter((a) => a.status === "APPLIED").length;
+      const failed = actions.filter((a) => a.status === "FAILED").length;
+      const warnings = payload.data?.analysis?.warnings ?? [];
+
+      const summary =
+        lang === "fr"
+          ? [
+              `Import IA termine (${payload.data?.docType ?? "UNKNOWN"}).`,
+              `Job: ${payload.data?.id ?? "-"}`,
+              `Statut: ${payload.data?.status ?? "-"}`,
+              `Actions: ${actions.length}, appliquees: ${applied}, erreurs: ${failed}`,
+              warnings.length ? `Avertissements: ${warnings.slice(0, 2).join(" | ")}` : null,
+            ]
+              .filter(Boolean)
+              .join("\n")
+          : [
+              `AI import completed (${payload.data?.docType ?? "UNKNOWN"}).`,
+              `Job: ${payload.data?.id ?? "-"}`,
+              `Status: ${payload.data?.status ?? "-"}`,
+              `Actions: ${actions.length}, applied: ${applied}, failed: ${failed}`,
+              warnings.length ? `Warnings: ${warnings.slice(0, 2).join(" | ")}` : null,
+            ]
+              .filter(Boolean)
+              .join("\n");
+
+      const assistantMsg: AssistantMessage = {
+        id: `a-file-${Date.now()}`,
+        role: "assistant",
+        content: summary,
+      };
+      setMessages((prev) => [...prev, assistantMsg]);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Import failed");
+    } finally {
+      setUploading(false);
+    }
   };
 
   if (loadingStatus || !enabled) return null;
@@ -361,6 +444,26 @@ export function AiAssistantPopover({ lang }: Props) {
           {error ? <p className="mt-2 text-xs text-rose-300">{error}</p> : null}
 
           <div className="mt-2 flex items-center gap-2">
+            <button
+              type="button"
+              onClick={() => uploadRef.current?.click()}
+              disabled={uploading || sending}
+              className="liquid-pill inline-flex h-11 w-11 items-center justify-center text-[var(--admin-text)] disabled:cursor-not-allowed disabled:opacity-40"
+              aria-label={text.upload}
+              title={text.upload}
+            >
+              {uploading ? (
+                <svg aria-hidden viewBox="0 0 24 24" className="h-4 w-4 animate-spin fill-none stroke-current" strokeWidth="1.8">
+                  <path d="M12 3a9 9 0 1 0 9 9" />
+                </svg>
+              ) : (
+                <svg aria-hidden viewBox="0 0 24 24" className="h-4 w-4 fill-none stroke-current" strokeWidth="1.8">
+                  <path d="M12 16V5" />
+                  <path d="M8 9l4-4 4 4" />
+                  <rect x="4" y="16" width="16" height="4" rx="1.5" />
+                </svg>
+              )}
+            </button>
             <input
               className="liquid-input h-11 flex-1 rounded-full px-4 text-sm text-[var(--admin-text)] outline-none placeholder:text-[var(--admin-muted)]"
               placeholder={text.placeholder}
@@ -385,6 +488,18 @@ export function AiAssistantPopover({ lang }: Props) {
                 <path d="M4 12L20 4L14 20L11 13L4 12Z" />
               </svg>
             </button>
+            <input
+              ref={uploadRef}
+              type="file"
+              className="hidden"
+              accept=".csv,.tsv,.xlsx,.xls,.json,.txt,.pdf,image/*"
+              onChange={async (event) => {
+                const file = event.target.files?.[0];
+                if (!file) return;
+                await uploadToIngestion(file);
+                event.target.value = "";
+              }}
+            />
           </div>
         </div>
               </div>

@@ -21,6 +21,7 @@ const NAV_ITEMS = [
   { key: "clients", href: "/admin/clients", en: "Clients", fr: "Clients" },
   { key: "suppliers", href: "/admin/suppliers", en: "Suppliers", fr: "Fournisseurs" },
   { key: "warehouses", href: "/admin/warehouses", en: "Warehouses", fr: "Entrepots" },
+  { key: "imports", href: "/admin/imports", en: "Imports", fr: "Imports" },
   { key: "settings", href: "/admin/settings", en: "Settings", fr: "Parametres" },
   { key: "audit", href: "/admin/audit", en: "Audit Log", fr: "Journal audit" },
 ] as const;

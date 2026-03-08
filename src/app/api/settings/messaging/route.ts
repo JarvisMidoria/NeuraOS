@@ -5,6 +5,7 @@ import { prisma } from "@/lib/prisma";
 import { decryptSecret, encryptSecret, maskSecret } from "@/lib/secrets";
 import { requireAdminSession } from "@/lib/settings-api";
 import { setTelegramWebhook } from "@/lib/telegram";
+import { deriveWhatsAppVerifyToken, getWhatsAppWebhookUrl } from "@/lib/whatsapp";
 
 export async function GET() {
   try {
@@ -24,10 +25,13 @@ export async function GET() {
 
     return NextResponse.json({
       data: {
+        companyId: session.user.companyId,
         whatsappEnabled: config?.whatsappEnabled ?? false,
         whatsappPhoneNumber: config?.whatsappPhoneNumber ?? "",
         whatsappBusinessAccountId: config?.whatsappBusinessAccountId ?? "",
         whatsappAccessTokenHint: config?.whatsappAccessTokenHint ?? null,
+        whatsappWebhookUrl: getWhatsAppWebhookUrl(session.user.companyId),
+        whatsappVerifyToken: deriveWhatsAppVerifyToken(session.user.companyId),
         telegramEnabled: config?.telegramEnabled ?? false,
         telegramBotUsername: config?.telegramBotUsername ?? "",
         telegramBotTokenHint: config?.telegramBotTokenHint ?? null,
@@ -123,10 +127,13 @@ export async function PUT(req: NextRequest) {
 
     return NextResponse.json({
       data: {
+        companyId: session.user.companyId,
         whatsappEnabled: saved.whatsappEnabled,
         whatsappPhoneNumber: saved.whatsappPhoneNumber ?? "",
         whatsappBusinessAccountId: saved.whatsappBusinessAccountId ?? "",
         whatsappAccessTokenHint: saved.whatsappAccessTokenHint ?? null,
+        whatsappWebhookUrl: getWhatsAppWebhookUrl(session.user.companyId),
+        whatsappVerifyToken: deriveWhatsAppVerifyToken(session.user.companyId),
         telegramEnabled: saved.telegramEnabled,
         telegramBotUsername: saved.telegramBotUsername ?? "",
         telegramBotTokenHint: saved.telegramBotTokenHint ?? null,

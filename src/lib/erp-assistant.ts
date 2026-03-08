@@ -64,7 +64,7 @@ export async function runErpAssistant(input: {
   message: string;
   model?: string;
   actorUserId?: string;
-  channel?: "web" | "telegram";
+  channel?: "web" | "telegram" | "whatsapp";
 }) {
   const message = input.message.trim();
   if (!message) {
@@ -284,4 +284,3 @@ export async function runErpAssistant(input: {
       },
   };
 }
-
