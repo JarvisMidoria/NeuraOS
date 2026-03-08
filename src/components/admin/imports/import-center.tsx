@@ -227,26 +227,28 @@ export function ImportCenter({ lang }: { lang: "en" | "fr" }) {
 
           return (
             <article key={job.id} className="liquid-surface rounded-2xl p-4">
-              <div className="grid gap-2 text-xs text-[var(--admin-muted)] sm:grid-cols-5">
-                <div>
+              <div className="grid gap-3 text-xs text-[var(--admin-muted)] sm:grid-cols-[minmax(0,2fr)_minmax(0,1fr)_minmax(0,1fr)_minmax(0,1fr)_minmax(0,1.2fr)]">
+                <div className="min-w-0">
                   <p className="uppercase tracking-wide">{text.file}</p>
-                  <p className="mt-1 text-sm text-[var(--admin-text)]">{job.fileName || "-"}</p>
+                  <p className="mt-1 break-all text-sm text-[var(--admin-text)]" title={job.fileName ?? "-"}>
+                    {job.fileName || "-"}
+                  </p>
                 </div>
-                <div>
+                <div className="min-w-0">
                   <p className="uppercase tracking-wide">{text.type}</p>
-                  <p className="mt-1 text-sm text-[var(--admin-text)]">{job.docType}</p>
+                  <p className="mt-1 break-words text-sm text-[var(--admin-text)]">{job.docType}</p>
                 </div>
-                <div>
+                <div className="min-w-0">
                   <p className="uppercase tracking-wide">{text.source}</p>
-                  <p className="mt-1 text-sm text-[var(--admin-text)]">{job.source}</p>
+                  <p className="mt-1 break-words text-sm text-[var(--admin-text)]">{job.source}</p>
                 </div>
-                <div>
+                <div className="min-w-0">
                   <p className="uppercase tracking-wide">{text.status}</p>
-                  <p className="mt-1 text-sm text-[var(--admin-text)]">{job.status}</p>
+                  <p className="mt-1 break-words text-sm text-[var(--admin-text)]">{job.status}</p>
                 </div>
-                <div>
+                <div className="min-w-0">
                   <p className="uppercase tracking-wide">{text.createdAt}</p>
-                  <p className="mt-1 text-sm text-[var(--admin-text)]">
+                  <p className="mt-1 break-words text-sm text-[var(--admin-text)]">
                     {new Date(job.createdAt).toLocaleString(lang === "fr" ? "fr-FR" : "en-US")}
                   </p>
                 </div>
@@ -258,7 +260,7 @@ export function ImportCenter({ lang }: { lang: "en" | "fr" }) {
               </div>
 
               {warnings.length ? (
-                <div className="mt-3 rounded-xl border border-amber-300/40 bg-amber-400/10 px-3 py-2 text-xs text-amber-200">
+                <div className="warning-panel mt-3 rounded-xl px-3 py-2 text-xs">
                   <p className="font-semibold">{text.warnings}</p>
                   <ul className="mt-1 list-disc pl-4">
                     {warnings.slice(0, 5).map((warning, index) => (
