@@ -59,7 +59,7 @@ export function AdminShell({ children }: { children: ReactNode }) {
           <NotificationCenter lang={lang} />
         </div>
       </div>
-      <header className="admin-topbar fixed inset-x-0 top-0 z-40 border-b px-4 pb-3 pt-[calc(0.75rem+env(safe-area-inset-top))] lg:hidden">
+      <header className="admin-topbar fixed inset-x-0 top-0 z-40 px-4 pb-3 pt-[calc(0.75rem+env(safe-area-inset-top))] lg:hidden">
         <button
           type="button"
           onClick={() => setMobileOpen(true)}
@@ -103,7 +103,7 @@ export function AdminShell({ children }: { children: ReactNode }) {
           mobileOpen ? "translate-x-0" : "-translate-x-full"
         }`}
       >
-        <div className="sticky top-0 z-10 mb-5 flex items-center justify-between border-b border-[var(--admin-border)] bg-[var(--admin-drawer-bg)] pb-3 pt-1 backdrop-blur">
+        <div className="sticky top-0 z-10 mb-5 flex items-center justify-between bg-[var(--admin-drawer-bg)] pb-3 pt-1 backdrop-blur">
           <NeuraLogo href="/admin" />
           <button
             type="button"

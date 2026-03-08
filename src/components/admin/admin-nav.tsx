@@ -76,10 +76,6 @@ export function AdminNav({ onNavigate }: AdminNavProps) {
   const text = useMemo(
     () => ({
       search: lang === "fr" ? "Recherche globale..." : "Global search...",
-      searchHint:
-        lang === "fr"
-          ? "Tape ex: prod, devis, commandes, fournisseurs..."
-          : "Type e.g. prod, quotes, orders, suppliers...",
       noResults: lang === "fr" ? "Aucun resultat" : "No results",
       loading: lang === "fr" ? "Recherche..." : "Searching...",
       english: "EN",
@@ -206,7 +202,6 @@ export function AdminNav({ onNavigate }: AdminNavProps) {
                 ))}
             </div>
           )}
-          {query.trim().length < 1 && <p className="mt-1 text-[11px] text-[var(--admin-muted)]">{text.searchHint}</p>}
         </div>
 
         <div className="flex items-center gap-2">
