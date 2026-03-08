@@ -55,8 +55,8 @@ export function ImportCenter({ lang }: { lang: "en" | "fr" }) {
     () => ({
       subtitle:
         lang === "fr"
-          ? "Importez vos fichiers (CSV, XLSX, PDF, JSON, TXT), previsualisez, puis appliquez avec IA."
-          : "Upload CSV, XLSX, PDF, JSON or TXT, preview parsed actions, then apply with AI.",
+          ? "Importez vos fichiers (CSV, XLSX, PDF, JSON, TXT, PNG, JPG), previsualisez, puis appliquez avec IA."
+          : "Upload CSV, XLSX, PDF, JSON, TXT, PNG or JPG, preview parsed actions, then apply with AI.",
       chooseFile: lang === "fr" ? "Choisir un fichier" : "Choose file",
       dropHint:
         lang === "fr"

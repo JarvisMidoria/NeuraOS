@@ -11,7 +11,7 @@ import {
 import { read, utils } from "xlsx";
 import { ApiError } from "@/lib/api-helpers";
 import { logAudit } from "@/lib/audit";
-import { runCompanyLlm } from "@/lib/llm";
+import { runCompanyLlm, runCompanyLlmWithImage } from "@/lib/llm";
 import { prisma } from "@/lib/prisma";
 import { preparePurchasePayload } from "@/lib/purchases/calculations";
 import { getNextPurchaseOrderNumber } from "@/lib/purchases/sequencing";
@@ -220,6 +220,40 @@ function isTextLikeFile(fileName: string, mimeType: string) {
     mimeType.startsWith("text/") ||
     mimeType.includes("csv")
   );
+}
+
+function isImageFile(fileName: string, mimeType: string) {
+  return (
+    fileName.endsWith(".png") ||
+    fileName.endsWith(".jpg") ||
+    fileName.endsWith(".jpeg") ||
+    fileName.endsWith(".webp") ||
+    mimeType.startsWith("image/")
+  );
+}
+
+async function parseImageTextWithAi(input: {
+  companyId: string;
+  fileBuffer: Buffer;
+  mimeType?: string;
+}) {
+  const mime = input.mimeType?.trim() || "image/png";
+  const base64 = input.fileBuffer.toString("base64");
+  const imageDataUrl = `data:${mime};base64,${base64}`;
+  const prompt = [
+    "You are extracting structured business data from a screenshot/photo of ERP documents.",
+    "Return plain text only, not markdown.",
+    "If you can detect a table, return a CSV-like block with header row and comma-separated values.",
+    "Normalize headers to likely ERP keys when possible (sku, product_name, quantity, unit_price, client_name, supplier_name, order_date, valid_until, tax_rate, warehouse_name, quote_number, order_number, po_number).",
+    "If no table is visible, transcribe all useful lines as key: value pairs.",
+  ].join("\n");
+
+  const result = await runCompanyLlmWithImage({
+    companyId: input.companyId,
+    prompt,
+    imageDataUrl,
+  });
+  return result.content.trim();
 }
 
 function inferDocTypeByHeaders(fileName: string | undefined, headers: string[]): IngestionDocType {
@@ -590,8 +624,27 @@ export async function createIngestionPreview(input: {
       }
     } else if (isJsonFile(fileNameLower, mimeLower) || isTextLikeFile(fileNameLower, mimeLower)) {
       rawText = input.fileBuffer.toString("utf-8");
+    } else if (isImageFile(fileNameLower, mimeLower)) {
+      try {
+        rawText = await parseImageTextWithAi({
+          companyId: input.companyId,
+          fileBuffer: input.fileBuffer,
+          mimeType: input.mimeType,
+        });
+        if (!rawText) {
+          warnings.push("Image text extraction returned empty content.");
+        } else {
+          warnings.push("Image OCR extraction used AI. Please review mapped actions before apply.");
+        }
+      } catch (error) {
+        warnings.push(
+          error instanceof Error
+            ? `Image extraction failed: ${error.message}`
+            : "Image extraction failed.",
+        );
+      }
     } else {
-      warnings.push("Unsupported binary format for auto-import. Please upload CSV/XLSX/PDF/TXT/JSON.");
+      warnings.push("Unsupported binary format for auto-import. Please upload CSV/XLSX/PDF/TXT/JSON/PNG/JPG.");
     }
   }
 
