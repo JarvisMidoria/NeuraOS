@@ -137,6 +137,13 @@ export async function PATCH(req: NextRequest) {
       }
       return handleApiError(new ApiError(400, "Database validation failed", { code: error.code, meta: error.meta }));
     }
+    if (error instanceof Error) {
+      return handleApiError(
+        new ApiError(500, `Company settings save failed: ${error.message}`, {
+          name: error.name,
+        }),
+      );
+    }
     return handleApiError(error);
   }
 }
