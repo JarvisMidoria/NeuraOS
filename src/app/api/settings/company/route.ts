@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
-import { ProductUnitMode } from "@prisma/client";
+import { Prisma, ProductUnitMode } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { handleApiError, ApiError } from "@/lib/api-helpers";
 import { requireAdminSession } from "@/lib/settings-api";
@@ -9,6 +9,17 @@ import { ALLOWED_CURRENCY_CODES } from "@/lib/currency";
 
 const ALLOWED_PRODUCT_UNITS = new Set(["EA", "M", "L", "KG"]);
 const ALLOWED_PRODUCT_UNIT_MODES = new Set(["GLOBAL", "PER_PRODUCT"]);
+
+function normalizeProductUnit(value: unknown): string {
+  const raw = String(value ?? "")
+    .trim()
+    .toUpperCase();
+  if (raw === "EA" || raw === "EACH" || raw === "UNIT" || raw === "UNITS") return "EA";
+  if (raw === "M" || raw === "METER" || raw === "METERS" || raw === "METRE" || raw === "METRES") return "M";
+  if (raw === "L" || raw === "LITER" || raw === "LITERS" || raw === "LITRE" || raw === "LITRES") return "L";
+  if (raw === "KG" || raw === "KGS" || raw === "KILOGRAM" || raw === "KILOGRAMS") return "KG";
+  return raw;
+}
 
 export async function GET() {
   try {
@@ -53,7 +64,7 @@ export async function PATCH(req: NextRequest) {
                 : ProductUnitMode.PER_PRODUCT,
           }
         : {}),
-      ...(body.defaultProductUnit !== undefined ? { defaultProductUnit: String(body.defaultProductUnit).toUpperCase() } : {}),
+      ...(body.defaultProductUnit !== undefined ? { defaultProductUnit: normalizeProductUnit(body.defaultProductUnit) } : {}),
       ...(body.locale !== undefined ? { locale: String(body.locale) } : {}),
       ...(body.timezone !== undefined ? { timezone: String(body.timezone) } : {}),
     };
@@ -105,17 +116,27 @@ export async function PATCH(req: NextRequest) {
       return updated;
     });
 
-    await logAudit({
-      companyId: session.user.companyId,
-      userId: session.user.id,
-      entity: "company",
-      entityId: company.id,
-      action: "COMPANY_SETTINGS_UPDATE",
-      metadata: { updatedKeys: Object.keys(data) },
-    });
+    try {
+      await logAudit({
+        companyId: session.user.companyId,
+        userId: session.user.id,
+        entity: "company",
+        entityId: company.id,
+        action: "COMPANY_SETTINGS_UPDATE",
+        metadata: { updatedKeys: Object.keys(data) },
+      });
+    } catch (auditError) {
+      console.error("audit log failed on company settings update", auditError);
+    }
 
     return NextResponse.json({ data: company });
   } catch (error) {
+    if (error instanceof Prisma.PrismaClientKnownRequestError) {
+      if (error.code === "P2002") {
+        return handleApiError(new ApiError(409, "A unique field value already exists", { code: error.code, meta: error.meta }));
+      }
+      return handleApiError(new ApiError(400, "Database validation failed", { code: error.code, meta: error.meta }));
+    }
     return handleApiError(error);
   }
 }
