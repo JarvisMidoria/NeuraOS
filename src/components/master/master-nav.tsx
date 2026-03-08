@@ -23,7 +23,7 @@ export function MasterNav({ onNavigate }: { onNavigate?: () => void }) {
             onClick={onNavigate}
             className={`liquid-pill w-[212px] max-w-full px-3 py-1.5 text-sm transition ${
               active
-                ? "border-[var(--accent)] bg-[linear-gradient(135deg,rgba(102,167,255,0.36),rgba(84,210,255,0.24))] text-[var(--admin-text)]"
+                ? "liquid-selected"
                 : "text-[var(--admin-muted)] hover:border-[var(--accent)] hover:bg-[color-mix(in_srgb,var(--accent)_12%,var(--admin-soft-bg))] hover:text-[var(--admin-text)]"
             }`}
           >

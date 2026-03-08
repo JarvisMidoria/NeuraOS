@@ -60,7 +60,7 @@ export function WorkspaceModeToggle({ lang }: Props) {
         disabled={saving}
         onClick={() => setWorkspaceMode("LIVE")}
         className={`rounded-full px-2 py-1 transition ${
-          mode === "LIVE" ? "bg-[var(--admin-soft-bg)] text-[var(--admin-text)]" : "text-[var(--admin-muted)]"
+          mode === "LIVE" ? "liquid-selected" : "text-[var(--admin-muted)]"
         }`}
       >
         {saving && mode !== "LIVE" ? text.loading : text.live}
@@ -70,7 +70,7 @@ export function WorkspaceModeToggle({ lang }: Props) {
         disabled={saving}
         onClick={() => setWorkspaceMode("SIMULATION")}
         className={`rounded-full px-2 py-1 transition ${
-          mode === "SIMULATION" ? "bg-[var(--admin-soft-bg)] text-[var(--admin-text)]" : "text-[var(--admin-muted)]"
+          mode === "SIMULATION" ? "liquid-selected" : "text-[var(--admin-muted)]"
         }`}
       >
         {saving && mode !== "SIMULATION" ? text.loading : text.sim}

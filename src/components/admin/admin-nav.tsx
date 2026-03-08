@@ -217,7 +217,7 @@ export function AdminNav({ onNavigate }: AdminNavProps) {
             title={text.english}
             className={`liquid-pill inline-flex h-9 w-9 items-center justify-center p-0 text-[10px] ${
               lang === "en"
-                ? "bg-[var(--admin-soft-bg)] text-[var(--admin-text)]"
+                ? "liquid-selected"
                 : "text-[var(--admin-muted)] hover:text-[var(--admin-text)]"
             }`}
           >
@@ -230,7 +230,7 @@ export function AdminNav({ onNavigate }: AdminNavProps) {
             title={text.french}
             className={`liquid-pill inline-flex h-9 w-9 items-center justify-center p-0 text-[10px] ${
               lang === "fr"
-                ? "bg-[var(--admin-soft-bg)] text-[var(--admin-text)]"
+                ? "liquid-selected"
                 : "text-[var(--admin-muted)] hover:text-[var(--admin-text)]"
             }`}
           >
@@ -243,7 +243,7 @@ export function AdminNav({ onNavigate }: AdminNavProps) {
             title={text.darkLabel}
             className={`liquid-pill inline-flex h-9 w-9 items-center justify-center p-0 text-[10px] ${
               theme === "dark"
-                ? "bg-[var(--admin-soft-bg)] text-[var(--admin-text)]"
+                ? "liquid-selected"
                 : "text-[var(--admin-muted)] hover:text-[var(--admin-text)]"
             }`}
           >
@@ -258,7 +258,7 @@ export function AdminNav({ onNavigate }: AdminNavProps) {
             title={text.lightLabel}
             className={`liquid-pill inline-flex h-9 w-9 items-center justify-center p-0 text-[10px] ${
               theme === "light"
-                ? "bg-[var(--admin-soft-bg)] text-[var(--admin-text)]"
+                ? "liquid-selected"
                 : "text-[var(--admin-muted)] hover:text-[var(--admin-text)]"
             }`}
           >
@@ -287,7 +287,7 @@ export function AdminNav({ onNavigate }: AdminNavProps) {
               onClick={onNavigate}
               className={`liquid-pill w-[212px] max-w-full px-3 py-1.5 text-sm transition ${
                 active
-                  ? "border-[var(--accent)] bg-[linear-gradient(135deg,rgba(102,167,255,0.36),rgba(84,210,255,0.24))] text-[var(--admin-text)]"
+                  ? "liquid-selected"
                   : "text-[var(--admin-muted)] hover:border-[var(--accent)] hover:bg-[color-mix(in_srgb,var(--accent)_12%,var(--admin-soft-bg))] hover:text-[var(--admin-text)]"
               }`}
             >

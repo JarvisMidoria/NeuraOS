@@ -324,6 +324,21 @@ body {
     opacity 180ms ease;
 }
 
+.admin-shell .liquid-selected {
+  border-color: color-mix(in srgb, var(--accent) 82%, white) !important;
+  background:
+    linear-gradient(135deg, rgba(102, 167, 255, 0.46), rgba(84, 210, 255, 0.32)),
+    var(--admin-soft-bg) !important;
+  color: var(--admin-text) !important;
+}
+
+[data-admin-theme="light"] .admin-shell .liquid-selected {
+  border-color: color-mix(in srgb, var(--accent) 62%, #2f4f8f) !important;
+  background:
+    linear-gradient(135deg, rgba(102, 167, 255, 0.28), rgba(84, 210, 255, 0.2)),
+    var(--admin-soft-bg) !important;
+}
+
 .admin-shell .liquid-pill:hover:not(:disabled),
 .admin-shell .liquid-btn-primary:hover:not(:disabled),
 .admin-shell .liquid-btn-ghost:hover:not(:disabled) {
