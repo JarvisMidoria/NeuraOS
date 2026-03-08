@@ -5,11 +5,15 @@ const prisma = new PrismaClient();
 
 async function resetDatabase() {
   await prisma.$transaction([
+    prisma.ingestionAction.deleteMany(),
+    prisma.ingestionJob.deleteMany(),
     prisma.customFieldValue.deleteMany(),
     prisma.rolePermission.deleteMany(),
     prisma.userRole.deleteMany(),
     prisma.notification.deleteMany(),
+    prisma.companyMessagingConfig.deleteMany(),
     prisma.companyLlmConfig.deleteMany(),
+    prisma.companyWorkspace.deleteMany(),
     prisma.tenantSubscription.deleteMany(),
     prisma.billingEvent.deleteMany(),
     prisma.salesOrderTaxLine.deleteMany(),

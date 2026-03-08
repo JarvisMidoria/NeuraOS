@@ -83,6 +83,53 @@ enum LlmAccessMode {
   BYOK
 }
 
+enum IngestionSource {
+  WEB_UPLOAD
+  COPILOT_CHAT
+  TELEGRAM
+  WHATSAPP
+  API
+}
+
+enum IngestionStatus {
+  RECEIVED
+  ANALYZED
+  READY_APPLY
+  APPLIED
+  NEEDS_REVIEW
+  FAILED
+}
+
+enum IngestionDocType {
+  UNKNOWN
+  PRODUCTS
+  CLIENTS
+  SUPPLIERS
+  SALES_QUOTE
+  SALES_ORDER
+  PURCHASE_ORDER
+  GOODS_RECEIPT
+  STOCK_ADJUSTMENT
+}
+
+enum IngestionActionType {
+  UPSERT_PRODUCT
+  UPSERT_CLIENT
+  UPSERT_SUPPLIER
+  CREATE_SALES_QUOTE
+  CREATE_SALES_ORDER
+  CREATE_PURCHASE_ORDER
+  CREATE_GOODS_RECEIPT
+  ADJUST_STOCK
+}
+
+enum IngestionActionStatus {
+  PLANNED
+  APPLIED
+  SKIPPED
+  FAILED
+}
+
 model Company {
   id              String                  @id @default(uuid())
   name            String
@@ -121,6 +168,8 @@ model Company {
   subscription    TenantSubscription?
   liveWorkspace   CompanyWorkspace?       @relation("LiveWorkspace")
   simulationWorkspace CompanyWorkspace?   @relation("SimulationWorkspace")
+  ingestionJobs   IngestionJob[]
+  ingestionActions IngestionAction[]
 
 }
 
@@ -184,6 +233,7 @@ model User {
   lastLoginAt     DateTime?
   roles           UserRole[]
   auditLogs       AuditLog[]
+  ingestionJobs   IngestionJob[] @relation("IngestionCreatedBy")
   quotesCreated   SalesQuote[]
   ordersCreated   SalesOrder[] @relation("OrderCreatedBy")
   ordersApproved  SalesOrder[] @relation("OrderApprovedBy")
@@ -732,4 +782,50 @@ model BillingEvent {
   @@index([status, occurredAt])
   @@index([stripeSubscriptionId])
   @@index([stripeCustomerId])
+}
+
+model IngestionJob {
+  id              String           @id @default(uuid())
+  companyId       String
+  company         Company          @relation(fields: [companyId], references: [id])
+  createdByUserId String?
+  createdByUser   User?            @relation("IngestionCreatedBy", fields: [createdByUserId], references: [id])
+  source          IngestionSource
+  status          IngestionStatus  @default(RECEIVED)
+  docType         IngestionDocType @default(UNKNOWN)
+  fileName        String?
+  mimeType        String?
+  fileSizeBytes   Int?
+  rawText         String?
+  extractedJson   Json?
+  analysis        Json?
+  errorMessage    String?
+  receivedAt      DateTime         @default(now())
+  analyzedAt      DateTime?
+  appliedAt       DateTime?
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+  actions         IngestionAction[]
+
+  @@index([companyId, createdAt])
+  @@index([companyId, status])
+  @@index([companyId, docType, createdAt])
+}
+
+model IngestionAction {
+  id           String                @id @default(uuid())
+  jobId        String
+  job          IngestionJob          @relation(fields: [jobId], references: [id])
+  companyId    String
+  company      Company               @relation(fields: [companyId], references: [id])
+  type         IngestionActionType
+  status       IngestionActionStatus @default(PLANNED)
+  payload      Json
+  result       Json?
+  errorMessage String?
+  createdAt    DateTime              @default(now())
+  updatedAt    DateTime              @updatedAt
+
+  @@index([jobId, status])
+  @@index([companyId, type, createdAt])
 }

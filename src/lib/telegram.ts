@@ -7,6 +7,13 @@ type TelegramApiResponse = {
   description?: string;
 };
 
+type TelegramFile = {
+  file_id: string;
+  file_unique_id: string;
+  file_size?: number;
+  file_path?: string;
+};
+
 function getSigningKey() {
   return (
     process.env.LLM_CONFIG_SECRET?.trim() ||
@@ -91,3 +98,24 @@ export async function sendTelegramMessage(input: { botToken: string; chatId: num
   }
 }
 
+export async function getTelegramFile(input: { botToken: string; fileId: string }) {
+  const response = await fetch(
+    `https://api.telegram.org/bot${input.botToken}/getFile?file_id=${encodeURIComponent(input.fileId)}`,
+  );
+  const payload = (await response.json().catch(() => ({}))) as TelegramApiResponse;
+  if (!response.ok || !payload.ok || !payload.result) {
+    throw new ApiError(400, payload.description ?? "Failed to fetch Telegram file metadata");
+  }
+  return payload.result as TelegramFile;
+}
+
+export async function downloadTelegramFile(input: { botToken: string; filePath: string }) {
+  const response = await fetch(
+    `https://api.telegram.org/file/bot${input.botToken}/${input.filePath.replace(/^\/+/, "")}`,
+  );
+  if (!response.ok) {
+    throw new ApiError(400, "Failed to download Telegram file");
+  }
+  const arrayBuffer = await response.arrayBuffer();
+  return Buffer.from(arrayBuffer);
+}
