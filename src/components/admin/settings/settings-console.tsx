@@ -8,6 +8,8 @@ type CompanySettings = {
   name: string;
   domain: string | null;
   currencyCode: string;
+  backgroundPreset: string;
+  backgroundImageUrl: string | null;
   productUnitMode: "GLOBAL" | "PER_PRODUCT";
   defaultProductUnit: "EA" | "M" | "L" | "KG";
   locale: string;
@@ -116,6 +118,9 @@ export function SettingsConsole({ lang = "en" }: { lang?: "en" | "fr" }) {
     name: "",
     domain: "",
     currencyCode: "USD",
+    backgroundPreset: "FROZEN_INDIGO",
+    backgroundMode: "PRESET" as "PRESET" | "IMAGE",
+    backgroundImageUrl: "",
     productUnitMode: "PER_PRODUCT" as "GLOBAL" | "PER_PRODUCT",
     defaultProductUnit: "EA" as "EA" | "M" | "L" | "KG",
     locale: "en-US",
@@ -206,6 +211,9 @@ export function SettingsConsole({ lang = "en" }: { lang?: "en" | "fr" }) {
         name: companyBody.data.name,
         domain: companyBody.data.domain ?? "",
         currencyCode: companyBody.data.currencyCode,
+        backgroundPreset: companyBody.data.backgroundPreset ?? "FROZEN_INDIGO",
+        backgroundMode: companyBody.data.backgroundImageUrl ? "IMAGE" : "PRESET",
+        backgroundImageUrl: companyBody.data.backgroundImageUrl ?? "",
         productUnitMode: companyBody.data.productUnitMode,
         defaultProductUnit: companyBody.data.defaultProductUnit,
         locale: companyBody.data.locale,
@@ -257,6 +265,22 @@ export function SettingsConsole({ lang = "en" }: { lang?: "en" | "fr" }) {
       unitModeGlobal:
         lang === "fr" ? "Unite unique pour tous les produits" : "Single unit for all products",
       defaultUnit: lang === "fr" ? "Unite par defaut" : "Default unit",
+      background: lang === "fr" ? "Fond" : "Background",
+      backgroundPreset: lang === "fr" ? "Palette frozen" : "Frozen palette",
+      backgroundImage: lang === "fr" ? "Image de fond" : "Background image",
+      modePreset: lang === "fr" ? "Palette" : "Palette",
+      modeImage: lang === "fr" ? "Image" : "Image",
+      uploadImage: lang === "fr" ? "Importer image" : "Upload image",
+      imageHint:
+        lang === "fr"
+          ? "PNG/JPG/WebP, recommande <= 2MB pour de bonnes performances."
+          : "PNG/JPG/WebP, recommended <= 2MB for good performance.",
+      frozenIndigo: lang === "fr" ? "Indigo" : "Indigo",
+      frozenAurora: lang === "fr" ? "Aurora" : "Aurora",
+      frozenOcean: lang === "fr" ? "Ocean" : "Ocean",
+      frozenMint: lang === "fr" ? "Menthe" : "Mint",
+      frozenDusk: lang === "fr" ? "Crepuscule" : "Dusk",
+      frozenRose: lang === "fr" ? "Rose polaire" : "Polar Rose",
       unitEa: lang === "fr" ? "Unites (EA)" : "Units (EA)",
       unitM: lang === "fr" ? "Metres (M)" : "Meters (M)",
       unitL: lang === "fr" ? "Litres (L)" : "Liters (L)",
@@ -272,6 +296,18 @@ export function SettingsConsole({ lang = "en" }: { lang?: "en" | "fr" }) {
     [lang],
   );
 
+  const backgroundPresets = useMemo(
+    () => [
+      { value: "FROZEN_INDIGO", label: tCompany.frozenIndigo },
+      { value: "FROZEN_AURORA", label: tCompany.frozenAurora },
+      { value: "FROZEN_OCEAN", label: tCompany.frozenOcean },
+      { value: "FROZEN_MINT", label: tCompany.frozenMint },
+      { value: "FROZEN_DUSK", label: tCompany.frozenDusk },
+      { value: "FROZEN_ROSE", label: tCompany.frozenRose },
+    ],
+    [tCompany],
+  );
+
   const updateCompany = async (event: React.FormEvent) => {
     event.preventDefault();
     setError(null);
@@ -285,6 +321,7 @@ export function SettingsConsole({ lang = "en" }: { lang?: "en" | "fr" }) {
       await jsonOrThrow<{ data: CompanySettings }>(res);
       setStatus("Company settings updated");
       await fetchAll();
+      window.dispatchEvent(new Event("neura:company-settings-updated"));
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to update company");
     }
@@ -587,6 +624,74 @@ export function SettingsConsole({ lang = "en" }: { lang?: "en" | "fr" }) {
               </option>
             ))}
           </select>
+          <div className="rounded-md border border-zinc-300 px-3 py-2">
+            <p className="mb-2 text-xs text-zinc-500">{tCompany.background}</p>
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() => setCompanyForm((p) => ({ ...p, backgroundMode: "PRESET" }))}
+                className={`rounded-full border px-3 py-1 text-xs ${companyForm.backgroundMode === "PRESET" ? "liquid-selected" : ""}`}
+              >
+                {tCompany.modePreset}
+              </button>
+              <button
+                type="button"
+                onClick={() => setCompanyForm((p) => ({ ...p, backgroundMode: "IMAGE" }))}
+                className={`rounded-full border px-3 py-1 text-xs ${companyForm.backgroundMode === "IMAGE" ? "liquid-selected" : ""}`}
+              >
+                {tCompany.modeImage}
+              </button>
+            </div>
+          </div>
+          <select
+            className="rounded-md border border-zinc-300 px-3 py-2 text-sm"
+            value={companyForm.backgroundPreset}
+            onChange={(e) =>
+              setCompanyForm((p) => ({
+                ...p,
+                backgroundPreset: e.target.value,
+              }))
+            }
+            aria-label={tCompany.backgroundPreset}
+            disabled={companyForm.backgroundMode !== "PRESET"}
+          >
+            {backgroundPresets.map((preset) => (
+              <option key={preset.value} value={preset.value}>
+                {preset.label}
+              </option>
+            ))}
+          </select>
+          <div className="md:col-span-2 rounded-md border border-zinc-300 px-3 py-3">
+            <label className="mb-2 block text-xs text-zinc-500">{tCompany.backgroundImage}</label>
+            <div className="flex flex-col gap-2 sm:flex-row">
+              <input
+                className="w-full rounded-md border border-zinc-300 px-3 py-2 text-sm"
+                value={companyForm.backgroundImageUrl}
+                onChange={(e) => setCompanyForm((p) => ({ ...p, backgroundImageUrl: e.target.value }))}
+                placeholder="https://..."
+                disabled={companyForm.backgroundMode !== "IMAGE"}
+              />
+              <label className="inline-flex cursor-pointer items-center justify-center rounded-md border border-zinc-300 px-3 py-2 text-sm">
+                {tCompany.uploadImage}
+                <input
+                  type="file"
+                  accept="image/png,image/jpeg,image/webp"
+                  className="hidden"
+                  onChange={(event) => {
+                    const file = event.target.files?.[0];
+                    if (!file) return;
+                    const reader = new FileReader();
+                    reader.onload = () => {
+                      const result = String(reader.result ?? "");
+                      setCompanyForm((p) => ({ ...p, backgroundMode: "IMAGE", backgroundImageUrl: result }));
+                    };
+                    reader.readAsDataURL(file);
+                  }}
+                />
+              </label>
+            </div>
+            <p className="mt-2 text-xs text-zinc-500">{tCompany.imageHint}</p>
+          </div>
           <select
             className="rounded-md border border-zinc-300 px-3 py-2 text-sm"
             value={companyForm.productUnitMode}

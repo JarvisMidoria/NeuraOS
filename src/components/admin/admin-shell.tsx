@@ -35,6 +35,47 @@ export function AdminShell({ children }: { children: ReactNode }) {
   }, [mobileOpen]);
 
   useEffect(() => {
+    let canceled = false;
+    const applyBackground = (preset?: string | null, imageUrl?: string | null) => {
+      const root = document.documentElement;
+      const safePreset = String(preset || "FROZEN_INDIGO").toUpperCase();
+      root.setAttribute("data-admin-bg-preset", safePreset);
+      if (imageUrl && imageUrl.trim()) {
+        root.setAttribute("data-admin-bg-source", "IMAGE");
+        root.style.setProperty("--admin-upload-bg-image", `url("${imageUrl}")`);
+      } else {
+        root.setAttribute("data-admin-bg-source", "PRESET");
+        root.style.removeProperty("--admin-upload-bg-image");
+      }
+    };
+
+    const loadBackground = async () => {
+      try {
+        const res = await fetch("/api/settings/company", { cache: "no-store" });
+        if (!res.ok) return;
+        const payload = (await res.json()) as {
+          data?: { backgroundPreset?: string | null; backgroundImageUrl?: string | null };
+        };
+        if (canceled) return;
+        applyBackground(payload.data?.backgroundPreset, payload.data?.backgroundImageUrl);
+      } catch {
+        applyBackground("FROZEN_INDIGO", null);
+      }
+    };
+
+    const onUpdated = () => {
+      void loadBackground();
+    };
+
+    void loadBackground();
+    window.addEventListener("neura:company-settings-updated", onUpdated);
+    return () => {
+      canceled = true;
+      window.removeEventListener("neura:company-settings-updated", onUpdated);
+    };
+  }, []);
+
+  useEffect(() => {
     if (!mobileOpen) return;
     const handleEscape = (event: KeyboardEvent) => {
       if (event.key === "Escape") setMobileOpen(false);

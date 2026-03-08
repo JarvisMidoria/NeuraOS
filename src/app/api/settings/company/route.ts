@@ -9,6 +9,14 @@ import { ALLOWED_CURRENCY_CODES } from "@/lib/currency";
 
 const ALLOWED_PRODUCT_UNITS = new Set(["EA", "M", "L", "KG"]);
 const ALLOWED_PRODUCT_UNIT_MODES = new Set(["GLOBAL", "PER_PRODUCT"]);
+const ALLOWED_BG_PRESETS = new Set([
+  "FROZEN_INDIGO",
+  "FROZEN_AURORA",
+  "FROZEN_OCEAN",
+  "FROZEN_MINT",
+  "FROZEN_DUSK",
+  "FROZEN_ROSE",
+]);
 
 function normalizeProductUnit(value: unknown): string {
   const raw = String(value ?? "")
@@ -31,6 +39,8 @@ export async function GET() {
         name: true,
         domain: true,
         currencyCode: true,
+        backgroundPreset: true,
+        backgroundImageUrl: true,
         productUnitMode: true,
         defaultProductUnit: true,
         locale: true,
@@ -56,6 +66,17 @@ export async function PATCH(req: NextRequest) {
       ...(body.name !== undefined ? { name: String(body.name).trim() } : {}),
       ...(body.domain !== undefined ? { domain: body.domain ? String(body.domain).trim() : null } : {}),
       ...(body.currencyCode !== undefined ? { currencyCode: String(body.currencyCode).toUpperCase() } : {}),
+      ...(body.backgroundPreset !== undefined ? { backgroundPreset: String(body.backgroundPreset).toUpperCase() } : {}),
+      ...(body.backgroundMode !== undefined
+        ? {
+            backgroundImageUrl:
+              String(body.backgroundMode).toUpperCase() === "IMAGE"
+                ? (body.backgroundImageUrl ? String(body.backgroundImageUrl).trim() : null)
+                : null,
+          }
+        : body.backgroundImageUrl !== undefined
+          ? { backgroundImageUrl: body.backgroundImageUrl ? String(body.backgroundImageUrl).trim() : null }
+          : {}),
       ...(body.productUnitMode !== undefined
         ? {
             productUnitMode:
@@ -75,6 +96,9 @@ export async function PATCH(req: NextRequest) {
       !ALLOWED_CURRENCY_CODES.includes(data.currencyCode as (typeof ALLOWED_CURRENCY_CODES)[number])
     ) {
       throw new ApiError(400, "currencyCode must be one of EUR, USD, MAD");
+    }
+    if (typeof data.backgroundPreset === "string" && !ALLOWED_BG_PRESETS.has(data.backgroundPreset)) {
+      throw new ApiError(400, "backgroundPreset must be one of FROZEN_INDIGO, FROZEN_AURORA, FROZEN_OCEAN, FROZEN_MINT, FROZEN_DUSK, FROZEN_ROSE");
     }
     if (
       typeof data.productUnitMode === "string" &&
@@ -98,6 +122,8 @@ export async function PATCH(req: NextRequest) {
           name: true,
           domain: true,
           currencyCode: true,
+          backgroundPreset: true,
+          backgroundImageUrl: true,
           productUnitMode: true,
           defaultProductUnit: true,
           locale: true,

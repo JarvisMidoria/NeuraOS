@@ -1,7 +1,7 @@
 @import "tailwindcss";
 
 :root {
-  --background: #07090d;
+  --background: #0b1222;
   --foreground: #f4f5f8;
   --surface: rgba(17, 19, 24, 0.85);
   --surface-border: rgba(255, 255, 255, 0.12);
@@ -12,7 +12,7 @@
   --liquid-highlight: rgba(255, 255, 255, 0.2);
   --liquid-rim: rgba(255, 255, 255, 0.22);
   --liquid-blur: 14px;
-  --admin-app-bg: #080b12;
+  --admin-app-bg: #0d1730;
   --admin-surface: rgba(11, 18, 34, 0.88);
   --admin-border: rgba(255, 255, 255, 0.18);
   --admin-text: #f3f5fb;
@@ -27,6 +27,17 @@
   --admin-drawer-bg: rgba(7, 14, 28, 0.97);
   --admin-modal-bg: rgba(10, 18, 34, 0.94);
   --admin-modal-border: rgba(255, 255, 255, 0.2);
+  --admin-bg-gradient-dark:
+    radial-gradient(circle at 8% 12%, rgba(111, 138, 255, 0.34) 0%, rgba(111, 138, 255, 0) 40%),
+    radial-gradient(circle at 86% 16%, rgba(82, 204, 255, 0.22) 0%, rgba(82, 204, 255, 0) 44%),
+    radial-gradient(circle at 52% 118%, rgba(255, 186, 126, 0.16) 0%, rgba(255, 186, 126, 0) 46%),
+    linear-gradient(180deg, #111e3c 0%, #0c1730 54%, #091225 100%);
+  --admin-bg-gradient-light:
+    radial-gradient(circle at 8% 12%, rgba(169, 197, 255, 0.36) 0%, rgba(169, 197, 255, 0) 40%),
+    radial-gradient(circle at 84% 18%, rgba(142, 229, 255, 0.3) 0%, rgba(142, 229, 255, 0) 42%),
+    radial-gradient(circle at 58% 112%, rgba(255, 212, 153, 0.2) 0%, rgba(255, 212, 153, 0) 45%),
+    linear-gradient(180deg, #f5f8ff 0%, #ecf2ff 58%, #e8efff 100%);
+  --admin-upload-bg-image: none;
 }
 
 @theme inline {
@@ -38,7 +49,7 @@
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #07090d;
+    --background: #0b1222;
     --foreground: #f4f5f8;
   }
 }
@@ -49,10 +60,18 @@ body {
   font-family: var(--font-sans);
   overflow-x: hidden;
   background-image:
-    radial-gradient(circle at 8% 12%, rgba(87, 119, 255, 0.36) 0%, rgba(87, 119, 255, 0) 38%),
-    radial-gradient(circle at 85% 18%, rgba(67, 194, 255, 0.26) 0%, rgba(67, 194, 255, 0) 42%),
-    radial-gradient(circle at 58% 120%, rgba(255, 171, 97, 0.22) 0%, rgba(255, 171, 97, 0) 45%),
-    linear-gradient(180deg, #0a1326 0%, #071021 50%, #050b18 100%);
+    radial-gradient(circle at 8% 12%, rgba(111, 138, 255, 0.35) 0%, rgba(111, 138, 255, 0) 38%),
+    radial-gradient(circle at 85% 18%, rgba(82, 204, 255, 0.24) 0%, rgba(82, 204, 255, 0) 42%),
+    radial-gradient(circle at 58% 120%, rgba(255, 186, 126, 0.18) 0%, rgba(255, 186, 126, 0) 45%),
+    linear-gradient(180deg, #101d39 0%, #0b162e 52%, #091125 100%);
+}
+
+html[data-admin-bg-preset] body {
+  background-image: var(--admin-bg-gradient-dark);
+}
+
+html[data-admin-theme="light"][data-admin-bg-preset] body {
+  background-image: var(--admin-bg-gradient-light);
 }
 
 html,
@@ -116,15 +135,97 @@ body {
 
 [data-admin-theme="light"] body {
   background: #edf2ff;
-  background-image:
-    radial-gradient(circle at 10% 10%, rgba(157, 187, 255, 0.42) 0%, rgba(157, 187, 255, 0) 38%),
-    radial-gradient(circle at 90% 18%, rgba(128, 230, 255, 0.28) 0%, rgba(128, 230, 255, 0) 42%),
-    radial-gradient(circle at 58% 110%, rgba(255, 208, 143, 0.22) 0%, rgba(255, 208, 143, 0) 42%),
-    linear-gradient(180deg, #f4f7ff 0%, #ecf2ff 55%, #e9eeff 100%);
+  background-image: var(--admin-bg-gradient-light);
 }
 
 .admin-shell {
-  background: var(--admin-app-bg);
+  background-color: var(--admin-app-bg);
+  background-image: var(--admin-bg-gradient-dark);
+  background-attachment: fixed;
+  background-size: cover;
+}
+
+[data-admin-theme="light"] .admin-shell {
+  background-image: var(--admin-bg-gradient-light);
+}
+
+html[data-admin-bg-source="IMAGE"] .admin-shell {
+  background-image:
+    linear-gradient(180deg, rgba(6, 14, 30, 0.52) 0%, rgba(6, 14, 30, 0.6) 100%),
+    var(--admin-upload-bg-image);
+  background-size: cover;
+  background-position: center;
+}
+
+html[data-admin-theme="light"][data-admin-bg-source="IMAGE"] .admin-shell {
+  background-image:
+    linear-gradient(180deg, rgba(242, 247, 255, 0.56) 0%, rgba(242, 247, 255, 0.64) 100%),
+    var(--admin-upload-bg-image);
+}
+
+html[data-admin-bg-preset="FROZEN_AURORA"] {
+  --admin-bg-gradient-dark:
+    radial-gradient(circle at 12% 14%, rgba(122, 166, 255, 0.32) 0%, rgba(122, 166, 255, 0) 40%),
+    radial-gradient(circle at 86% 22%, rgba(91, 228, 255, 0.24) 0%, rgba(91, 228, 255, 0) 43%),
+    radial-gradient(circle at 52% 118%, rgba(156, 255, 221, 0.16) 0%, rgba(156, 255, 221, 0) 45%),
+    linear-gradient(180deg, #13213f 0%, #10223f 46%, #0a1a33 100%);
+  --admin-bg-gradient-light:
+    radial-gradient(circle at 10% 10%, rgba(183, 211, 255, 0.35) 0%, rgba(183, 211, 255, 0) 40%),
+    radial-gradient(circle at 88% 20%, rgba(163, 241, 255, 0.28) 0%, rgba(163, 241, 255, 0) 43%),
+    radial-gradient(circle at 56% 110%, rgba(184, 255, 236, 0.2) 0%, rgba(184, 255, 236, 0) 45%),
+    linear-gradient(180deg, #f6faff 0%, #ecf7ff 56%, #e6f4ff 100%);
+}
+
+html[data-admin-bg-preset="FROZEN_OCEAN"] {
+  --admin-bg-gradient-dark:
+    radial-gradient(circle at 10% 14%, rgba(102, 173, 255, 0.3) 0%, rgba(102, 173, 255, 0) 40%),
+    radial-gradient(circle at 85% 18%, rgba(85, 224, 255, 0.24) 0%, rgba(85, 224, 255, 0) 44%),
+    radial-gradient(circle at 54% 116%, rgba(101, 169, 255, 0.18) 0%, rgba(101, 169, 255, 0) 45%),
+    linear-gradient(180deg, #102747 0%, #0d2340 48%, #0a1a31 100%);
+  --admin-bg-gradient-light:
+    radial-gradient(circle at 10% 10%, rgba(180, 218, 255, 0.33) 0%, rgba(180, 218, 255, 0) 40%),
+    radial-gradient(circle at 88% 20%, rgba(174, 245, 255, 0.29) 0%, rgba(174, 245, 255, 0) 44%),
+    radial-gradient(circle at 56% 110%, rgba(168, 214, 255, 0.2) 0%, rgba(168, 214, 255, 0) 45%),
+    linear-gradient(180deg, #f4f9ff 0%, #eaf4ff 58%, #e5f0ff 100%);
+}
+
+html[data-admin-bg-preset="FROZEN_MINT"] {
+  --admin-bg-gradient-dark:
+    radial-gradient(circle at 9% 14%, rgba(116, 189, 255, 0.26) 0%, rgba(116, 189, 255, 0) 40%),
+    radial-gradient(circle at 86% 17%, rgba(128, 255, 220, 0.2) 0%, rgba(128, 255, 220, 0) 43%),
+    radial-gradient(circle at 54% 116%, rgba(255, 221, 168, 0.14) 0%, rgba(255, 221, 168, 0) 45%),
+    linear-gradient(180deg, #13283a 0%, #102a38 48%, #0d2230 100%);
+  --admin-bg-gradient-light:
+    radial-gradient(circle at 10% 10%, rgba(186, 218, 255, 0.32) 0%, rgba(186, 218, 255, 0) 40%),
+    radial-gradient(circle at 88% 19%, rgba(183, 255, 235, 0.24) 0%, rgba(183, 255, 235, 0) 42%),
+    radial-gradient(circle at 58% 110%, rgba(255, 228, 184, 0.18) 0%, rgba(255, 228, 184, 0) 45%),
+    linear-gradient(180deg, #f7fbff 0%, #edf7f9 56%, #eaf4f6 100%);
+}
+
+html[data-admin-bg-preset="FROZEN_DUSK"] {
+  --admin-bg-gradient-dark:
+    radial-gradient(circle at 12% 14%, rgba(156, 139, 255, 0.24) 0%, rgba(156, 139, 255, 0) 40%),
+    radial-gradient(circle at 84% 18%, rgba(120, 177, 255, 0.22) 0%, rgba(120, 177, 255, 0) 42%),
+    radial-gradient(circle at 56% 116%, rgba(255, 167, 200, 0.14) 0%, rgba(255, 167, 200, 0) 45%),
+    linear-gradient(180deg, #1b1f45 0%, #191f40 48%, #131735 100%);
+  --admin-bg-gradient-light:
+    radial-gradient(circle at 10% 10%, rgba(216, 205, 255, 0.3) 0%, rgba(216, 205, 255, 0) 40%),
+    radial-gradient(circle at 88% 18%, rgba(189, 221, 255, 0.26) 0%, rgba(189, 221, 255, 0) 42%),
+    radial-gradient(circle at 56% 110%, rgba(255, 204, 225, 0.18) 0%, rgba(255, 204, 225, 0) 44%),
+    linear-gradient(180deg, #f8f7ff 0%, #f1f2ff 56%, #eceeff 100%);
+}
+
+html[data-admin-bg-preset="FROZEN_ROSE"] {
+  --admin-bg-gradient-dark:
+    radial-gradient(circle at 12% 15%, rgba(153, 171, 255, 0.24) 0%, rgba(153, 171, 255, 0) 40%),
+    radial-gradient(circle at 86% 18%, rgba(255, 170, 204, 0.2) 0%, rgba(255, 170, 204, 0) 43%),
+    radial-gradient(circle at 52% 118%, rgba(255, 206, 159, 0.12) 0%, rgba(255, 206, 159, 0) 45%),
+    linear-gradient(180deg, #2a2140 0%, #241d3b 50%, #1d1830 100%);
+  --admin-bg-gradient-light:
+    radial-gradient(circle at 10% 10%, rgba(205, 215, 255, 0.3) 0%, rgba(205, 215, 255, 0) 40%),
+    radial-gradient(circle at 88% 20%, rgba(255, 211, 228, 0.24) 0%, rgba(255, 211, 228, 0) 43%),
+    radial-gradient(circle at 56% 110%, rgba(255, 226, 189, 0.18) 0%, rgba(255, 226, 189, 0) 45%),
+    linear-gradient(180deg, #fdf8ff 0%, #f7f0fa 56%, #f2ebf7 100%);
 }
 
 .admin-shell .admin-topbar,

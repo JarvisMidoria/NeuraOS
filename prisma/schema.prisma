@@ -141,6 +141,8 @@ model Company {
   domain          String?
   ownerUserId     String?                 @unique
   currencyCode    String                  @default("USD")
+  backgroundPreset String                 @default("FROZEN_INDIGO")
+  backgroundImageUrl String?
   productUnitMode ProductUnitMode         @default(PER_PRODUCT)
   defaultProductUnit String               @default("EA")
   locale          String                  @default("en-US")
