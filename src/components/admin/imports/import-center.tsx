@@ -46,6 +46,7 @@ export function ImportCenter({ lang }: { lang: "en" | "fr" }) {
   const [jobs, setJobs] = useState<IngestionJob[]>([]);
   const [loading, setLoading] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const [pendingFile, setPendingFile] = useState<File | null>(null);
   const [autoApply, setAutoApply] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [status, setStatus] = useState<string | null>(null);
@@ -64,9 +65,12 @@ export function ImportCenter({ lang }: { lang: "en" | "fr" }) {
           : "Drag and drop a file here or click to browse",
       autoApply: lang === "fr" ? "Appliquer automatiquement si pret" : "Auto-apply when ready",
       refresh: lang === "fr" ? "Actualiser" : "Refresh",
+      confirmImport: lang === "fr" ? "Confirmer l'import" : "Confirm import",
+      clearSelection: lang === "fr" ? "Annuler selection" : "Clear selection",
       apply: lang === "fr" ? "Appliquer" : "Apply",
       loading: lang === "fr" ? "Chargement..." : "Loading...",
       noData: lang === "fr" ? "Aucun import" : "No imports yet",
+      selectedFile: lang === "fr" ? "Fichier selectionne" : "Selected file",
       actions: lang === "fr" ? "Actions" : "Actions",
       warnings: lang === "fr" ? "Avertissements" : "Warnings",
       confidence: lang === "fr" ? "Confiance" : "Confidence",
@@ -149,17 +153,27 @@ export function ImportCenter({ lang }: { lang: "en" | "fr" }) {
       event.preventDefault();
       const file = event.dataTransfer.files?.[0];
       if (!file) return;
-      await uploadFile(file);
+      setPendingFile(file);
+      setStatus(null);
+      setError(null);
     },
-    [uploadFile],
+    [],
   );
 
-  const onFileSelect = useCallback(async (event: ChangeEvent<HTMLInputElement>) => {
+  const onFileSelect = useCallback((event: ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
-    await uploadFile(file);
+    setPendingFile(file);
+    setStatus(null);
+    setError(null);
     event.target.value = "";
-  }, [uploadFile]);
+  }, []);
+
+  const onConfirmImport = useCallback(async () => {
+    if (!pendingFile) return;
+    await uploadFile(pendingFile);
+    setPendingFile(null);
+  }, [pendingFile, uploadFile]);
 
   useEffect(() => {
     void fetchJobs();
@@ -194,6 +208,30 @@ export function ImportCenter({ lang }: { lang: "en" | "fr" }) {
             {text.refresh}
           </button>
         </div>
+
+        {pendingFile ? (
+          <div className="mt-3 flex flex-wrap items-center gap-2 text-xs text-[var(--admin-muted)]">
+            <span className="liquid-surface rounded-full px-3 py-1 text-[var(--admin-text)]">
+              {text.selectedFile}: {pendingFile.name} ({Math.max(1, Math.round(pendingFile.size / 1024))} KB)
+            </span>
+            <button
+              type="button"
+              className="liquid-btn-primary px-3 py-1.5 text-xs"
+              onClick={onConfirmImport}
+              disabled={uploading}
+            >
+              {uploading ? text.loading : text.confirmImport}
+            </button>
+            <button
+              type="button"
+              className="liquid-pill px-3 py-1.5 text-xs"
+              onClick={() => setPendingFile(null)}
+              disabled={uploading}
+            >
+              {text.clearSelection}
+            </button>
+          </div>
+        ) : null}
 
         <label className="mt-3 inline-flex items-center gap-2 text-xs text-[var(--admin-muted)]">
           <input
