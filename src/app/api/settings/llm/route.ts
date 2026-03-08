@@ -27,8 +27,8 @@ function hasSharedProviderConfigured() {
 }
 
 function sharedMonthlyTokenLimit() {
-  const raw = Number(process.env.SHARED_LLM_MONTHLY_TOKEN_LIMIT ?? "200000");
-  if (!Number.isFinite(raw) || raw <= 0) return 200000;
+  const raw = Number(process.env.SHARED_LLM_MONTHLY_TOKEN_LIMIT ?? "10000000");
+  if (!Number.isFinite(raw) || raw <= 0) return 10000000;
   return Math.floor(raw);
 }
 

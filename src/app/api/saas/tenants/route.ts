@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import bcrypt from "bcryptjs";
-import { Prisma, SubscriptionPlan, SubscriptionStatus, UserKind } from "@prisma/client";
+import { LlmAccessMode, LlmProvider, Prisma, SubscriptionPlan, SubscriptionStatus, UserKind } from "@prisma/client";
 import { handleApiError, ApiError } from "@/lib/api-helpers";
 import { prisma } from "@/lib/prisma";
 import { requireSuperAdminSession } from "@/lib/saas-admin";
@@ -21,6 +21,16 @@ function parsePlan(value: unknown): SubscriptionPlan {
 function parseStatus(value: unknown): SubscriptionStatus {
   if (value === "ACTIVE" || value === "PAST_DUE" || value === "CANCELED") return value;
   return "TRIALING";
+}
+
+function hasSharedProviderConfigured() {
+  return Boolean(process.env.SHARED_LLM_API_KEY?.trim());
+}
+
+function sharedProvider(): LlmProvider {
+  return (process.env.SHARED_LLM_PROVIDER ?? "OPENAI").trim().toUpperCase() === "OPENAI_COMPATIBLE"
+    ? "OPENAI_COMPATIBLE"
+    : "OPENAI";
 }
 
 export async function GET(req: NextRequest) {
@@ -183,6 +193,22 @@ export async function POST(req: NextRequest) {
         },
       });
 
+      // Auto-bootstrap shared AI config for every new tenant.
+      // It is enabled immediately when platform shared provider is configured.
+      await tx.companyLlmConfig.create({
+        data: {
+          companyId: company.id,
+          accessMode: LlmAccessMode.SHARED,
+          provider: sharedProvider(),
+          defaultModel: process.env.SHARED_LLM_MODEL?.trim() || "gpt-4o-mini",
+          baseUrl:
+            sharedProvider() === "OPENAI_COMPATIBLE"
+              ? process.env.SHARED_LLM_BASE_URL?.trim() || null
+              : null,
+          isEnabled: hasSharedProviderConfigured(),
+        },
+      });
+
       const subscription = await tx.tenantSubscription.create({
         data: {
           companyId: company.id,
@@ -205,6 +231,8 @@ export async function POST(req: NextRequest) {
             bySuperAdminId: session.user.id,
             subscriptionPlan: plan,
             subscriptionStatus: status,
+            aiAutoBootstrapped: true,
+            aiAutoEnabled: hasSharedProviderConfigured(),
           },
         },
       });
