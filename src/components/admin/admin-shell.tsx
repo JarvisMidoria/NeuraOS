@@ -2,6 +2,7 @@
 
 import type { ReactNode } from "react";
 import { useEffect, useMemo, useState } from "react";
+import { signOut } from "next-auth/react";
 import { NeuraLogo } from "@/components/brand/neura-logo";
 import { AdminNav } from "@/components/admin/admin-nav";
 import { NotificationCenter } from "@/components/admin/notification-center";
@@ -46,6 +47,7 @@ export function AdminShell({ children }: { children: ReactNode }) {
     () => ({
       menu: lang === "fr" ? "Menu" : "Menu",
       close: lang === "fr" ? "Fermer" : "Close",
+      logout: lang === "fr" ? "Deconnexion" : "Log out",
     }),
     [lang],
   );
@@ -55,6 +57,13 @@ export function AdminShell({ children }: { children: ReactNode }) {
       <div className="fixed right-4 top-[calc(0.75rem+env(safe-area-inset-top))] z-40 hidden lg:flex">
         <div className="flex items-center gap-2">
           <WorkspaceModeToggle lang={lang} />
+          <button
+            type="button"
+            className="liquid-pill px-3 py-1.5 text-xs text-[var(--admin-text)]"
+            onClick={() => void signOut({ callbackUrl: "/login" })}
+          >
+            {text.logout}
+          </button>
           <AiAssistantPopover lang={lang} />
           <NotificationCenter lang={lang} />
         </div>
@@ -117,6 +126,15 @@ export function AdminShell({ children }: { children: ReactNode }) {
         </div>
         <div className="mb-3">
           <WorkspaceModeToggle lang={lang} />
+        </div>
+        <div className="mb-3">
+          <button
+            type="button"
+            className="liquid-pill w-full px-3 py-2 text-sm text-[var(--admin-text)]"
+            onClick={() => void signOut({ callbackUrl: "/login" })}
+          >
+            {text.logout}
+          </button>
         </div>
         <AdminNav onNavigate={() => setMobileOpen(false)} />
       </aside>
