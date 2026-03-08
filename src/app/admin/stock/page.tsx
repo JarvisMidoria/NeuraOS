@@ -22,7 +22,7 @@ export default async function StockPage() {
     }),
     prisma.product.findMany({
       where: { companyId, isActive: true },
-      select: { id: true, sku: true, name: true, lowStockThreshold: true },
+      select: { id: true, sku: true, name: true, unitOfMeasure: true, lowStockThreshold: true },
       orderBy: { name: "asc" },
     }),
     getLowStockProducts(companyId),
@@ -39,6 +39,7 @@ export default async function StockPage() {
         productId: product.id,
         sku: product.sku,
         name: product.name,
+        unitOfMeasure: product.unitOfMeasure,
         lowStockThreshold: product.lowStockThreshold?.toString() ?? null,
         totalQuantity: total.toString(),
         warehouses: warehouseBreakdown.map((entry) => ({

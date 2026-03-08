@@ -11,6 +11,7 @@ type ProductStockSnapshot = {
   productId: string;
   sku: string;
   name: string;
+  unitOfMeasure: string;
   lowStockThreshold?: string | null;
   totalQuantity: string;
   warehouses: Array<{
@@ -24,6 +25,7 @@ type LowStockItem = {
   id: string;
   sku: string;
   name: string;
+  unitOfMeasure: string;
   currentStock: string;
   lowStockThreshold: string;
 };
@@ -115,6 +117,23 @@ export function StockConsole({ warehouses, products, lowStock, lang }: StockCons
     warehouses: lang === "fr" ? "Entrepots" : "Warehouses",
     noMovements: lang === "fr" ? "Aucun mouvement" : "No movements yet",
   };
+
+  const formatUnit = (unit?: string) => {
+    const normalized = String(unit ?? "").toUpperCase();
+    switch (normalized) {
+      case "M":
+        return lang === "fr" ? "m" : "m";
+      case "KG":
+        return "kg";
+      case "L":
+        return "L";
+      case "EA":
+      default:
+        return lang === "fr" ? "unites" : "units";
+    }
+  };
+
+  const withUnit = (value: string, unit?: string) => `${value} ${formatUnit(unit)}`;
 
   const submitHandler = async (
     event: React.FormEvent<HTMLFormElement>,
@@ -435,10 +454,10 @@ export function StockConsole({ warehouses, products, lowStock, lang }: StockCons
                 <p className="mt-1 text-base font-semibold text-zinc-900">{item.name}</p>
                 <div className="mt-2 flex flex-wrap gap-2 text-xs">
                   <span className="rounded-full bg-zinc-100 px-2 py-1">
-                    {t.stock}: <span className="font-semibold text-red-600">{item.currentStock}</span>
+                    {t.stock}: <span className="font-semibold text-red-600">{withUnit(item.currentStock, item.unitOfMeasure)}</span>
                   </span>
                   <span className="rounded-full bg-zinc-100 px-2 py-1">
-                    {t.threshold}: {item.lowStockThreshold}
+                    {t.threshold}: {withUnit(item.lowStockThreshold, item.unitOfMeasure)}
                   </span>
                 </div>
               </div>
@@ -472,19 +491,19 @@ export function StockConsole({ warehouses, products, lowStock, lang }: StockCons
                   <p className="mt-1 text-base font-semibold text-zinc-900">{item.name}</p>
                   {item.lowStockThreshold ? (
                     <p className="text-xs text-zinc-500">
-                      {t.threshold}: {item.lowStockThreshold}
+                      {t.threshold}: {withUnit(item.lowStockThreshold, item.unitOfMeasure)}
                     </p>
                   ) : null}
                 </div>
                 <span className="rounded-full bg-zinc-100 px-2 py-1 text-xs font-semibold">
-                  {t.total}: {item.totalQuantity}
+                  {t.total}: {withUnit(item.totalQuantity, item.unitOfMeasure)}
                 </span>
               </div>
               <div className="mt-3 flex flex-wrap gap-2 text-xs text-zinc-600">
                 {item.warehouses.length ? (
                   item.warehouses.map((warehouse) => (
                     <span key={warehouse.warehouseId} className="rounded-full bg-zinc-100 px-2 py-0.5">
-                      {warehouse.warehouseName}: {warehouse.quantity}
+                      {warehouse.warehouseName}: {withUnit(warehouse.quantity, item.unitOfMeasure)}
                     </span>
                   ))
                 ) : (
