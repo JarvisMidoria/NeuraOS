@@ -74,20 +74,31 @@ export async function PATCH(req: NextRequest) {
       throw new ApiError(400, "defaultProductUnit must be one of EA, M, L, KG");
     }
 
-    const company = await prisma.company.update({
-      where: { id: session.user.companyId },
-      data,
-      select: {
-        id: true,
-        name: true,
-        domain: true,
-        currencyCode: true,
-        productUnitMode: true,
-        defaultProductUnit: true,
-        locale: true,
-        timezone: true,
-        updatedAt: true,
-      },
+    const company = await prisma.$transaction(async (tx) => {
+      const updated = await tx.company.update({
+        where: { id: session.user.companyId },
+        data,
+        select: {
+          id: true,
+          name: true,
+          domain: true,
+          currencyCode: true,
+          productUnitMode: true,
+          defaultProductUnit: true,
+          locale: true,
+          timezone: true,
+          updatedAt: true,
+        },
+      });
+
+      if (updated.productUnitMode === ProductUnitMode.GLOBAL) {
+        await tx.product.updateMany({
+          where: { companyId: session.user.companyId },
+          data: { unitOfMeasure: updated.defaultProductUnit },
+        });
+      }
+
+      return updated;
     });
 
     await logAudit({
