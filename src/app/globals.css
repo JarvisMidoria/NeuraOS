@@ -346,6 +346,31 @@ body {
   border-color: color-mix(in srgb, var(--accent) 55%, var(--admin-border));
 }
 
+.admin-shell .liquid-pill:hover:not(:disabled),
+.admin-shell .liquid-btn-ghost:hover:not(:disabled) {
+  background:
+    linear-gradient(135deg, rgba(102, 167, 255, 0.4), rgba(84, 210, 255, 0.24)),
+    var(--admin-soft-bg) !important;
+  color: var(--admin-text) !important;
+}
+
+.admin-shell button:hover:not(:disabled) {
+  border-color: color-mix(in srgb, var(--accent) 50%, var(--admin-border));
+}
+
+.admin-shell button.text-red-600:hover:not(:disabled),
+.admin-shell button.text-rose-600:hover:not(:disabled),
+.admin-shell button.border-red-200:hover:not(:disabled),
+.admin-shell button.border-rose-200:hover:not(:disabled),
+.admin-shell .text-red-600:hover,
+.admin-shell .text-rose-600:hover {
+  border-color: color-mix(in srgb, #ff5f77 65%, #ffffff 10%) !important;
+  background:
+    linear-gradient(135deg, rgba(255, 96, 128, 0.32), rgba(255, 63, 98, 0.2)),
+    color-mix(in srgb, #220915 86%, transparent) !important;
+  color: #ffd5de !important;
+}
+
 .admin-shell .border-white\/10,
 .admin-shell .border-white\/15,
 .admin-shell .border-white\/25 {
