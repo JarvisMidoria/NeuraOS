@@ -1,8 +1,9 @@
 import { NextResponse } from "next/server";
 import { handleApiError } from "@/lib/api-helpers";
-import { serializeIngestionJob } from "@/lib/ingestion";
 import { prisma } from "@/lib/prisma";
 import { requireAdminSession } from "@/lib/settings-api";
+
+export const runtime = "nodejs";
 
 export async function GET(_req: Request, context: { params: Promise<{ jobId: string }> }) {
   try {
@@ -25,7 +26,7 @@ export async function GET(_req: Request, context: { params: Promise<{ jobId: str
       return NextResponse.json({ error: "Ingestion job not found" }, { status: 404 });
     }
 
-    return NextResponse.json({ data: serializeIngestionJob(job) });
+    return NextResponse.json({ data: { ...job, actions: job.actions ?? [] } });
   } catch (error) {
     return handleApiError(error);
   }

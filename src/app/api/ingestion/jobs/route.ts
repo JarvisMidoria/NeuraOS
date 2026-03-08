@@ -2,9 +2,30 @@ import type { NextRequest } from "next/server";
 import { IngestionDocType, IngestionSource, IngestionStatus, Prisma } from "@prisma/client";
 import { NextResponse } from "next/server";
 import { handleApiError } from "@/lib/api-helpers";
-import { applyIngestionJob, createIngestionJob, serializeIngestionJob } from "@/lib/ingestion";
 import { prisma } from "@/lib/prisma";
 import { requireAdminSession } from "@/lib/settings-api";
+
+export const runtime = "nodejs";
+
+function serializeIngestionJob(
+  job: Awaited<ReturnType<typeof prisma.ingestionJob.findFirst>> & {
+    actions?: Array<{
+      id: string;
+      type: string;
+      status: string;
+      payload: Prisma.JsonValue;
+      result: Prisma.JsonValue | null;
+      errorMessage: string | null;
+      createdAt: Date;
+      updatedAt: Date;
+    }>;
+  },
+) {
+  return {
+    ...job,
+    actions: job.actions ?? [],
+  };
+}
 
 function toInt(input: string | null, fallback: number, min: number, max: number) {
   const value = Number(input ?? fallback);
@@ -117,6 +138,7 @@ export async function GET(req: NextRequest) {
 
 export async function POST(req: NextRequest) {
   try {
+    const { applyIngestionJob, createIngestionJob } = await import("@/lib/ingestion");
     const session = await requireAdminSession();
     let source: IngestionSource = IngestionSource.WEB_UPLOAD;
     let fileName: string | undefined;
