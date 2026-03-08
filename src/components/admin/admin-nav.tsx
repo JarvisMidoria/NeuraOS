@@ -4,6 +4,8 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 
+const SIDEBAR_TRACK_WIDTH = "w-[196px]";
+
 const NAV_ITEMS = [
   { key: "overview", href: "/admin", en: "Overview", fr: "Apercu" },
   { key: "analytics", href: "/admin/analytics", en: "Analytics", fr: "Analytics" },
@@ -56,6 +58,7 @@ function isActive(pathname: string, href: string) {
 
 export function AdminNav({ onNavigate }: AdminNavProps) {
   const pathname = usePathname();
+  const [companyName, setCompanyName] = useState("Tenant");
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<SearchResult[]>([]);
   const [loading, setLoading] = useState(false);
@@ -100,6 +103,21 @@ export function AdminNav({ onNavigate }: AdminNavProps) {
   useEffect(() => {
     document.documentElement.setAttribute("data-admin-theme", theme);
   }, [theme]);
+
+  useEffect(() => {
+    const loadCompany = async () => {
+      try {
+        const response = await fetch("/api/settings/company", { cache: "no-store" });
+        if (!response.ok) return;
+        const payload = (await response.json()) as { data?: { name?: string } };
+        const resolvedName = String(payload.data?.name ?? "").trim();
+        if (resolvedName) setCompanyName(resolvedName);
+      } catch {
+        // noop
+      }
+    };
+    loadCompany();
+  }, []);
 
   useEffect(() => {
     const loadWorkspace = async () => {
@@ -171,8 +189,14 @@ export function AdminNav({ onNavigate }: AdminNavProps) {
 
   return (
     <>
-      <div className="mb-4 space-y-3">
-        <div className="relative">
+      <div className="sticky top-0 z-20 mb-4 bg-transparent pb-2">
+        <div className="mb-4 text-center">
+          <p className="break-words text-3xl font-semibold tracking-tight text-[var(--admin-text)]">{companyName}</p>
+          <p className="mt-1 text-[11px] text-[var(--admin-muted)]">Powered by NeuraOS</p>
+        </div>
+
+        <div className={`mx-auto space-y-3 ${SIDEBAR_TRACK_WIDTH}`}>
+          <div className="relative">
           <input
             value={query}
             onChange={(event) => setQuery(event.target.value)}
@@ -203,9 +227,9 @@ export function AdminNav({ onNavigate }: AdminNavProps) {
                 ))}
             </div>
           )}
-        </div>
+          </div>
 
-        <div className="flex items-center gap-2">
+          <div className="flex items-center justify-between">
           <button
             type="button"
             onClick={() => setLanguage("en")}
@@ -270,10 +294,11 @@ export function AdminNav({ onNavigate }: AdminNavProps) {
               <path d="m4.9 19.1 1.8-1.8" />
             </svg>
           </button>
+          </div>
         </div>
       </div>
 
-      <nav className="flex flex-col items-start gap-1 pb-4">
+      <nav className="mx-auto flex flex-col items-center gap-1 pb-4">
         {navItems.map((item) => {
           const active = isActive(pathname, item.href);
           return (
@@ -281,7 +306,7 @@ export function AdminNav({ onNavigate }: AdminNavProps) {
               key={item.href}
               href={item.href}
               onClick={onNavigate}
-              className={`liquid-pill w-[212px] max-w-full px-3 py-1.5 text-sm transition ${
+              className={`liquid-pill ${SIDEBAR_TRACK_WIDTH} max-w-full px-3 py-1.5 text-sm transition ${
                 active
                   ? "liquid-selected"
                   : "text-[var(--admin-muted)] hover:border-[var(--accent)] hover:bg-[color-mix(in_srgb,var(--accent)_12%,var(--admin-soft-bg))] hover:text-[var(--admin-text)]"

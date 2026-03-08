@@ -132,10 +132,7 @@ export function AdminShell({ children }: { children: ReactNode }) {
       </header>
 
       <div className="mx-auto grid min-h-[calc(100vh-57px)] w-full max-w-[1400px] grid-cols-1 pt-[calc(57px+env(safe-area-inset-top))] lg:min-h-screen lg:grid-cols-[240px_1fr] lg:pt-0">
-        <aside className="hidden border-r border-[var(--admin-border)] px-5 py-6 lg:block">
-          <div className="mb-8 flex items-center justify-center">
-            <NeuraLogo href="/admin" />
-          </div>
+        <aside className="sticky top-0 hidden h-screen self-start overflow-y-auto border-r border-[var(--admin-border)] px-5 py-6 lg:block">
           <AdminNav />
         </aside>
 
@@ -153,8 +150,7 @@ export function AdminShell({ children }: { children: ReactNode }) {
           mobileOpen ? "translate-x-0" : "-translate-x-full"
         }`}
       >
-        <div className="sticky top-0 z-10 mb-5 flex items-center justify-between bg-[var(--admin-drawer-bg)] pb-3 pt-1 backdrop-blur">
-          <NeuraLogo href="/admin" />
+        <div className="sticky top-0 z-10 mb-3 flex items-center justify-end bg-transparent pb-2 pt-1">
           <button
             type="button"
             onClick={() => setMobileOpen(false)}
@@ -165,13 +161,11 @@ export function AdminShell({ children }: { children: ReactNode }) {
             ×
           </button>
         </div>
-        <div className="mb-3">
+        <div className="mb-3 flex items-center gap-2">
           <WorkspaceModeToggle lang={lang} />
-        </div>
-        <div className="mb-3">
           <button
             type="button"
-            className="liquid-pill w-full px-3 py-2 text-sm text-[var(--admin-text)]"
+            className="inline-flex items-center gap-1 rounded-full border border-[var(--admin-border)] bg-[var(--admin-elevated-soft)] px-3 py-1 text-[10px] text-[var(--admin-text)]"
             onClick={() => void signOut({ callbackUrl: "/login" })}
           >
             {text.logout}
