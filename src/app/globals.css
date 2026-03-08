@@ -23,8 +23,8 @@
   --admin-elevated: rgba(10, 18, 34, 0.96);
   --admin-elevated-soft: rgba(20, 30, 54, 0.7);
   --admin-shadow: none;
-  --admin-topbar-bg: rgba(7, 14, 28, 0.95);
-  --admin-drawer-bg: rgba(7, 14, 28, 0.97);
+  --admin-topbar-bg: rgba(10, 18, 36, 0.42);
+  --admin-drawer-bg: rgba(10, 18, 36, 0.5);
   --admin-modal-bg: rgba(10, 18, 34, 0.94);
   --admin-modal-border: rgba(255, 255, 255, 0.2);
   --admin-bg-gradient-dark:
@@ -116,8 +116,8 @@ body {
   --admin-elevated: rgba(255, 255, 255, 0.9);
   --admin-elevated-soft: rgba(245, 248, 255, 0.92);
   --admin-shadow: none;
-  --admin-topbar-bg: rgba(242, 247, 255, 0.82);
-  --admin-drawer-bg: rgba(244, 248, 255, 0.9);
+  --admin-topbar-bg: rgba(245, 249, 255, 0.4);
+  --admin-drawer-bg: rgba(245, 249, 255, 0.5);
   --admin-modal-bg: rgba(248, 251, 255, 0.97);
   --admin-modal-border: rgba(15, 23, 42, 0.16);
   --liquid-highlight: rgba(255, 255, 255, 0.7);
@@ -230,15 +230,19 @@ html[data-admin-bg-preset="FROZEN_ROSE"] {
 
 .admin-shell .admin-topbar,
 .admin-shell .admin-mobile-drawer {
-  background: var(--admin-topbar-bg);
+  background:
+    linear-gradient(145deg, rgba(255, 255, 255, 0.16), rgba(255, 255, 255, 0.04)),
+    var(--admin-topbar-bg);
   box-shadow: var(--admin-shadow);
   border-color: var(--admin-border);
-  backdrop-filter: blur(calc(var(--liquid-blur) + 2px)) saturate(135%);
-  -webkit-backdrop-filter: blur(calc(var(--liquid-blur) + 2px)) saturate(135%);
+  backdrop-filter: blur(calc(var(--liquid-blur) + 6px)) saturate(140%);
+  -webkit-backdrop-filter: blur(calc(var(--liquid-blur) + 6px)) saturate(140%);
 }
 
 .admin-shell .admin-mobile-drawer {
-  background: var(--admin-drawer-bg);
+  background:
+    linear-gradient(145deg, rgba(255, 255, 255, 0.18), rgba(255, 255, 255, 0.03)),
+    var(--admin-drawer-bg);
 }
 
 .admin-shell .bg-white {
