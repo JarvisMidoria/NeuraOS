@@ -830,6 +830,12 @@ export async function applyIngestionJob(input: {
   jobId: string;
   actorUserId: string;
 }) {
+  const companySettings = await prisma.company.findUnique({
+    where: { id: input.companyId },
+    select: { productUnitMode: true, defaultProductUnit: true },
+  });
+  if (!companySettings) throw new ApiError(404, "Company not found");
+
   const job = await prisma.ingestionJob.findFirst({
     where: { id: input.jobId, companyId: input.companyId },
     include: { actions: { orderBy: { createdAt: "asc" } } },
@@ -858,7 +864,10 @@ export async function applyIngestionJob(input: {
             name,
             description: data.description?.trim() || null,
             unitPrice: parseDecimal(data.unitPrice, existing?.unitPrice.toString() ?? "0"),
-            unitOfMeasure: data.unitOfMeasure?.trim() || "EA",
+            unitOfMeasure:
+              companySettings.productUnitMode === "GLOBAL"
+                ? companySettings.defaultProductUnit
+                : data.unitOfMeasure?.trim() || "EA",
             lowStockThreshold: data.lowStockThreshold?.trim() ? parseDecimal(data.lowStockThreshold) : null,
           };
 

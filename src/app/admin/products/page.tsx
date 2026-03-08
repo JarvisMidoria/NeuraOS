@@ -4,6 +4,8 @@ import { auth } from "@/auth";
 import { ProductsManager } from "@/components/admin/products/products-manager";
 import { getAdminLang } from "@/lib/admin-preferences";
 
+const ALLOWED_UNITS = new Set(["EA", "M", "L", "KG"]);
+
 export default async function ProductsPage() {
   const session = await auth();
   const lang = await getAdminLang();
@@ -13,7 +15,7 @@ export default async function ProductsPage() {
 
   const companyId = session.user.companyId;
 
-  const [categories, customFields] = await Promise.all([
+  const [categories, customFields, companySettings] = await Promise.all([
     prisma.productCategory.findMany({
       where: { companyId },
       orderBy: { name: "asc" },
@@ -22,7 +24,28 @@ export default async function ProductsPage() {
       where: { companyId, entityType: "product" },
       orderBy: { label: "asc" },
     }),
+    prisma.company.findUnique({
+      where: { id: companyId },
+      select: {
+        productUnitMode: true,
+        defaultProductUnit: true,
+        currencyCode: true,
+      },
+    }),
   ]);
+
+  const normalizedCompanySettings: {
+    productUnitMode: "GLOBAL" | "PER_PRODUCT";
+    defaultProductUnit: "EA" | "M" | "L" | "KG";
+    currencyCode: string;
+  } = {
+    productUnitMode:
+      companySettings?.productUnitMode === "GLOBAL" ? "GLOBAL" : "PER_PRODUCT",
+    defaultProductUnit: ALLOWED_UNITS.has(companySettings?.defaultProductUnit ?? "")
+      ? (companySettings?.defaultProductUnit as "EA" | "M" | "L" | "KG")
+      : "EA",
+    currencyCode: companySettings?.currencyCode ?? "USD",
+  };
 
   return (
     <div className="space-y-6">
@@ -39,7 +62,12 @@ export default async function ProductsPage() {
             : "Manage product master data, categories, and custom attributes."}
         </p>
       </div>
-      <ProductsManager categories={categories} customFieldDefinitions={customFields} lang={lang} />
+      <ProductsManager
+        categories={categories}
+        customFieldDefinitions={customFields}
+        lang={lang}
+        companySettings={normalizedCompanySettings}
+      />
     </div>
   );
 }

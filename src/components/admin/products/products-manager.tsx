@@ -35,11 +35,25 @@ interface ProductsManagerProps {
   categories: Category[];
   customFieldDefinitions: CustomFieldDefinition[];
   lang: "en" | "fr";
+  companySettings: {
+    productUnitMode: "GLOBAL" | "PER_PRODUCT";
+    defaultProductUnit: "EA" | "M" | "L" | "KG";
+    currencyCode: string;
+  };
 }
 
 const PAGE_SIZE = 10;
+const ALLOWED_UNITS = new Set(["EA", "M", "L", "KG"]);
 
-export function ProductsManager({ categories, customFieldDefinitions, lang }: ProductsManagerProps) {
+export function ProductsManager({
+  categories,
+  customFieldDefinitions,
+  lang,
+  companySettings,
+}: ProductsManagerProps) {
+  const normalizeUnit = (value: string): "EA" | "M" | "L" | "KG" =>
+    ALLOWED_UNITS.has(value) ? (value as "EA" | "M" | "L" | "KG") : companySettings.defaultProductUnit;
+
   const [products, setProducts] = useState<ProductRecord[]>([]);
   const [total, setTotal] = useState(0);
   const [page, setPage] = useState(1);
@@ -54,9 +68,10 @@ export function ProductsManager({ categories, customFieldDefinitions, lang }: Pr
     name: "",
     description: "",
     unitPrice: "",
-    unitOfMeasure: "EA",
+    unitOfMeasure: companySettings.defaultProductUnit,
     categoryId: "",
     lowStockThreshold: "",
+    restockAlertEnabled: false,
   });
   const [customValues, setCustomValues] = useState<Record<string, string>>({});
 
@@ -78,9 +93,14 @@ export function ProductsManager({ categories, customFieldDefinitions, lang }: Pr
       name: lang === "fr" ? "Nom" : "Name",
       unitPrice: lang === "fr" ? "Prix unitaire" : "Unit Price",
       uom: lang === "fr" ? "Unite" : "Unit of Measure",
+      unitModeGlobal:
+        lang === "fr"
+          ? "Mode global actif: unite unique appliquee a tous les produits."
+          : "Global mode enabled: one unit is applied to all products.",
       category: lang === "fr" ? "Categorie" : "Category",
       uncategorized: lang === "fr" ? "Sans categorie" : "Uncategorized",
-      lowStock: lang === "fr" ? "Seuil stock bas" : "Low Stock Threshold",
+      lowStock: lang === "fr" ? "Seuil alerte restock" : "Restock alert threshold",
+      restockEnabled: lang === "fr" ? "Activer alerte restock" : "Enable restock alert",
       description: lang === "fr" ? "Description" : "Description",
       lowStockPlaceholder: lang === "fr" ? "ex: 10" : "e.g. 10",
       customFields: lang === "fr" ? "Champs personnalises" : "Custom Fields",
@@ -116,12 +136,18 @@ export function ProductsManager({ categories, customFieldDefinitions, lang }: Pr
       name: "",
       description: "",
       unitPrice: "",
-      unitOfMeasure: "EA",
+      unitOfMeasure: companySettings.defaultProductUnit,
       categoryId: "",
       lowStockThreshold: "",
+      restockAlertEnabled: false,
     });
     setCustomValues({});
   };
+
+  useEffect(() => {
+    if (companySettings.productUnitMode !== "GLOBAL") return;
+    setFormData((prev) => ({ ...prev, unitOfMeasure: companySettings.defaultProductUnit }));
+  }, [companySettings.defaultProductUnit, companySettings.productUnitMode]);
 
   const loadProducts = useCallback(async () => {
     setLoading(true);
@@ -160,9 +186,10 @@ export function ProductsManager({ categories, customFieldDefinitions, lang }: Pr
       name: product.name,
       description: product.description ?? "",
       unitPrice: product.unitPrice,
-      unitOfMeasure: product.unitOfMeasure,
+      unitOfMeasure: normalizeUnit(product.unitOfMeasure),
       categoryId: product.category?.id ?? "",
       lowStockThreshold: product.lowStockThreshold ?? "",
+      restockAlertEnabled: Boolean(product.lowStockThreshold),
     });
     const fieldMap: Record<string, string> = {};
     product.customFields.forEach((field) => {
@@ -204,7 +231,10 @@ export function ProductsManager({ categories, customFieldDefinitions, lang }: Pr
         unitPrice: formData.unitPrice,
         unitOfMeasure: formData.unitOfMeasure,
         categoryId: formData.categoryId || null,
-        lowStockThreshold: formData.lowStockThreshold || null,
+        lowStockThreshold:
+          formData.restockAlertEnabled && formData.lowStockThreshold
+            ? formData.lowStockThreshold
+            : null,
         customFieldValues: customFieldDefinitions.map((definition) => ({
           fieldId: definition.id,
           value: customValues[definition.id] ?? "",
@@ -295,14 +325,30 @@ export function ProductsManager({ categories, customFieldDefinitions, lang }: Pr
           </div>
           <div className="space-y-2">
             <label className="text-sm font-medium text-zinc-700">{t.uom}</label>
-            <input
-              className="w-full rounded-md border border-zinc-300 px-3 py-2 text-sm"
-              value={formData.unitOfMeasure}
-              onChange={(event) =>
-                setFormData((prev) => ({ ...prev, unitOfMeasure: event.target.value }))
-              }
-              required
-            />
+            {companySettings.productUnitMode === "GLOBAL" ? (
+              <>
+                <input
+                  className="w-full rounded-md border border-zinc-300 bg-zinc-50 px-3 py-2 text-sm text-zinc-600"
+                  value={companySettings.defaultProductUnit}
+                  disabled
+                />
+                <p className="text-xs text-zinc-500">{t.unitModeGlobal}</p>
+              </>
+            ) : (
+              <select
+                className="w-full rounded-md border border-zinc-300 px-3 py-2 text-sm"
+                value={formData.unitOfMeasure}
+                onChange={(event) =>
+                  setFormData((prev) => ({ ...prev, unitOfMeasure: normalizeUnit(event.target.value) }))
+                }
+                required
+              >
+                <option value="EA">Units (EA)</option>
+                <option value="M">Meters (M)</option>
+                <option value="L">Liters (L)</option>
+                <option value="KG">Kilograms (KG)</option>
+              </select>
+            )}
           </div>
           <div className="space-y-2">
             <label className="text-sm font-medium text-zinc-700">{t.category}</label>
@@ -321,6 +367,21 @@ export function ProductsManager({ categories, customFieldDefinitions, lang }: Pr
           </div>
           <div className="space-y-2">
             <label className="text-sm font-medium text-zinc-700">{t.lowStock}</label>
+            <label className="flex items-center gap-2 text-sm text-zinc-600">
+              <input
+                type="checkbox"
+                checked={formData.restockAlertEnabled}
+                onChange={(event) =>
+                  setFormData((prev) => ({
+                    ...prev,
+                    restockAlertEnabled: event.target.checked,
+                    lowStockThreshold:
+                      event.target.checked ? prev.lowStockThreshold || "" : "",
+                  }))
+                }
+              />
+              {t.restockEnabled}
+            </label>
             <input
               type="number"
               step="0.01"
@@ -330,6 +391,7 @@ export function ProductsManager({ categories, customFieldDefinitions, lang }: Pr
                 setFormData((prev) => ({ ...prev, lowStockThreshold: event.target.value }))
               }
               placeholder={t.lowStockPlaceholder}
+              disabled={!formData.restockAlertEnabled}
             />
           </div>
           <div className="md:col-span-2 space-y-2">
@@ -429,7 +491,7 @@ export function ProductsManager({ categories, customFieldDefinitions, lang }: Pr
                         {t.category}: {product.category?.name ?? "—"}
                       </span>
                       <span className="rounded-full bg-zinc-100 px-2 py-1">
-                        {t.unitPrice}: ${Number(product.unitPrice ?? 0).toFixed(2)}
+                        {t.unitPrice}: {Number(product.unitPrice ?? 0).toFixed(2)} {companySettings.currencyCode}
                       </span>
                       <span className="rounded-full bg-zinc-100 px-2 py-1">
                         {t.lowStock}: {product.lowStockThreshold ?? "—"}

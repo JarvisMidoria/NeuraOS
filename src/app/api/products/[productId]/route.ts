@@ -30,6 +30,8 @@ type ProductUpdatePayload = {
   customFieldValues?: CustomFieldInput[];
 };
 
+const ALLOWED_PRODUCT_UNITS = new Set(["EA", "M", "L", "KG"]);
+
 interface RouteContext {
   params: Promise<{ productId: string }>;
 }
@@ -92,6 +94,11 @@ export async function PATCH(req: NextRequest, context: RouteContext) {
 
     const body = (await req.json()) as ProductUpdatePayload;
     const companyId = session.user.companyId;
+    const company = await prisma.company.findUnique({
+      where: { id: companyId },
+      select: { productUnitMode: true, defaultProductUnit: true },
+    });
+    if (!company) throw new ApiError(404, "Company not found");
 
     const { product: updated, beforeSnapshot } = await prisma.$transaction(async (tx) => {
       const existing = await tx.product.findFirst({ where: { id: productId, companyId } });
@@ -109,7 +116,19 @@ export async function PATCH(req: NextRequest, context: RouteContext) {
       if (body.name !== undefined) data.name = body.name;
       if (body.description !== undefined) data.description = body.description;
       if (body.unitPrice !== undefined) data.unitPrice = new Prisma.Decimal(body.unitPrice);
-      if (body.unitOfMeasure !== undefined) data.unitOfMeasure = body.unitOfMeasure;
+      if (body.unitOfMeasure !== undefined) {
+        const requestedUnit = String(body.unitOfMeasure).trim().toUpperCase();
+        if (company.productUnitMode === "GLOBAL") {
+          data.unitOfMeasure = company.defaultProductUnit;
+        } else {
+          if (!ALLOWED_PRODUCT_UNITS.has(requestedUnit)) {
+            throw new ApiError(400, "unitOfMeasure must be one of EA, M, L, KG");
+          }
+          data.unitOfMeasure = requestedUnit;
+        }
+      } else if (company.productUnitMode === "GLOBAL") {
+        data.unitOfMeasure = company.defaultProductUnit;
+      }
       if (body.isActive !== undefined) data.isActive = !!body.isActive;
       if (body.lowStockThreshold !== undefined) {
         data.lowStockThreshold = body.lowStockThreshold === null || body.lowStockThreshold === ""

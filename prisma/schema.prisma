@@ -130,12 +130,19 @@ enum IngestionActionStatus {
   FAILED
 }
 
+enum ProductUnitMode {
+  GLOBAL
+  PER_PRODUCT
+}
+
 model Company {
   id              String                  @id @default(uuid())
   name            String
   domain          String?
   ownerUserId     String?                 @unique
   currencyCode    String                  @default("USD")
+  productUnitMode ProductUnitMode         @default(PER_PRODUCT)
+  defaultProductUnit String               @default("EA")
   locale          String                  @default("en-US")
   timezone        String                  @default("UTC")
   createdAt       DateTime                @default(now())

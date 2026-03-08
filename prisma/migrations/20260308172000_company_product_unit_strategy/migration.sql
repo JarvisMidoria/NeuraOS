@@ -1,0 +1,3 @@
+ALTER TABLE "Company"
+  ADD COLUMN "productUnitMode" TEXT NOT NULL DEFAULT 'PER_PRODUCT',
+  ADD COLUMN "defaultProductUnit" TEXT NOT NULL DEFAULT 'EA';

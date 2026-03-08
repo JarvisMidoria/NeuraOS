@@ -7,6 +7,8 @@ type CompanySettings = {
   name: string;
   domain: string | null;
   currencyCode: string;
+  productUnitMode: "GLOBAL" | "PER_PRODUCT";
+  defaultProductUnit: "EA" | "M" | "L" | "KG";
   locale: string;
   timezone: string;
 };
@@ -113,6 +115,8 @@ export function SettingsConsole() {
     name: "",
     domain: "",
     currencyCode: "USD",
+    productUnitMode: "PER_PRODUCT" as "GLOBAL" | "PER_PRODUCT",
+    defaultProductUnit: "EA" as "EA" | "M" | "L" | "KG",
     locale: "en-US",
     timezone: "UTC",
   });
@@ -201,6 +205,8 @@ export function SettingsConsole() {
         name: companyBody.data.name,
         domain: companyBody.data.domain ?? "",
         currencyCode: companyBody.data.currencyCode,
+        productUnitMode: companyBody.data.productUnitMode,
+        defaultProductUnit: companyBody.data.defaultProductUnit,
         locale: companyBody.data.locale,
         timezone: companyBody.data.timezone,
       });
@@ -537,8 +543,39 @@ export function SettingsConsole() {
           <input className="rounded-md border border-zinc-300 px-3 py-2 text-sm" value={companyForm.name} onChange={(e) => setCompanyForm((p) => ({ ...p, name: e.target.value }))} placeholder="Company name" />
           <input className="rounded-md border border-zinc-300 px-3 py-2 text-sm" value={companyForm.domain} onChange={(e) => setCompanyForm((p) => ({ ...p, domain: e.target.value }))} placeholder="Domain" />
           <input className="rounded-md border border-zinc-300 px-3 py-2 text-sm" value={companyForm.currencyCode} onChange={(e) => setCompanyForm((p) => ({ ...p, currencyCode: e.target.value }))} placeholder="Currency" />
+          <select
+            className="rounded-md border border-zinc-300 px-3 py-2 text-sm"
+            value={companyForm.productUnitMode}
+            onChange={(e) =>
+              setCompanyForm((p) => ({
+                ...p,
+                productUnitMode: e.target.value as "GLOBAL" | "PER_PRODUCT",
+              }))
+            }
+          >
+            <option value="PER_PRODUCT">Per-product unit mode</option>
+            <option value="GLOBAL">Single unit for all products</option>
+          </select>
+          <select
+            className="rounded-md border border-zinc-300 px-3 py-2 text-sm"
+            value={companyForm.defaultProductUnit}
+            onChange={(e) =>
+              setCompanyForm((p) => ({
+                ...p,
+                defaultProductUnit: e.target.value as "EA" | "M" | "L" | "KG",
+              }))
+            }
+          >
+            <option value="EA">Units (EA)</option>
+            <option value="M">Meters (M)</option>
+            <option value="L">Liters (L)</option>
+            <option value="KG">Kilograms (KG)</option>
+          </select>
           <input className="rounded-md border border-zinc-300 px-3 py-2 text-sm" value={companyForm.locale} onChange={(e) => setCompanyForm((p) => ({ ...p, locale: e.target.value }))} placeholder="Locale" />
           <input className="rounded-md border border-zinc-300 px-3 py-2 text-sm md:col-span-2" value={companyForm.timezone} onChange={(e) => setCompanyForm((p) => ({ ...p, timezone: e.target.value }))} placeholder="Timezone" />
+          <p className="text-xs text-zinc-500 md:col-span-2">
+            If unit mode is GLOBAL, all products will use the default unit automatically.
+          </p>
           <button className="w-fit rounded-md bg-zinc-900 px-4 py-2 text-sm font-medium text-white">Save company settings</button>
         </form>
       </section>

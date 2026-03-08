@@ -31,6 +31,8 @@ type ProductPayload = {
   customFieldValues?: CustomFieldInput[];
 };
 
+const ALLOWED_PRODUCT_UNITS = new Set(["EA", "M", "L", "KG"]);
+
 function serializeProduct(product: ProductWithRelations | null) {
   if (!product) return null;
   return {
@@ -127,6 +129,11 @@ export async function POST(req: NextRequest) {
         : null;
 
     const companyId = session.user.companyId;
+    const company = await prisma.company.findUnique({
+      where: { id: companyId },
+      select: { productUnitMode: true, defaultProductUnit: true },
+    });
+    if (!company) throw new ApiError(404, "Company not found");
 
     if (categoryId) {
       const category = await prisma.productCategory.findFirst({
@@ -137,6 +144,20 @@ export async function POST(req: NextRequest) {
       }
     }
 
+    const requestedUnit = String(unitOfMeasure || "").trim().toUpperCase();
+    if (
+      company.productUnitMode === "PER_PRODUCT" &&
+      requestedUnit &&
+      !ALLOWED_PRODUCT_UNITS.has(requestedUnit)
+    ) {
+      throw new ApiError(400, "unitOfMeasure must be one of EA, M, L, KG");
+    }
+
+    const effectiveUnitOfMeasure =
+      company.productUnitMode === "GLOBAL"
+        ? company.defaultProductUnit
+        : requestedUnit || "EA";
+
     const product = await prisma.$transaction(async (tx) => {
       const created = await tx.product.create({
         data: {
@@ -145,7 +166,7 @@ export async function POST(req: NextRequest) {
           name,
           description,
           unitPrice: unitPriceDecimal,
-          unitOfMeasure,
+          unitOfMeasure: effectiveUnitOfMeasure,
           categoryId: categoryId ?? null,
           lowStockThreshold: lowStockDecimal,
         },
