@@ -4,6 +4,16 @@ import { auth } from "@/auth";
 import { getAdminLang } from "@/lib/admin-preferences";
 import { getDashboardSnapshotCached } from "@/lib/dashboard-service";
 
+type AdminDashboardProps = {
+  searchParams: Promise<{ months?: string }>;
+};
+
+function parseMonths(input?: string) {
+  const value = Number(input);
+  if (value === 3 || value === 6 || value === 12) return value;
+  return 6;
+}
+
 function formatMetric(
   value: number,
   formatter: "currency" | "number" | "percent",
@@ -65,11 +75,13 @@ const STATUS_BADGE_CLASSES: Record<string, string> = {
   PARTIALLY_RECEIVED: "bg-cyan-100 text-cyan-700",
 };
 
-export default async function AdminDashboard() {
+export default async function AdminDashboard({ searchParams }: AdminDashboardProps) {
   const session = await auth();
   const user = session?.user;
   const lang = await getAdminLang();
   const locale = lang === "fr" ? "fr-FR" : "en-US";
+  const params = await searchParams;
+  const months = parseMonths(params.months);
 
   if (!user?.companyId) {
     notFound();
@@ -79,7 +91,7 @@ export default async function AdminDashboard() {
     notFound();
   }
 
-  const snapshot = await getDashboardSnapshotCached(user.companyId);
+  const snapshot = await getDashboardSnapshotCached(user.companyId, months);
   const maxMonthlyValue = Math.max(...snapshot.monthlySales.map((entry) => entry.total), 1);
   const recentLowStock = snapshot.lowStock.slice(0, 6);
   const displayName = lang === "fr" ? "Ghali" : user.name ?? "Admin";
@@ -90,7 +102,7 @@ export default async function AdminDashboard() {
     keyMetrics: lang === "fr" ? "Indicateurs cles" : "Key metrics",
     salesTrend: lang === "fr" ? "Tendance ventes et stock" : "Sales trend and inventory",
     revenue: lang === "fr" ? "Chiffre d'affaires" : "Revenue",
-    trailing: lang === "fr" ? "6 derniers mois" : "Trailing 6 months",
+    trailing: lang === "fr" ? `${months} derniers mois` : `Trailing ${months} months`,
     refreshed: lang === "fr" ? "Mis a jour" : "Auto-refreshed",
     inventory: lang === "fr" ? "Stock" : "Inventory",
     lowStock: lang === "fr" ? "Alertes stock bas" : "Low stock alerts",
@@ -103,6 +115,7 @@ export default async function AdminDashboard() {
     threshold: lang === "fr" ? "Seuil" : "Threshold",
     suggested: lang === "fr" ? "Reappro recommandee" : "Suggested replenishment",
     docsAndTasks: lang === "fr" ? "Documents et taches" : "Documents and tasks",
+    period: lang === "fr" ? "Periode" : "Period",
     latest: lang === "fr" ? "Recents" : "Latest",
     documents: lang === "fr" ? "Documents" : "Documents",
     noTransactions:
@@ -121,6 +134,21 @@ export default async function AdminDashboard() {
         <p className="text-sm text-zinc-500">
           {text.company}: {user.companyId}
         </p>
+        <div className="mt-2 flex flex-wrap items-center gap-2">
+          {[3, 6, 12].map((value) => (
+            <Link
+              key={value}
+              href={`/admin?months=${value}`}
+              className={`rounded-full border px-3 py-1 text-sm ${
+                months === value
+                  ? "border-zinc-900 bg-zinc-900 text-white"
+                  : "border-zinc-200 text-zinc-600 hover:bg-zinc-100"
+              }`}
+            >
+              {value}m
+            </Link>
+          ))}
+        </div>
       </div>
 
       <section aria-label={text.keyMetrics} className="perf-section grid gap-4 md:grid-cols-2 xl:grid-cols-4">
@@ -129,7 +157,7 @@ export default async function AdminDashboard() {
             <p className="text-sm text-zinc-500">
               {lang === "fr"
                 ? kpi.label
-                    .replace("Sales (MTD)", "Ventes (MTD)")
+                    .replace("Sales (period)", "Ventes (periode)")
                     .replace("Avg order value", "Panier moyen")
                     .replace("Quote win rate", "Taux de gain devis")
                     .replace("Open PO value", "Valeur commandes achat ouvertes")
@@ -147,9 +175,9 @@ export default async function AdminDashboard() {
                 <span className="text-xs text-zinc-500">
                   {lang === "fr"
                     ? kpi.helper
-                        .replace("vs prev month", "vs mois precedent")
+                        .replace("vs prev month", "vs periode precedente")
                         .replace("fulfilled orders", "commandes livrees")
-                        .replace("30-day window", "fenetre 30 jours")
+                        .replace("month window", "mois")
                         .replace("active", "actif")
                     : kpi.helper}
                 </span>
@@ -167,7 +195,7 @@ export default async function AdminDashboard() {
               <h2 className="text-xl font-semibold text-zinc-900">{text.trailing}</h2>
             </div>
             <span className="text-xs text-zinc-500">
-              {text.refreshed} {new Date(snapshot.timestamp).toLocaleString(locale)}
+              {text.period}: {months}m · {text.refreshed} {new Date(snapshot.timestamp).toLocaleString(locale)}
             </span>
           </div>
           <div className="mt-6 flex items-end gap-4" role="figure" aria-label={text.revenue}>

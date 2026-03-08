@@ -40,6 +40,7 @@ const ACTIVE_QUOTE_STATUSES: DocumentStatus[] = [DocumentStatus.SENT, DocumentSt
 
 export type DashboardSnapshot = {
   timestamp: string;
+  periodMonths: number;
   kpis: Array<{
     id: string;
     label: string;
@@ -71,21 +72,24 @@ export type DashboardSnapshot = {
   }>;
 };
 
-export async function getDashboardSnapshot(companyId: string): Promise<DashboardSnapshot> {
+function parseMonths(months?: number) {
+  if (months === 3 || months === 6 || months === 12) return months;
+  return 6;
+}
+
+export async function getDashboardSnapshot(companyId: string, monthsInput?: number): Promise<DashboardSnapshot> {
   const startedAt = perfNow();
+  const periodMonths = parseMonths(monthsInput);
   const now = new Date();
-  const startOfMonth = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1));
-  const startOfNextMonth = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() + 1, 1));
-  const startOfPrevMonth = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() - 1, 1));
-  const endOfPrevMonth = new Date(startOfMonth.getTime() - 1);
+  const startOfPeriod = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() - (periodMonths - 1), 1));
+  const prevPeriodStart = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() - (2 * periodMonths - 1), 1));
+  const prevPeriodEnd = new Date(startOfPeriod.getTime() - 1);
 
   const last30DaysStart = new Date(now);
   last30DaysStart.setUTCDate(now.getUTCDate() - 30);
   const prevWindowStart = new Date(last30DaysStart);
   prevWindowStart.setUTCDate(last30DaysStart.getUTCDate() - 30);
   const prevWindowEnd = new Date(last30DaysStart.getTime() - 1);
-
-  const sixMonthsAgo = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() - 5, 1));
 
   const [
     salesCurrent,
@@ -110,8 +114,8 @@ export async function getDashboardSnapshot(companyId: string): Promise<Dashboard
         companyId,
         status: { in: FULFILLED_ORDER_STATUSES },
         orderDate: {
-          gte: startOfMonth,
-          lt: startOfNextMonth,
+          gte: startOfPeriod,
+          lte: now,
         },
       },
       _sum: { totalAmount: true },
@@ -121,8 +125,8 @@ export async function getDashboardSnapshot(companyId: string): Promise<Dashboard
         companyId,
         status: { in: FULFILLED_ORDER_STATUSES },
         orderDate: {
-          gte: startOfPrevMonth,
-          lte: endOfPrevMonth,
+          gte: prevPeriodStart,
+          lte: prevPeriodEnd,
         },
       },
       _sum: { totalAmount: true },
@@ -131,7 +135,7 @@ export async function getDashboardSnapshot(companyId: string): Promise<Dashboard
       where: {
         companyId,
         status: { in: FULFILLED_ORDER_STATUSES },
-        orderDate: { gte: startOfMonth, lt: startOfNextMonth },
+        orderDate: { gte: startOfPeriod, lte: now },
       },
       _sum: { totalAmount: true },
       _count: { _all: true },
@@ -140,7 +144,7 @@ export async function getDashboardSnapshot(companyId: string): Promise<Dashboard
       where: {
         companyId,
         status: { in: FULFILLED_ORDER_STATUSES },
-        orderDate: { gte: startOfPrevMonth, lte: endOfPrevMonth },
+        orderDate: { gte: prevPeriodStart, lte: prevPeriodEnd },
       },
       _sum: { totalAmount: true },
       _count: { _all: true },
@@ -167,7 +171,7 @@ export async function getDashboardSnapshot(companyId: string): Promise<Dashboard
       where: {
         companyId,
         status: { in: OPEN_PURCHASE_STATUSES },
-        orderDate: { gte: startOfMonth, lt: startOfNextMonth },
+        orderDate: { gte: startOfPeriod, lte: now },
       },
       _sum: { totalAmount: true },
       _count: { _all: true },
@@ -176,7 +180,7 @@ export async function getDashboardSnapshot(companyId: string): Promise<Dashboard
       where: {
         companyId,
         status: { in: OPEN_PURCHASE_STATUSES },
-        orderDate: { gte: startOfPrevMonth, lte: endOfPrevMonth },
+        orderDate: { gte: prevPeriodStart, lte: prevPeriodEnd },
       },
       _sum: { totalAmount: true },
       _count: { _all: true },
@@ -186,7 +190,8 @@ export async function getDashboardSnapshot(companyId: string): Promise<Dashboard
              COALESCE(SUM("totalAmount"), 0) AS total
       FROM "SalesOrder"
       WHERE "companyId" = ${companyId}
-        AND "orderDate" >= ${sixMonthsAgo}
+        AND "orderDate" >= ${startOfPeriod}
+        AND "orderDate" <= ${now}
         AND "status" IN (${Prisma.join(
           FULFILLED_ORDER_STATUSES.map((status) => Prisma.sql`CAST(${status} AS "DocumentStatus")`),
         )})
@@ -263,7 +268,7 @@ export async function getDashboardSnapshot(companyId: string): Promise<Dashboard
   });
 
   const monthlySales: DashboardSnapshot["monthlySales"] = [];
-  for (let i = 5; i >= 0; i -= 1) {
+  for (let i = periodMonths - 1; i >= 0; i -= 1) {
     const date = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() - i, 1));
     const iso = date.toISOString();
     const value = monthlyDataMap.get(iso) ?? 0;
@@ -373,10 +378,11 @@ export async function getDashboardSnapshot(companyId: string): Promise<Dashboard
 
   const payload: DashboardSnapshot = {
     timestamp: now.toISOString(),
+    periodMonths,
     kpis: [
       {
         id: "sales-mtd",
-        label: "Sales (MTD)",
+        label: "Sales (period)",
         value: salesMtdValue,
         formatter: "currency",
         deltaPct: salesDelta.deltaPct,
@@ -399,7 +405,7 @@ export async function getDashboardSnapshot(companyId: string): Promise<Dashboard
         formatter: "percent",
         deltaPct: quoteRateDelta.deltaPct,
         trend: quoteRateDelta.trend,
-        helper: "30-day window",
+        helper: `${periodMonths}-month window`,
       },
       {
         id: "open-pos",
@@ -422,11 +428,11 @@ export async function getDashboardSnapshot(companyId: string): Promise<Dashboard
 }
 
 const getDashboardSnapshotCachedInternal = unstable_cache(
-  async (companyId: string) => getDashboardSnapshot(companyId),
-  ["dashboard-snapshot-v1"],
+  async (companyId: string, months?: number) => getDashboardSnapshot(companyId, months),
+  ["dashboard-snapshot-v2"],
   { revalidate: 30 },
 );
 
-export function getDashboardSnapshotCached(companyId: string) {
-  return getDashboardSnapshotCachedInternal(companyId);
+export function getDashboardSnapshotCached(companyId: string, months?: number) {
+  return getDashboardSnapshotCachedInternal(companyId, months);
 }
