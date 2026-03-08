@@ -8,7 +8,6 @@ import {
   Prisma,
   StockMovementType,
 } from "@prisma/client";
-import { PDFParse } from "pdf-parse";
 import { read, utils } from "xlsx";
 import { ApiError } from "@/lib/api-helpers";
 import { logAudit } from "@/lib/audit";
@@ -179,6 +178,7 @@ function parseSpreadsheet(buffer: Buffer) {
 }
 
 async function parsePdfText(buffer: Buffer) {
+  const { PDFParse } = await import("pdf-parse");
   const parser = new PDFParse({ data: buffer });
   try {
     const result = await parser.getText();
