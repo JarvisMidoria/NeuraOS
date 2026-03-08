@@ -25,6 +25,9 @@ BEGIN
       AND udt_name <> 'ProductUnitMode'
   ) THEN
     ALTER TABLE "Company"
+      ALTER COLUMN "productUnitMode" DROP DEFAULT;
+
+    ALTER TABLE "Company"
       ALTER COLUMN "productUnitMode" TYPE "ProductUnitMode"
       USING (UPPER("productUnitMode")::"ProductUnitMode");
   END IF;
