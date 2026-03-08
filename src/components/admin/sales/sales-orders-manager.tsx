@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { formatCurrency } from "@/lib/currency";
 
 type ClientOption = {
   id: string;
@@ -50,6 +51,7 @@ interface SalesOrdersManagerProps {
   warehouses: WarehouseOption[];
   canManageSales: boolean;
   lang: "en" | "fr";
+  currencyCode: string;
 }
 
 const PAGE_SIZE = 10;
@@ -83,6 +85,7 @@ export function SalesOrdersManager({
   warehouses,
   canManageSales,
   lang,
+  currencyCode,
 }: SalesOrdersManagerProps) {
   const [orders, setOrders] = useState<OrderRecord[]>([]);
   const [page, setPage] = useState(1);
@@ -417,7 +420,7 @@ export function SalesOrdersManager({
                     </p>
                     <p className="text-sm text-zinc-700 sm:text-right">
                       <span className="text-zinc-500">{t.total}: </span>
-                      {new Intl.NumberFormat(locale, { style: "currency", currency: "USD" }).format(Number(order.totalAmount ?? 0))}
+                      {formatCurrency(Number(order.totalAmount ?? 0), locale, currencyCode)}
                     </p>
                   </div>
                   <div className="space-y-1 text-xs text-zinc-600">

@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { formatCurrency } from "@/lib/currency";
 
 type SupplierOption = { id: string; name: string };
 type ProductOption = { id: string; sku: string; name: string; unitPrice: string };
@@ -42,10 +43,12 @@ export function PurchasesOrdersManager({
   suppliers,
   products,
   canManagePurchasing,
+  currencyCode,
 }: {
   suppliers: SupplierOption[];
   products: ProductOption[];
   canManagePurchasing: boolean;
+  currencyCode: string;
 }) {
   const [orders, setOrders] = useState<PurchaseOrder[]>([]);
   const [page, setPage] = useState(1);
@@ -63,6 +66,7 @@ export function PurchasesOrdersManager({
   const [lines, setLines] = useState<FormLine[]>([
     { productId: products[0]?.id ?? "", quantity: "1", unitPrice: products[0]?.unitPrice ?? "0", taxes: "20" },
   ]);
+  const locale = "en-US";
 
   const totalPages = useMemo(() => Math.max(1, Math.ceil(total / PAGE_SIZE)), [total]);
 
@@ -225,11 +229,11 @@ export function PurchasesOrdersManager({
                 </div>
                 <div className="mt-2 grid gap-2 sm:grid-cols-2">
                   <p className="text-sm text-zinc-700"><span className="text-zinc-500">Supplier: </span>{order.supplier?.name ?? "—"}</p>
-                  <p className="text-sm text-zinc-700 sm:text-right"><span className="text-zinc-500">Total: </span>${Number(order.totalAmount).toFixed(2)}</p>
+                  <p className="text-sm text-zinc-700 sm:text-right"><span className="text-zinc-500">Total: </span>{formatCurrency(Number(order.totalAmount), locale, currencyCode)}</p>
                 </div>
                 <div className="mt-2 space-y-1 text-xs text-zinc-600">
                   {order.lines.map((line) => (
-                    <div key={line.id}>{line.product?.name ?? "Product"} · Qty {line.quantity} @ ${Number(line.unitPrice).toFixed(2)}</div>
+                    <div key={line.id}>{line.product?.name ?? "Product"} · Qty {line.quantity} @ {formatCurrency(Number(line.unitPrice), locale, currencyCode)}</div>
                   ))}
                 </div>
                 <div className="mt-3 flex flex-wrap gap-2 text-xs">

@@ -3,6 +3,8 @@ import { notFound } from "next/navigation";
 import { auth } from "@/auth";
 import { getAdminLang } from "@/lib/admin-preferences";
 import { getDashboardSnapshotCached } from "@/lib/dashboard-service";
+import { prisma } from "@/lib/prisma";
+import { formatCurrency } from "@/lib/currency";
 
 type AdminDashboardProps = {
   searchParams: Promise<{ months?: string }>;
@@ -18,15 +20,11 @@ function formatMetric(
   value: number,
   formatter: "currency" | "number" | "percent",
   locale: string,
+  currencyCode: string,
 ) {
-  const currencyFormatter = new Intl.NumberFormat(locale, {
-    style: "currency",
-    currency: "USD",
-    maximumFractionDigits: 0,
-  });
   const numberFormatter = new Intl.NumberFormat(locale, { maximumFractionDigits: 0 });
   const percentFormatter = new Intl.NumberFormat(locale, { maximumFractionDigits: 1 });
-  if (formatter === "currency") return currencyFormatter.format(value);
+  if (formatter === "currency") return formatCurrency(value, locale, currencyCode, 0);
   if (formatter === "percent") return `${percentFormatter.format(value)}%`;
   return numberFormatter.format(value);
 }
@@ -91,7 +89,14 @@ export default async function AdminDashboard({ searchParams }: AdminDashboardPro
     notFound();
   }
 
-  const snapshot = await getDashboardSnapshotCached(user.companyId, months);
+  const [snapshot, company] = await Promise.all([
+    getDashboardSnapshotCached(user.companyId, months),
+    prisma.company.findUnique({
+      where: { id: user.companyId },
+      select: { currencyCode: true },
+    }),
+  ]);
+  const currencyCode = company?.currencyCode ?? "USD";
   const maxMonthlyValue = Math.max(...snapshot.monthlySales.map((entry) => entry.total), 1);
   const recentLowStock = snapshot.lowStock.slice(0, 6);
   const displayName = lang === "fr" ? "Ghali" : user.name ?? "Admin";
@@ -164,7 +169,7 @@ export default async function AdminDashboard({ searchParams }: AdminDashboardPro
                 : kpi.label}
             </p>
             <p className="mt-3 text-3xl font-semibold tracking-tight text-zinc-900">
-              {formatMetric(kpi.value, kpi.formatter, locale)}
+              {formatMetric(kpi.value, kpi.formatter, locale, currencyCode)}
             </p>
             <div className="mt-4 flex items-center justify-between text-sm">
               <span className={`flex items-center gap-1 font-medium ${TREND_COLOR[kpi.trend]}`}>
@@ -207,14 +212,14 @@ export default async function AdminDashboard({ searchParams }: AdminDashboardPro
                     <div
                       className="w-full rounded-lg bg-gradient-to-t from-emerald-500 to-emerald-400"
                       style={{ height: `${percentage || 4}%` }}
-                      aria-label={`${entry.month} ${text.revenue} ${formatMetric(entry.total, "currency", locale)}`}
+                      aria-label={`${entry.month} ${text.revenue} ${formatMetric(entry.total, "currency", locale, currencyCode)}`}
                     />
                   </div>
                   <div className="text-center text-sm text-zinc-500">
                     <p className="font-medium text-zinc-900">
                       {new Date(entry.iso).toLocaleString(locale, { month: "short" })}
                     </p>
-                    <p>{formatMetric(entry.total, "currency", locale)}</p>
+                    <p>{formatMetric(entry.total, "currency", locale, currencyCode)}</p>
                   </div>
                 </div>
               );
@@ -249,11 +254,11 @@ export default async function AdminDashboard({ searchParams }: AdminDashboardPro
                     <span className="text-zinc-500">
                       {text.onHand}{" "}
                       <span className="font-semibold text-zinc-900">
-                        {formatMetric(current, "number", locale)}
+                        {formatMetric(current, "number", locale, currencyCode)}
                       </span>
                     </span>
                     <span className="text-zinc-500">
-                      {text.threshold} {formatMetric(threshold, "number", locale)}
+                      {text.threshold} {formatMetric(threshold, "number", locale, currencyCode)}
                     </span>
                   </div>
                   <div className="mt-2 h-2 rounded-full bg-zinc-100">
@@ -263,7 +268,7 @@ export default async function AdminDashboard({ searchParams }: AdminDashboardPro
                     />
                   </div>
                   <p className="mt-2 text-xs text-rose-600">
-                    {text.suggested}: {formatMetric(Math.ceil(deficit), "number", locale)}
+                    {text.suggested}: {formatMetric(Math.ceil(deficit), "number", locale, currencyCode)}
                   </p>
                 </div>
               );
@@ -304,7 +309,7 @@ export default async function AdminDashboard({ searchParams }: AdminDashboardPro
                     {(STATUS_LABELS[doc.status]?.[lang] ?? doc.status) as string}
                   </span>
                   <p className="text-sm font-semibold text-zinc-900 sm:text-right">
-                    {doc.total === null ? "—" : formatMetric(doc.total, "currency", locale)}
+                    {doc.total === null ? "—" : formatMetric(doc.total, "currency", locale, currencyCode)}
                   </p>
                 </div>
               </Link>
@@ -343,7 +348,7 @@ export default async function AdminDashboard({ searchParams }: AdminDashboardPro
                           : "bg-emerald-100 text-emerald-600"
                     }`}
                   >
-                    {formatMetric(task.count, "number", locale)}
+                    {formatMetric(task.count, "number", locale, currencyCode)}
                   </span>
                 </div>
                 <p className="mt-1 text-sm text-zinc-500">

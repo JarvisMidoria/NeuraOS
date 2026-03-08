@@ -20,7 +20,7 @@ export async function GET(req: NextRequest, context: RouteContext) {
     const [company, quote] = await Promise.all([
       prisma.company.findUnique({
         where: { id: session.user.companyId },
-        select: { name: true, domain: true },
+        select: { name: true, domain: true, currencyCode: true },
       }),
       prisma.salesQuote.findFirst({
         where: { id: quoteId, companyId: session.user.companyId },

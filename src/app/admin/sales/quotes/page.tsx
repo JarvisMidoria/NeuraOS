@@ -13,7 +13,7 @@ export default async function SalesQuotesPage() {
 
   const companyId = session.user.companyId;
 
-  const [clients, products, warehouses] = await Promise.all([
+  const [clients, products, warehouses, company] = await Promise.all([
     prisma.client.findMany({ where: { companyId }, orderBy: { name: "asc" } }),
     prisma.product.findMany({
       where: { companyId },
@@ -21,6 +21,7 @@ export default async function SalesQuotesPage() {
       select: { id: true, name: true, sku: true, unitPrice: true },
     }),
     prisma.warehouse.findMany({ where: { companyId }, orderBy: { name: "asc" } }),
+    prisma.company.findUnique({ where: { id: companyId }, select: { currencyCode: true } }),
   ]);
 
   const canManageSales = session.user.permissions?.includes("MANAGE_SALES") ?? false;
@@ -47,6 +48,7 @@ export default async function SalesQuotesPage() {
         warehouses={warehouses}
         canManageSales={canManageSales}
         lang={lang}
+        currencyCode={company?.currencyCode ?? "USD"}
       />
     </div>
   );

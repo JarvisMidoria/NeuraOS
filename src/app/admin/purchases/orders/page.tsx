@@ -8,9 +8,10 @@ export default async function PurchasesOrdersPage() {
   if (!session?.user?.companyId) redirect("/login");
 
   const companyId = session.user.companyId;
-  const [suppliers, products] = await Promise.all([
+  const [suppliers, products, company] = await Promise.all([
     prisma.supplier.findMany({ where: { companyId }, orderBy: { name: "asc" }, select: { id: true, name: true } }),
     prisma.product.findMany({ where: { companyId }, orderBy: { name: "asc" }, select: { id: true, sku: true, name: true, unitPrice: true } }),
+    prisma.company.findUnique({ where: { id: companyId }, select: { currencyCode: true } }),
   ]);
 
   const canManagePurchasing = session.user.permissions?.includes("MANAGE_PURCHASING") ?? false;
@@ -26,6 +27,7 @@ export default async function PurchasesOrdersPage() {
         suppliers={suppliers}
         products={products.map((p) => ({ ...p, unitPrice: p.unitPrice.toString() }))}
         canManagePurchasing={canManagePurchasing}
+        currencyCode={company?.currencyCode ?? "USD"}
       />
     </div>
   );

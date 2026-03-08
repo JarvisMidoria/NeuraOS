@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { formatCurrency } from "@/lib/currency";
 
 type ClientOption = {
   id: string;
@@ -59,6 +60,7 @@ interface SalesQuotesManagerProps {
   warehouses: WarehouseOption[];
   canManageSales: boolean;
   lang: "en" | "fr";
+  currencyCode: string;
 }
 
 const PAGE_SIZE = 10;
@@ -96,6 +98,7 @@ export function SalesQuotesManager({
   warehouses,
   canManageSales,
   lang,
+  currencyCode,
 }: SalesQuotesManagerProps) {
   const [quotes, setQuotes] = useState<QuoteRecord[]>([]);
   const [page, setPage] = useState(1);
@@ -472,7 +475,7 @@ export function SalesQuotesManager({
                     </p>
                     <p className="text-sm text-zinc-700 sm:text-right">
                       <span className="text-zinc-500">{t.total}: </span>
-                      {new Intl.NumberFormat(locale, { style: "currency", currency: "USD" }).format(Number(quote.totalAmount))}
+                      {formatCurrency(Number(quote.totalAmount), locale, currencyCode)}
                     </p>
                     <p className="text-sm text-zinc-500">
                       {t.validUntil}: {quote.validUntil ? new Date(quote.validUntil).toLocaleDateString(locale) : "—"}
@@ -482,7 +485,7 @@ export function SalesQuotesManager({
                     {quote.lines.map((line) => (
                       <div key={line.id}>
                         {line.product?.name ?? line.productId} — {t.qtyLong} {line.quantity} @{" "}
-                        {new Intl.NumberFormat(locale, { style: "currency", currency: "USD" }).format(Number(line.unitPrice))}
+                        {formatCurrency(Number(line.unitPrice), locale, currencyCode)}
                       </div>
                     ))}
                   </div>

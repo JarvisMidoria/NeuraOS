@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { ALLOWED_CURRENCY_CODES } from "@/lib/currency";
 
 type CompanySettings = {
   id: string;
@@ -249,7 +250,7 @@ export function SettingsConsole({ lang = "en" }: { lang?: "en" | "fr" }) {
       title: lang === "fr" ? "Entreprise" : "Company",
       name: lang === "fr" ? "Nom de l'entreprise" : "Company name",
       domain: lang === "fr" ? "Domaine" : "Domain",
-      currency: lang === "fr" ? "Devise (ISO)" : "Currency (ISO)",
+      currency: lang === "fr" ? "Devise" : "Currency",
       unitMode: lang === "fr" ? "Mode d'unite produit" : "Product unit mode",
       unitModePerProduct:
         lang === "fr" ? "Unite definie par produit" : "Per-product unit mode",
@@ -569,7 +570,23 @@ export function SettingsConsole({ lang = "en" }: { lang?: "en" | "fr" }) {
         <form onSubmit={updateCompany} className="mt-4 grid gap-3 md:grid-cols-2">
           <input className="rounded-md border border-zinc-300 px-3 py-2 text-sm" value={companyForm.name} onChange={(e) => setCompanyForm((p) => ({ ...p, name: e.target.value }))} placeholder={tCompany.name} />
           <input className="rounded-md border border-zinc-300 px-3 py-2 text-sm" value={companyForm.domain} onChange={(e) => setCompanyForm((p) => ({ ...p, domain: e.target.value }))} placeholder={tCompany.domain} />
-          <input className="rounded-md border border-zinc-300 px-3 py-2 text-sm" value={companyForm.currencyCode} onChange={(e) => setCompanyForm((p) => ({ ...p, currencyCode: e.target.value }))} placeholder={tCompany.currency} />
+          <select
+            className="rounded-md border border-zinc-300 px-3 py-2 text-sm"
+            value={companyForm.currencyCode}
+            onChange={(e) =>
+              setCompanyForm((p) => ({
+                ...p,
+                currencyCode: e.target.value,
+              }))
+            }
+            aria-label={tCompany.currency}
+          >
+            {ALLOWED_CURRENCY_CODES.map((code) => (
+              <option key={code} value={code}>
+                {code}
+              </option>
+            ))}
+          </select>
           <select
             className="rounded-md border border-zinc-300 px-3 py-2 text-sm"
             value={companyForm.productUnitMode}

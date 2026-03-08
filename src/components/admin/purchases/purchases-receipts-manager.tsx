@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { formatCurrency } from "@/lib/currency";
 
 type Warehouse = { id: string; name: string };
 
@@ -35,7 +36,7 @@ type Receipt = {
 
 const PAGE_SIZE = 10;
 
-export function PurchasesReceiptsManager({ warehouses }: { warehouses: Warehouse[] }) {
+export function PurchasesReceiptsManager({ warehouses, currencyCode }: { warehouses: Warehouse[]; currencyCode: string }) {
   const [orders, setOrders] = useState<PurchaseOrder[]>([]);
   const [receipts, setReceipts] = useState<Receipt[]>([]);
   const [loading, setLoading] = useState(true);
@@ -49,6 +50,7 @@ export function PurchasesReceiptsManager({ warehouses }: { warehouses: Warehouse
   const [selectedWarehouseId, setSelectedWarehouseId] = useState(warehouses[0]?.id ?? "");
   const [notes, setNotes] = useState("");
   const [quantities, setQuantities] = useState<Record<string, string>>({});
+  const locale = "en-US";
 
   const totalPages = useMemo(() => Math.max(1, Math.ceil(total / PAGE_SIZE)), [total]);
 
@@ -175,7 +177,7 @@ export function PurchasesReceiptsManager({ warehouses }: { warehouses: Warehouse
                 <div key={line.id} className="grid gap-2 rounded-xl border border-zinc-100 p-3 md:grid-cols-[1fr_120px_120px] md:items-center">
                   <div className="text-sm text-zinc-700">{line.product?.sku} — {line.product?.name}</div>
                   <input type="number" step="0.01" className="rounded-md border border-zinc-300 px-3 py-2 text-sm" value={quantities[line.id] ?? line.quantity} onChange={(e) => setQuantities((prev) => ({ ...prev, [line.id]: e.target.value }))} />
-                  <div className="text-sm text-zinc-500">@ ${Number(line.unitPrice).toFixed(2)}</div>
+                  <div className="text-sm text-zinc-500">@ {formatCurrency(Number(line.unitPrice), locale, currencyCode)}</div>
                 </div>
               ))}
             </div>
@@ -211,7 +213,7 @@ export function PurchasesReceiptsManager({ warehouses }: { warehouses: Warehouse
                 </div>
                 <div className="mt-2 space-y-1 text-xs text-zinc-600">
                   {receipt.lines.map((line) => (
-                    <div key={line.id}>{line.product?.name ?? "Product"} · Qty {line.quantity} @ ${Number(line.unitPrice).toFixed(2)}</div>
+                    <div key={line.id}>{line.product?.name ?? "Product"} · Qty {line.quantity} @ {formatCurrency(Number(line.unitPrice), locale, currencyCode)}</div>
                   ))}
                 </div>
               </div>

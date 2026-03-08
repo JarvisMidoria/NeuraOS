@@ -20,7 +20,7 @@ export async function GET(req: NextRequest, context: RouteContext) {
     const [company, order] = await Promise.all([
       prisma.company.findUnique({
         where: { id: session.user.companyId },
-        select: { name: true, domain: true },
+        select: { name: true, domain: true, currencyCode: true },
       }),
       prisma.purchaseOrder.findFirst({
         where: { id: orderId, companyId: session.user.companyId },

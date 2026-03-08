@@ -1,11 +1,8 @@
 import type { DocumentModel } from "@/lib/documents/types";
+import { formatCurrency as formatMoney } from "@/lib/currency";
 
-function formatCurrency(value: number) {
-  return new Intl.NumberFormat("en-US", {
-    style: "currency",
-    currency: "USD",
-    maximumFractionDigits: 2,
-  }).format(value);
+function formatCurrency(value: number, currencyCode?: string | null) {
+  return formatMoney(value, "en-US", currencyCode, 2);
 }
 
 function formatDecimal(value: { toString(): string } | null | undefined) {
@@ -14,7 +11,7 @@ function formatDecimal(value: { toString(): string } | null | undefined) {
 }
 
 export function quoteToDocumentModel(
-  company: { name: string; domain?: string | null },
+  company: { name: string; domain?: string | null; currencyCode?: string | null },
   quote: {
     quoteNumber: number;
     quoteDate: Date;
@@ -48,13 +45,13 @@ export function quoteToDocumentModel(
       label: `${line.product.sku} · ${line.product.name}`,
       meta: line.description ?? undefined,
       quantity: formatDecimal(line.quantity),
-      unitPrice: formatCurrency(Number(line.unitPrice.toString())),
-      total: formatCurrency(Number(line.lineTotal.toString())),
+      unitPrice: formatCurrency(Number(line.unitPrice.toString()), company.currencyCode),
+      total: formatCurrency(Number(line.lineTotal.toString()), company.currencyCode),
     })),
     totals: [
-      { label: "Subtotal", value: formatCurrency(Number(quote.subtotalAmount.toString())) },
-      { label: "Tax", value: formatCurrency(Number(quote.taxAmount.toString())) },
-      { label: "Total", value: formatCurrency(Number(quote.totalAmount.toString())) },
+      { label: "Subtotal", value: formatCurrency(Number(quote.subtotalAmount.toString()), company.currencyCode) },
+      { label: "Tax", value: formatCurrency(Number(quote.taxAmount.toString()), company.currencyCode) },
+      { label: "Total", value: formatCurrency(Number(quote.totalAmount.toString()), company.currencyCode) },
     ],
   };
 }
@@ -95,7 +92,7 @@ export function salesOrderToDeliveryModel(
 }
 
 export function purchaseOrderToDocumentModel(
-  company: { name: string; domain?: string | null },
+  company: { name: string; domain?: string | null; currencyCode?: string | null },
   order: {
     poNumber: number;
     orderDate: Date;
@@ -127,13 +124,13 @@ export function purchaseOrderToDocumentModel(
     rows: order.lines.map((line) => ({
       label: `${line.product.sku} · ${line.product.name}`,
       quantity: formatDecimal(line.quantity),
-      unitPrice: formatCurrency(Number(line.unitPrice.toString())),
-      total: formatCurrency(Number(line.lineTotal.toString())),
+      unitPrice: formatCurrency(Number(line.unitPrice.toString()), company.currencyCode),
+      total: formatCurrency(Number(line.lineTotal.toString()), company.currencyCode),
     })),
     totals: [
-      { label: "Subtotal", value: formatCurrency(Number(order.subtotalAmount.toString())) },
-      { label: "Tax", value: formatCurrency(Number(order.taxAmount.toString())) },
-      { label: "Total", value: formatCurrency(Number(order.totalAmount.toString())) },
+      { label: "Subtotal", value: formatCurrency(Number(order.subtotalAmount.toString()), company.currencyCode) },
+      { label: "Tax", value: formatCurrency(Number(order.taxAmount.toString()), company.currencyCode) },
+      { label: "Total", value: formatCurrency(Number(order.totalAmount.toString()), company.currencyCode) },
     ],
   };
 }

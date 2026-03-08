@@ -8,11 +8,14 @@ export default async function PurchasesReceiptsPage() {
   if (!session?.user?.companyId) redirect("/login");
 
   const companyId = session.user.companyId;
-  const warehouses = await prisma.warehouse.findMany({
-    where: { companyId },
-    orderBy: { name: "asc" },
-    select: { id: true, name: true },
-  });
+  const [warehouses, company] = await Promise.all([
+    prisma.warehouse.findMany({
+      where: { companyId },
+      orderBy: { name: "asc" },
+      select: { id: true, name: true },
+    }),
+    prisma.company.findUnique({ where: { id: companyId }, select: { currencyCode: true } }),
+  ]);
 
   return (
     <div className="space-y-6">
@@ -21,7 +24,7 @@ export default async function PurchasesReceiptsPage() {
         <h1 className="text-3xl font-semibold tracking-tight text-zinc-900">Goods Receipts</h1>
         <p className="text-sm text-zinc-500">Receive supplier deliveries and post inbound stock.</p>
       </div>
-      <PurchasesReceiptsManager warehouses={warehouses} />
+      <PurchasesReceiptsManager warehouses={warehouses} currencyCode={company?.currencyCode ?? "USD"} />
     </div>
   );
 }

@@ -3,6 +3,8 @@ import { notFound } from "next/navigation";
 import { auth } from "@/auth";
 import { getAdminLang } from "@/lib/admin-preferences";
 import { getAnalyticsSnapshot } from "@/lib/analytics-service";
+import { prisma } from "@/lib/prisma";
+import { formatCurrency } from "@/lib/currency";
 
 type AnalyticsPageProps = {
   searchParams: Promise<{ months?: string }>;
@@ -12,10 +14,6 @@ function parseMonths(input?: string) {
   const value = Number(input);
   if (value === 3 || value === 6 || value === 12) return value;
   return 6;
-}
-
-function formatCurrency(value: number, locale: string) {
-  return new Intl.NumberFormat(locale, { style: "currency", currency: "USD", maximumFractionDigits: 0 }).format(value);
 }
 
 function formatNumber(value: number, locale: string) {
@@ -49,7 +47,14 @@ export default async function AdminAnalyticsPage({ searchParams }: AnalyticsPage
   const months = parseMonths(params.months);
   const lang = await getAdminLang();
   const locale = lang === "fr" ? "fr-FR" : "en-US";
-  const snapshot = await getAnalyticsSnapshot(user.companyId, months);
+  const [snapshot, company] = await Promise.all([
+    getAnalyticsSnapshot(user.companyId, months),
+    prisma.company.findUnique({
+      where: { id: user.companyId },
+      select: { currencyCode: true },
+    }),
+  ]);
+  const currencyCode = company?.currencyCode ?? "USD";
 
   const maxSales = Math.max(...snapshot.monthly.map((entry) => entry.sales), 1);
   const maxPurchases = Math.max(...snapshot.monthly.map((entry) => entry.purchases), 1);
@@ -109,11 +114,11 @@ export default async function AdminAnalyticsPage({ searchParams }: AnalyticsPage
       <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <article className="rounded-2xl border border-zinc-200 bg-white p-5 shadow-sm">
           <p className="text-sm text-zinc-500">{text.sales}</p>
-          <p className="mt-2 text-3xl font-semibold text-zinc-900">{formatCurrency(snapshot.metrics.salesTotal, locale)}</p>
+          <p className="mt-2 text-3xl font-semibold text-zinc-900">{formatCurrency(snapshot.metrics.salesTotal, locale, currencyCode, 0)}</p>
         </article>
         <article className="rounded-2xl border border-zinc-200 bg-white p-5 shadow-sm">
           <p className="text-sm text-zinc-500">{text.purchases}</p>
-          <p className="mt-2 text-3xl font-semibold text-zinc-900">{formatCurrency(snapshot.metrics.purchaseTotal, locale)}</p>
+          <p className="mt-2 text-3xl font-semibold text-zinc-900">{formatCurrency(snapshot.metrics.purchaseTotal, locale, currencyCode, 0)}</p>
         </article>
         <article className="rounded-2xl border border-zinc-200 bg-white p-5 shadow-sm">
           <p className="text-sm text-zinc-500">{text.quoteConv}</p>
@@ -192,7 +197,7 @@ export default async function AdminAnalyticsPage({ searchParams }: AnalyticsPage
                   <div key={client.id} className="rounded-lg border border-zinc-100 p-3">
                     <p className="text-sm font-semibold text-zinc-900">{client.name}</p>
                     <p className="text-xs text-zinc-500">{client.orders} {text.orders}</p>
-                    <p className="mt-1 text-sm text-zinc-800">{formatCurrency(client.total, locale)}</p>
+                    <p className="mt-1 text-sm text-zinc-800">{formatCurrency(client.total, locale, currencyCode)}</p>
                   </div>
                 ))}
               </div>
@@ -205,7 +210,7 @@ export default async function AdminAnalyticsPage({ searchParams }: AnalyticsPage
                   <div key={product.id} className="rounded-lg border border-zinc-100 p-3">
                     <p className="text-sm font-semibold text-zinc-900">{product.sku} · {product.name}</p>
                     <p className="text-xs text-zinc-500">{formatNumber(product.quantity, locale)} {text.units}</p>
-                    <p className="mt-1 text-sm text-zinc-800">{formatCurrency(product.revenue, locale)}</p>
+                    <p className="mt-1 text-sm text-zinc-800">{formatCurrency(product.revenue, locale, currencyCode)}</p>
                   </div>
                 ))}
               </div>

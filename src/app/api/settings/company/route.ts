@@ -5,6 +5,7 @@ import { prisma } from "@/lib/prisma";
 import { handleApiError, ApiError } from "@/lib/api-helpers";
 import { requireAdminSession } from "@/lib/settings-api";
 import { logAudit } from "@/lib/audit";
+import { ALLOWED_CURRENCY_CODES } from "@/lib/currency";
 
 const ALLOWED_PRODUCT_UNITS = new Set(["EA", "M", "L", "KG"]);
 const ALLOWED_PRODUCT_UNIT_MODES = new Set(["GLOBAL", "PER_PRODUCT"]);
@@ -58,8 +59,11 @@ export async function PATCH(req: NextRequest) {
     };
 
     if ("name" in data && !data.name) throw new ApiError(400, "name is required");
-    if (typeof data.currencyCode === "string" && data.currencyCode.length !== 3) {
-      throw new ApiError(400, "currencyCode must be 3 chars");
+    if (
+      typeof data.currencyCode === "string" &&
+      !ALLOWED_CURRENCY_CODES.includes(data.currencyCode as (typeof ALLOWED_CURRENCY_CODES)[number])
+    ) {
+      throw new ApiError(400, "currencyCode must be one of EUR, USD, MAD");
     }
     if (
       typeof data.productUnitMode === "string" &&
