@@ -23,6 +23,7 @@ const NAV_ITEMS: NavEntry[] = [
       { key: "hr-core", href: "/admin/hr", en: "Core HR", fr: "Core RH" },
       { key: "hr-employees", href: "/admin/hr/employees", en: "Employees", fr: "Employes" },
       { key: "hr-structure", href: "/admin/hr/structure", en: "Structure", fr: "Structure" },
+      { key: "hr-imports", href: "/admin/hr/imports", en: "HR Imports", fr: "Imports RH" },
     ],
   },
   { key: "billing", href: "/admin/billing", en: "Billing", fr: "Facturation" },
