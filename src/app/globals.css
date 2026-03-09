@@ -23,10 +23,13 @@
   --admin-elevated: rgba(10, 18, 34, 0.96);
   --admin-elevated-soft: rgba(20, 30, 54, 0.7);
   --admin-shadow: none;
-  --admin-topbar-bg: rgba(10, 18, 36, 0.42);
-  --admin-drawer-bg: rgba(10, 18, 36, 0.5);
+  --admin-topbar-bg: rgba(10, 18, 36, 0.72);
+  --admin-drawer-bg: rgba(10, 18, 36, 0.8);
   --admin-modal-bg: rgba(10, 18, 34, 0.94);
   --admin-modal-border: rgba(255, 255, 255, 0.2);
+  --admin-warning-bg: rgba(255, 185, 67, 0.14);
+  --admin-warning-border: rgba(255, 196, 92, 0.44);
+  --admin-warning-text: #f7d271;
   --admin-bg-gradient-dark:
     radial-gradient(circle at 8% 12%, rgba(111, 138, 255, 0.34) 0%, rgba(111, 138, 255, 0) 40%),
     radial-gradient(circle at 86% 16%, rgba(82, 204, 255, 0.22) 0%, rgba(82, 204, 255, 0) 44%),
@@ -116,10 +119,13 @@ body {
   --admin-elevated: rgba(255, 255, 255, 0.9);
   --admin-elevated-soft: rgba(245, 248, 255, 0.92);
   --admin-shadow: none;
-  --admin-topbar-bg: rgba(245, 249, 255, 0.4);
-  --admin-drawer-bg: rgba(245, 249, 255, 0.5);
+  --admin-topbar-bg: rgba(245, 249, 255, 0.7);
+  --admin-drawer-bg: rgba(245, 249, 255, 0.8);
   --admin-modal-bg: rgba(248, 251, 255, 0.97);
   --admin-modal-border: rgba(15, 23, 42, 0.16);
+  --admin-warning-bg: rgba(255, 243, 214, 0.92);
+  --admin-warning-border: rgba(230, 179, 68, 0.55);
+  --admin-warning-text: #8a5b00;
   --liquid-highlight: rgba(255, 255, 255, 0.7);
   --liquid-rim: rgba(255, 255, 255, 0.52);
   --liquid-blur: 18px;
@@ -235,6 +241,24 @@ html[data-admin-bg-preset="FROZEN_ROSE"] {
     var(--admin-topbar-bg);
   box-shadow: var(--admin-shadow);
   border-color: var(--admin-border);
+  backdrop-filter: blur(calc(var(--liquid-blur) + 6px)) saturate(140%);
+  -webkit-backdrop-filter: blur(calc(var(--liquid-blur) + 6px)) saturate(140%);
+}
+
+.admin-shell .admin-sidebar {
+  background:
+    linear-gradient(145deg, rgba(255, 255, 255, 0.16), rgba(255, 255, 255, 0.03)),
+    var(--admin-topbar-bg);
+  box-shadow: var(--admin-shadow);
+  border-color: var(--admin-border);
+  backdrop-filter: blur(calc(var(--liquid-blur) + 6px)) saturate(140%);
+  -webkit-backdrop-filter: blur(calc(var(--liquid-blur) + 6px)) saturate(140%);
+}
+
+.admin-shell .admin-nav-sticky {
+  background:
+    linear-gradient(145deg, rgba(255, 255, 255, 0.16), rgba(255, 255, 255, 0.03)),
+    var(--admin-topbar-bg);
   backdrop-filter: blur(calc(var(--liquid-blur) + 6px)) saturate(140%);
   -webkit-backdrop-filter: blur(calc(var(--liquid-blur) + 6px)) saturate(140%);
 }
@@ -487,6 +511,12 @@ html[data-admin-bg-preset="FROZEN_ROSE"] {
   background: var(--admin-elevated-soft) !important;
 }
 
+.admin-shell .warning-panel {
+  border: 1px solid var(--admin-warning-border);
+  background: var(--admin-warning-bg);
+  color: var(--admin-warning-text);
+}
+
 .admin-shell .overflow-x-auto {
   position: relative;
   -webkit-overflow-scrolling: touch;
@@ -534,6 +564,24 @@ html[data-admin-bg-preset="FROZEN_ROSE"] {
 .admin-shell .admin-mobile-drawer {
   scrollbar-width: thin;
   scrollbar-color: rgba(156, 172, 208, 0.35) transparent;
+}
+
+.admin-shell .admin-sidebar-scroll {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(156, 172, 208, 0.35) transparent;
+}
+
+.admin-shell .admin-sidebar-scroll::-webkit-scrollbar {
+  width: 5px;
+}
+
+.admin-shell .admin-sidebar-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.admin-shell .admin-sidebar-scroll::-webkit-scrollbar-thumb {
+  border-radius: 999px;
+  background: rgba(156, 172, 208, 0.35);
 }
 
 .admin-shell .admin-mobile-drawer::-webkit-scrollbar {

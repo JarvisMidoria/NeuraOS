@@ -132,7 +132,7 @@ export function AdminShell({ children }: { children: ReactNode }) {
       </header>
 
       <div className="mx-auto grid min-h-[calc(100vh-57px)] w-full max-w-[1400px] grid-cols-1 pt-[calc(57px+env(safe-area-inset-top))] lg:min-h-screen lg:grid-cols-[240px_1fr] lg:pt-0">
-        <aside className="sticky top-0 hidden h-screen self-start overflow-y-auto border-r border-[var(--admin-border)] px-5 py-6 lg:block">
+        <aside className="admin-sidebar admin-sidebar-scroll sticky top-0 hidden h-screen self-start overflow-y-auto border-r border-[var(--admin-border)] px-5 py-6 lg:block">
           <AdminNav />
         </aside>
 

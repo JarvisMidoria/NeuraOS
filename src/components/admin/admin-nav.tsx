@@ -189,13 +189,13 @@ export function AdminNav({ onNavigate }: AdminNavProps) {
 
   return (
     <>
-      <div className="sticky top-0 z-20 mb-4 bg-transparent pb-2">
+      <div className="admin-nav-sticky sticky top-0 z-20 mb-4 pb-2">
         <div className="mb-4 text-center">
           <p className="break-words text-3xl font-semibold tracking-tight text-[var(--admin-text)]">{companyName}</p>
           <p className="mt-1 text-[11px] text-[var(--admin-muted)]">Powered by NeuraOS</p>
         </div>
 
-        <div className={`mx-auto space-y-3 ${SIDEBAR_TRACK_WIDTH}`}>
+        <div className={`ml-1 mr-auto space-y-3 ${SIDEBAR_TRACK_WIDTH}`}>
           <div className="relative">
           <input
             value={query}
@@ -298,7 +298,7 @@ export function AdminNav({ onNavigate }: AdminNavProps) {
         </div>
       </div>
 
-      <nav className="mx-auto flex flex-col items-center gap-1 pb-4">
+      <nav className="ml-1 mr-auto flex flex-col items-start gap-1 pb-4">
         {navItems.map((item) => {
           const active = isActive(pathname, item.href);
           return (
