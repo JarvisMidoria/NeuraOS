@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { formatCurrency } from "@/lib/currency";
 import { ActionButton, ActionLinkButton } from "../action-button";
+import { useSearchParams } from "next/navigation";
 
 type ClientOption = {
   id: string;
@@ -88,9 +89,11 @@ export function SalesOrdersManager({
   lang,
   currencyCode,
 }: SalesOrdersManagerProps) {
+  const searchParams = useSearchParams();
   const [orders, setOrders] = useState<OrderRecord[]>([]);
   const [page, setPage] = useState(1);
   const [total, setTotal] = useState(0);
+  const [clientFilter, setClientFilter] = useState("all");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
@@ -146,15 +149,28 @@ export function SalesOrdersManager({
       next: lang === "fr" ? "Suivant" : "Next",
       tvaLabel: lang === "fr" ? "TVA" : "VAT",
       openDeliveryNote: lang === "fr" ? "Bon livraison" : "Delivery note",
+      allClients: lang === "fr" ? "Tous les clients" : "All clients",
     }),
     [lang],
   );
+
+  useEffect(() => {
+    const preselectClientId = searchParams.get("clientId");
+    if (!preselectClientId) return;
+    if (clients.some((client) => client.id === preselectClientId)) {
+      setClientFilter(preselectClientId);
+      setPage(1);
+    }
+  }, [clients, searchParams]);
 
   const loadOrders = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
       const params = new URLSearchParams({ page: page.toString(), pageSize: PAGE_SIZE.toString() });
+      if (clientFilter !== "all") {
+        params.set("clientId", clientFilter);
+      }
       const response = await fetch(`/api/sales/orders?${params.toString()}`);
       if (!response.ok) {
         throw new Error(t.loadFailed);
@@ -167,7 +183,7 @@ export function SalesOrdersManager({
     } finally {
       setLoading(false);
     }
-  }, [page, t.loadFailed]);
+  }, [clientFilter, page, t.loadFailed]);
 
   useEffect(() => {
     loadOrders();
@@ -397,7 +413,24 @@ export function SalesOrdersManager({
               {t.showing} {Math.min(orders.length, PAGE_SIZE)} {t.of} {total} {lang === "fr" ? "commandes" : "orders"}
             </p>
           </div>
-          <ActionButton type="button" icon="refresh" onClick={loadOrders} label={t.refresh} />
+          <div className="flex items-center gap-3">
+            <select
+              className="rounded-md border border-zinc-300 px-3 py-2 text-sm"
+              value={clientFilter}
+              onChange={(event) => {
+                setClientFilter(event.target.value);
+                setPage(1);
+              }}
+            >
+              <option value="all">{t.allClients}</option>
+              {clients.map((client) => (
+                <option key={client.id} value={client.id}>
+                  {client.name}
+                </option>
+              ))}
+            </select>
+            <ActionButton type="button" icon="refresh" onClick={loadOrders} label={t.refresh} />
+          </div>
         </div>
         {loading ? (
           <p className="text-sm text-zinc-500">{t.loading}</p>

@@ -87,10 +87,12 @@ export async function GET(req: NextRequest) {
     const page = Number(searchParams.get("page") ?? "1");
     const pageSize = Number(searchParams.get("pageSize") ?? "10");
     const status = searchParams.get("status") as DocumentStatus | null;
+    const clientId = searchParams.get("clientId");
 
     const where = {
       companyId: session.user.companyId,
       ...(status ? { status } : {}),
+      ...(clientId ? { clientId } : {}),
     };
 
     const [orders, total] = await Promise.all([

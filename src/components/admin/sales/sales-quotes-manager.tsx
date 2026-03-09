@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { formatCurrency } from "@/lib/currency";
 import { ActionButton, ActionLinkButton } from "../action-button";
+import { useSearchParams } from "next/navigation";
 
 type ClientOption = {
   id: string;
@@ -101,9 +102,11 @@ export function SalesQuotesManager({
   lang,
   currencyCode,
 }: SalesQuotesManagerProps) {
+  const searchParams = useSearchParams();
   const [quotes, setQuotes] = useState<QuoteRecord[]>([]);
   const [page, setPage] = useState(1);
   const [total, setTotal] = useState(0);
+  const [clientFilter, setClientFilter] = useState("all");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
@@ -166,15 +169,28 @@ export function SalesQuotesManager({
       tvaLabel: lang === "fr" ? "TVA" : "VAT",
       openQuotePdf: lang === "fr" ? "PDF devis" : "Quote PDF",
       openDeliveryNote: lang === "fr" ? "Bon livraison" : "Delivery note",
+      allClients: lang === "fr" ? "Tous les clients" : "All clients",
     }),
     [lang],
   );
+
+  useEffect(() => {
+    const preselectClientId = searchParams.get("clientId");
+    if (!preselectClientId) return;
+    if (clients.some((client) => client.id === preselectClientId)) {
+      setClientFilter(preselectClientId);
+      setPage(1);
+    }
+  }, [clients, searchParams]);
 
   const loadQuotes = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
       const params = new URLSearchParams({ page: page.toString(), pageSize: PAGE_SIZE.toString() });
+      if (clientFilter !== "all") {
+        params.set("clientId", clientFilter);
+      }
       const response = await fetch(`/api/sales/quotes?${params.toString()}`);
       if (!response.ok) {
         throw new Error(t.loadFailed);
@@ -187,7 +203,7 @@ export function SalesQuotesManager({
     } finally {
       setLoading(false);
     }
-  }, [page, t.loadFailed]);
+  }, [clientFilter, page, t.loadFailed]);
 
   useEffect(() => {
     loadQuotes();
@@ -452,6 +468,21 @@ export function SalesQuotesManager({
             </p>
           </div>
           <div className="flex items-center gap-3">
+            <select
+              className="rounded-md border border-zinc-300 px-3 py-2 text-sm"
+              value={clientFilter}
+              onChange={(event) => {
+                setClientFilter(event.target.value);
+                setPage(1);
+              }}
+            >
+              <option value="all">{t.allClients}</option>
+              {clients.map((client) => (
+                <option key={client.id} value={client.id}>
+                  {client.name}
+                </option>
+              ))}
+            </select>
             <ActionButton type="button" icon="refresh" onClick={loadQuotes} label={t.refresh} />
           </div>
         </div>
