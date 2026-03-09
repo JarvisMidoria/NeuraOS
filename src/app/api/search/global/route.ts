@@ -34,6 +34,9 @@ const PAGE_SUGGESTIONS: Array<{
   { id: "page-purchases", type: "page", title: "Purchases", subtitle: "Purchase orders and receipts", href: "/admin/purchases/orders", keywords: ["purchase", "purchases", "procurement", "achat", "po"] },
   { id: "page-suppliers", type: "page", title: "Suppliers", subtitle: "Supplier management", href: "/admin/suppliers", keywords: ["supplier", "suppliers", "vendor", "fournisseur"] },
   { id: "page-documents", type: "page", title: "Documents", subtitle: "Quotes, orders and PDFs", href: "/admin/documents", keywords: ["documents", "document", "pdf", "invoice"] },
+  { id: "page-hr", type: "page", title: "Core HR", subtitle: "Employee base and org structure", href: "/admin/hr", keywords: ["hr", "human resources", "employee", "employees", "rh"] },
+  { id: "page-hr-employees", type: "page", title: "HR Employees", subtitle: "Employee records", href: "/admin/hr/employees", keywords: ["employee", "employees", "staff", "team", "salarie"] },
+  { id: "page-hr-structure", type: "page", title: "HR Structure", subtitle: "Departments, entities, locations", href: "/admin/hr/structure", keywords: ["department", "entity", "position", "location", "org"] },
 ];
 
 const TYPE_KEYWORDS: Record<SearchItemType, string[]> = {
@@ -118,6 +121,7 @@ export async function GET(req: NextRequest) {
     const canManageWarehouse = permissions.has("MANAGE_WAREHOUSE");
     const canManageSales = permissions.has("MANAGE_SALES");
     const canManagePurchasing = permissions.has("MANAGE_PURCHASING");
+    const canAccessHr = permissions.has("ADMIN") || permissions.has("HR_ADMIN") || permissions.has("HR_MANAGER") || permissions.has("HR_EMPLOYEE");
     const canReadSimulationCore = isSimulation && (canManageSales || canManagePurchasing || canSeeDashboard);
 
     const terms = parseTerms(query);
@@ -276,6 +280,7 @@ export async function GET(req: NextRequest) {
       if (page.href.includes("/purchases") && !(canManagePurchasing || canSeeDashboard)) return false;
       if (page.href.includes("/suppliers") && !(canManagePurchasing || canSeeDashboard)) return false;
       if (page.href.includes("/clients") && !canReadSimulationCore && !(canManageSales || canSeeDashboard)) return false;
+      if (page.href.includes("/admin/hr") && !canAccessHr) return false;
       return page.keywords.some((keyword) => keyword.startsWith(normalizedQuery) || keyword.includes(normalizedQuery));
     });
 

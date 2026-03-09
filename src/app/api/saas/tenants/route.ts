@@ -169,6 +169,52 @@ export async function POST(req: NextRequest) {
         ),
       );
 
+      const permissionByCode = new Map(permissions.map((permission) => [permission.code, permission]));
+      const hrAdminRole = await tx.role.create({
+        data: {
+          companyId: company.id,
+          name: "HR Admin",
+          description: "Full HR administration access",
+        },
+      });
+      const managerRole = await tx.role.create({
+        data: {
+          companyId: company.id,
+          name: "Manager",
+          description: "Access own team data",
+        },
+      });
+      const employeeRole = await tx.role.create({
+        data: {
+          companyId: company.id,
+          name: "Employee",
+          description: "Access own profile",
+        },
+      });
+
+      const hrRoleAssignments: Array<{ roleId: string; permissionCode: string }> = [
+        { roleId: hrAdminRole.id, permissionCode: "HR_ADMIN" },
+        { roleId: managerRole.id, permissionCode: "HR_MANAGER" },
+        { roleId: managerRole.id, permissionCode: "VIEW_DASHBOARD" },
+        { roleId: employeeRole.id, permissionCode: "HR_EMPLOYEE" },
+      ];
+
+      await Promise.all(
+        hrRoleAssignments
+          .map(({ roleId, permissionCode }) => {
+            const permission = permissionByCode.get(permissionCode);
+            if (!permission) return null;
+            return tx.rolePermission.create({
+              data: {
+                companyId: company.id,
+                roleId,
+                permissionId: permission.id,
+              },
+            });
+          })
+          .filter(Boolean) as Promise<unknown>[],
+      );
+
       const user = await tx.user.create({
         data: {
           companyId: company.id,

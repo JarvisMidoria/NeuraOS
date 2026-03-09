@@ -6,11 +6,25 @@ import { useEffect, useMemo, useState } from "react";
 
 const SIDEBAR_TRACK_WIDTH = "w-[196px]";
 
-const NAV_ITEMS = [
+type NavItem = { key: string; href: string; en: string; fr: string };
+type NavGroup = { key: string; en: string; fr: string; children: NavItem[] };
+type NavEntry = NavItem | NavGroup;
+
+const NAV_ITEMS: NavEntry[] = [
   { key: "overview", href: "/admin", en: "Overview", fr: "Apercu" },
   { key: "analytics", href: "/admin/analytics", en: "Analytics", fr: "Analytics" },
   { key: "notifications", href: "/admin/notifications", en: "Notifications", fr: "Notifications" },
   { key: "onboarding", href: "/admin/onboarding", en: "Onboarding", fr: "Onboarding" },
+  {
+    key: "hr",
+    en: "HR",
+    fr: "RH",
+    children: [
+      { key: "hr-core", href: "/admin/hr", en: "Core HR", fr: "Core RH" },
+      { key: "hr-employees", href: "/admin/hr/employees", en: "Employees", fr: "Employes" },
+      { key: "hr-structure", href: "/admin/hr/structure", en: "Structure", fr: "Structure" },
+    ],
+  },
   { key: "billing", href: "/admin/billing", en: "Billing", fr: "Facturation" },
   { key: "documents", href: "/admin/documents", en: "Documents", fr: "Documents" },
   { key: "products", href: "/admin/products", en: "Products", fr: "Produits" },
@@ -26,7 +40,7 @@ const NAV_ITEMS = [
   { key: "imports", href: "/admin/imports", en: "Imports", fr: "Imports" },
   { key: "settings", href: "/admin/settings", en: "Settings", fr: "Parametres" },
   { key: "audit", href: "/admin/audit", en: "Audit Log", fr: "Journal audit" },
-] as const;
+];
 
 const SIMULATION_NAV_KEYS = new Set([
   "overview",
@@ -56,6 +70,10 @@ function isActive(pathname: string, href: string) {
   return pathname.startsWith(href);
 }
 
+function isNavGroup(item: NavEntry): item is NavGroup {
+  return "children" in item;
+}
+
 export function AdminNav({ onNavigate }: AdminNavProps) {
   const pathname = usePathname();
   const [companyName, setCompanyName] = useState("Tenant");
@@ -64,6 +82,7 @@ export function AdminNav({ onNavigate }: AdminNavProps) {
   const [loading, setLoading] = useState(false);
   const [workspaceMode, setWorkspaceMode] = useState<"LIVE" | "SIMULATION">("LIVE");
   const [canUseSimulation, setCanUseSimulation] = useState(false);
+  const [openGroups, setOpenGroups] = useState<Record<string, boolean>>({});
   const [lang, setLang] = useState<AdminLang>(() => {
     if (typeof window === "undefined") return "en";
     const cookieLang = document.cookie.match(/(?:^|;\s*)neura_lang=([^;]+)/)?.[1];
@@ -134,10 +153,31 @@ export function AdminNav({ onNavigate }: AdminNavProps) {
     loadWorkspace();
   }, []);
 
-  const navItems = useMemo(() => {
+  const navItems = useMemo<NavEntry[]>(() => {
     if (!canUseSimulation || workspaceMode === "LIVE") return NAV_ITEMS;
-    return NAV_ITEMS.filter((item) => SIMULATION_NAV_KEYS.has(item.key));
+    return NAV_ITEMS.flatMap<NavEntry>((item) => {
+      if (!isNavGroup(item)) {
+        return SIMULATION_NAV_KEYS.has(item.key) ? [item] : [];
+      }
+      const children = item.children.filter((child) => SIMULATION_NAV_KEYS.has(child.key));
+      if (children.length === 0) return [];
+      return [{ ...item, children }];
+    });
   }, [workspaceMode, canUseSimulation]);
+
+  useEffect(() => {
+    setOpenGroups((previous) => {
+      const next = { ...previous };
+      for (const item of navItems) {
+        if (!isNavGroup(item)) continue;
+        const hasActiveChild = item.children.some((child) => isActive(pathname, child.href));
+        if (hasActiveChild && !next[item.key]) {
+          next[item.key] = true;
+        }
+      }
+      return next;
+    });
+  }, [navItems, pathname]);
 
   useEffect(() => {
     const normalized = query.trim();
@@ -300,20 +340,64 @@ export function AdminNav({ onNavigate }: AdminNavProps) {
 
       <nav className="ml-1 mr-auto flex flex-col items-start gap-1 pb-4">
         {navItems.map((item) => {
-          const active = isActive(pathname, item.href);
+          if (!isNavGroup(item)) {
+            const active = isActive(pathname, item.href);
+            return (
+              <Link
+                key={item.href}
+                href={item.href}
+                onClick={onNavigate}
+                className={`liquid-pill ${SIDEBAR_TRACK_WIDTH} max-w-full px-3 py-1.5 text-sm transition ${
+                  active
+                    ? "liquid-selected"
+                    : "text-[var(--admin-muted)] hover:border-[var(--accent)] hover:bg-[color-mix(in_srgb,var(--accent)_12%,var(--admin-soft-bg))] hover:text-[var(--admin-text)]"
+                }`}
+              >
+                {lang === "fr" ? item.fr : item.en}
+              </Link>
+            );
+          }
+
+          const groupActive = item.children.some((child) => isActive(pathname, child.href));
+          const groupOpen = openGroups[item.key] ?? groupActive;
+
           return (
-            <Link
-              key={item.href}
-              href={item.href}
-              onClick={onNavigate}
-              className={`liquid-pill ${SIDEBAR_TRACK_WIDTH} max-w-full px-3 py-1.5 text-sm transition ${
-                active
-                  ? "liquid-selected"
-                  : "text-[var(--admin-muted)] hover:border-[var(--accent)] hover:bg-[color-mix(in_srgb,var(--accent)_12%,var(--admin-soft-bg))] hover:text-[var(--admin-text)]"
-              }`}
-            >
-              {lang === "fr" ? item.fr : item.en}
-            </Link>
+            <div key={item.key} className={`${SIDEBAR_TRACK_WIDTH} max-w-full space-y-1`}>
+              <button
+                type="button"
+                onClick={() => setOpenGroups((prev) => ({ ...prev, [item.key]: !(prev[item.key] ?? groupActive) }))}
+                className={`liquid-pill flex w-full items-center justify-between px-3 py-1.5 text-sm transition ${
+                  groupActive
+                    ? "liquid-selected"
+                    : "text-[var(--admin-muted)] hover:border-[var(--accent)] hover:bg-[color-mix(in_srgb,var(--accent)_12%,var(--admin-soft-bg))] hover:text-[var(--admin-text)]"
+                }`}
+              >
+                <span>{lang === "fr" ? item.fr : item.en}</span>
+                <span className={`text-xs transition ${groupOpen ? "rotate-180" : ""}`}>⌄</span>
+              </button>
+
+              {groupOpen ? (
+                <div className="space-y-1 pl-3">
+                  {item.children.map((child) => {
+                    const active = isActive(pathname, child.href);
+                    return (
+                      <Link
+                        key={child.href}
+                        href={child.href}
+                        onClick={onNavigate}
+                        className={`liquid-pill block max-w-full px-3 py-1.5 text-sm transition ${
+                          active
+                            ? "liquid-selected"
+                            : "text-[var(--admin-muted)] hover:border-[var(--accent)] hover:bg-[color-mix(in_srgb,var(--accent)_12%,var(--admin-soft-bg))] hover:text-[var(--admin-text)]"
+                        }`}
+                      >
+                        {lang === "fr" ? child.fr : child.en}
+                      </Link>
+                    );
+                  })}
+                </div>
+              ) : null}
+            </div>
           );
         })}
       </nav>
