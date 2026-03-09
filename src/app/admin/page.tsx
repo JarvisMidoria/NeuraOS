@@ -73,6 +73,13 @@ const STATUS_BADGE_CLASSES: Record<string, string> = {
   PARTIALLY_RECEIVED: "bg-cyan-100 text-cyan-700",
 };
 
+const KPI_LINKS: Record<string, string> = {
+  "sales-mtd": "/admin/sales/orders",
+  "avg-order": "/admin/sales/orders",
+  "quote-rate": "/admin/sales/quotes",
+  "open-pos": "/admin/purchases/orders",
+};
+
 export default async function AdminDashboard({ searchParams }: AdminDashboardProps) {
   const session = await auth();
   const user = session?.user;
@@ -158,7 +165,11 @@ export default async function AdminDashboard({ searchParams }: AdminDashboardPro
 
       <section aria-label={text.keyMetrics} className="perf-section grid gap-4 md:grid-cols-2 xl:grid-cols-4">
         {snapshot.kpis.map((kpi) => (
-          <div key={kpi.id} className="rounded-2xl border border-zinc-200 bg-white p-5 shadow-sm">
+          <Link
+            key={kpi.id}
+            href={KPI_LINKS[kpi.id] ?? "/admin"}
+            className="group rounded-2xl border border-zinc-200 bg-white p-5 shadow-sm transition hover:bg-zinc-50"
+          >
             <p className="text-sm text-zinc-500">
               {lang === "fr"
                 ? kpi.label
@@ -188,7 +199,10 @@ export default async function AdminDashboard({ searchParams }: AdminDashboardPro
                 </span>
               )}
             </div>
-          </div>
+            <p className="mt-3 text-xs font-medium text-indigo-600 group-hover:text-indigo-700">
+              {lang === "fr" ? "Ouvrir" : "Open"} ↗
+            </p>
+          </Link>
         ))}
       </section>
 
@@ -246,7 +260,11 @@ export default async function AdminDashboard({ searchParams }: AdminDashboardPro
               const threshold = Number(item.lowStockThreshold ?? 0);
               const deficit = Math.max(threshold - current, 0);
               return (
-                <div key={item.id} className="rounded-xl border border-zinc-100 p-4">
+                <Link
+                  key={item.id}
+                  href="/admin/stock"
+                  className="block rounded-xl border border-zinc-100 p-4 transition hover:bg-zinc-50"
+                >
                   <p className="text-sm font-semibold text-zinc-900">
                     {item.sku} · {item.name}
                   </p>
@@ -270,7 +288,7 @@ export default async function AdminDashboard({ searchParams }: AdminDashboardPro
                   <p className="mt-2 text-xs text-rose-600">
                     {text.suggested}: {formatMetric(Math.ceil(deficit), "number", locale, currencyCode)}
                   </p>
-                </div>
+                </Link>
               );
             })}
           </div>

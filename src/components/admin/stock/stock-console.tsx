@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { ActionButton } from "../action-button";
 
 type Warehouse = {
   id: string;
@@ -241,7 +242,7 @@ export function StockConsole({ warehouses, products, lowStock, lang }: StockCons
               value={inboundForm.reference}
               onChange={(event) => setInboundForm((prev) => ({ ...prev, reference: event.target.value }))}
             />
-            <button className="w-full rounded-md bg-zinc-900 px-4 py-2 text-sm font-medium text-white">{t.recordInbound}</button>
+            <ActionButton type="submit" tone="primary" icon="save" className="w-full justify-center" label={t.recordInbound} />
           </form>
         </div>
 
@@ -298,7 +299,7 @@ export function StockConsole({ warehouses, products, lowStock, lang }: StockCons
               value={outboundForm.reference}
               onChange={(event) => setOutboundForm((prev) => ({ ...prev, reference: event.target.value }))}
             />
-            <button className="w-full rounded-md bg-zinc-900 px-4 py-2 text-sm font-medium text-white">{t.recordOutbound}</button>
+            <ActionButton type="submit" tone="primary" icon="save" className="w-full justify-center" label={t.recordOutbound} />
           </form>
         </div>
       </div>
@@ -356,7 +357,7 @@ export function StockConsole({ warehouses, products, lowStock, lang }: StockCons
               value={adjustForm.reference}
               onChange={(event) => setAdjustForm((prev) => ({ ...prev, reference: event.target.value }))}
             />
-            <button className="w-full rounded-md bg-zinc-900 px-4 py-2 text-sm font-medium text-white">{t.recordAdjustment}</button>
+            <ActionButton type="submit" tone="primary" icon="save" className="w-full justify-center" label={t.recordAdjustment} />
           </form>
         </div>
 
@@ -426,7 +427,7 @@ export function StockConsole({ warehouses, products, lowStock, lang }: StockCons
               value={transferForm.reference}
               onChange={(event) => setTransferForm((prev) => ({ ...prev, reference: event.target.value }))}
             />
-            <button className="w-full rounded-md bg-zinc-900 px-4 py-2 text-sm font-medium text-white">{t.transferStock}</button>
+            <ActionButton type="submit" tone="primary" icon="save" className="w-full justify-center" label={t.transferStock} />
           </form>
         </div>
       </div>
@@ -437,14 +438,13 @@ export function StockConsole({ warehouses, products, lowStock, lang }: StockCons
             <h2 className="text-lg font-semibold text-zinc-900">{t.lowStockTitle}</h2>
             <p className="text-sm text-zinc-500">{t.lowStockHelp}</p>
           </div>
-          <button
+          <ActionButton
             type="button"
+            icon="refresh"
             onClick={refreshLowStock}
             disabled={refreshing}
-            className="rounded-md border border-zinc-300 px-3 py-2 text-sm disabled:opacity-60"
-          >
-            {refreshing ? t.refreshing : t.refresh}
-          </button>
+            label={refreshing ? t.refreshing : t.refresh}
+          />
         </div>
         {lowStockItems.length ? (
           <div className="space-y-3">
@@ -474,13 +474,7 @@ export function StockConsole({ warehouses, products, lowStock, lang }: StockCons
             <h2 className="text-lg font-semibold text-zinc-900">{t.stockByProduct}</h2>
             <p className="text-sm text-zinc-500">{t.stockByProductHelp}</p>
           </div>
-          <button
-            type="button"
-            onClick={() => window.location.reload()}
-            className="rounded-md border border-zinc-300 px-3 py-2 text-sm"
-          >
-            {t.refreshPage}
-          </button>
+          <ActionButton type="button" icon="refresh" onClick={() => window.location.reload()} label={t.refreshPage} />
         </div>
         <div className="space-y-3">
           {products.map((item) => (

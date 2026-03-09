@@ -16,7 +16,8 @@ type ActionIconName =
   | "left"
   | "right"
   | "download"
-  | "upload";
+  | "upload"
+  | "plus";
 
 type ActionTone = "neutral" | "primary" | "danger";
 type ActionSize = "sm" | "md" | "icon";
@@ -95,6 +96,13 @@ function iconPath(name: ActionIconName) {
           <path d="M12 15V3" />
           <path d="M7 8L12 3L17 8" />
           <path d="M4 20H20" />
+        </>
+      );
+    case "plus":
+      return (
+        <>
+          <path d="M12 5V19" />
+          <path d="M5 12H19" />
         </>
       );
     default:

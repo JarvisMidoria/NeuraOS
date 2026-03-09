@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { formatCurrency } from "@/lib/currency";
+import { ActionButton } from "../action-button";
 
 type ClientOption = {
   id: string;
@@ -285,9 +286,7 @@ export function SalesOrdersManager({
           <div className="space-y-3">
             <div className="flex items-center justify-between">
               <p className="text-sm font-medium text-zinc-700">{t.lines}</p>
-              <button type="button" onClick={addLine} className="text-sm font-medium text-zinc-600 hover:text-zinc-900">
-                {t.addLine}
-              </button>
+              <ActionButton type="button" size="sm" icon="plus" onClick={addLine} label={t.addLine} />
             </div>
 
             {lines.map((line, index) => (
@@ -361,9 +360,14 @@ export function SalesOrdersManager({
                       placeholder={t.optional}
                     />
                     {lines.length > 1 && (
-                      <button type="button" onClick={() => removeLine(index)} className="text-xs text-zinc-500 hover:text-red-600">
-                        {t.remove}
-                      </button>
+                      <ActionButton
+                        type="button"
+                        size="sm"
+                        tone="danger"
+                        icon="delete"
+                        onClick={() => removeLine(index)}
+                        label={t.remove}
+                      />
                     )}
                   </div>
                 </div>
@@ -372,16 +376,14 @@ export function SalesOrdersManager({
           </div>
 
           <div className="flex items-center gap-3">
-            <button
+            <ActionButton
               type="submit"
+              tone="primary"
+              icon="save"
               disabled={submitting}
-              className="rounded-md bg-zinc-900 px-4 py-2 text-sm font-medium text-white disabled:opacity-70"
-            >
-              {submitting ? t.saving : t.createOrder}
-            </button>
-            <button type="button" onClick={resetForm} className="text-sm font-medium text-zinc-600 hover:text-zinc-900">
-              {t.reset}
-            </button>
+              label={submitting ? t.saving : t.createOrder}
+            />
+            <ActionButton type="button" icon="close" onClick={resetForm} label={t.reset} />
           </div>
         </form>
       </div>
@@ -394,9 +396,7 @@ export function SalesOrdersManager({
               {t.showing} {Math.min(orders.length, PAGE_SIZE)} {t.of} {total} {lang === "fr" ? "commandes" : "orders"}
             </p>
           </div>
-          <button type="button" onClick={loadOrders} className="rounded-md border border-zinc-300 px-3 py-2 text-sm">
-            {t.refresh}
-          </button>
+          <ActionButton type="button" icon="refresh" onClick={loadOrders} label={t.refresh} />
         </div>
         {loading ? (
           <p className="text-sm text-zinc-500">{t.loading}</p>
@@ -432,28 +432,30 @@ export function SalesOrdersManager({
                   </div>
                   <div className="flex flex-wrap gap-2 text-xs">
                     {order.status === "DRAFT" && canManageSales && (
-                      <button
-                        className="rounded-md border border-emerald-200 px-2 py-1 text-emerald-700"
+                      <ActionButton
+                        size="sm"
+                        tone="primary"
+                        icon="apply"
                         onClick={() => handleStatusChange(order.id, "APPROVED")}
-                      >
-                        {t.approve}
-                      </button>
+                        label={t.approve}
+                      />
                     )}
                     {order.status === "APPROVED" && canManageSales && (
-                      <button
-                        className="rounded-md border border-blue-200 px-2 py-1 text-blue-700"
+                      <ActionButton
+                        size="sm"
+                        icon="right"
                         onClick={() => handleStatusChange(order.id, "CONFIRMED")}
-                      >
-                        {t.confirmShip}
-                      </button>
+                        label={t.confirmShip}
+                      />
                     )}
                     {order.status !== "REJECTED" && order.status !== "CONFIRMED" && (
-                      <button
-                        className="rounded-md border border-red-200 px-2 py-1 text-red-600"
+                      <ActionButton
+                        size="sm"
+                        tone="danger"
+                        icon="close"
                         onClick={() => handleStatusChange(order.id, "REJECTED")}
-                      >
-                        {t.reject}
-                      </button>
+                        label={t.reject}
+                      />
                     )}
                   </div>
                 </div>
@@ -466,22 +468,22 @@ export function SalesOrdersManager({
             {t.page} {page} {t.of} {totalPages}
           </span>
           <div className="flex gap-2">
-            <button
+            <ActionButton
               type="button"
+              size="sm"
+              icon="left"
               disabled={page <= 1}
               onClick={() => setPage((prev) => Math.max(1, prev - 1))}
-              className="rounded-md border border-zinc-300 px-3 py-1 disabled:opacity-40"
-            >
-              {t.previous}
-            </button>
-            <button
+              label={t.previous}
+            />
+            <ActionButton
               type="button"
+              size="sm"
+              icon="right"
               disabled={page >= totalPages}
               onClick={() => setPage((prev) => Math.min(totalPages, prev + 1))}
-              className="rounded-md border border-zinc-300 px-3 py-1 disabled:opacity-40"
-            >
-              {t.next}
-            </button>
+              label={t.next}
+            />
           </div>
         </div>
       </div>

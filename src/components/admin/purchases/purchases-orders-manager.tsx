@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { formatCurrency } from "@/lib/currency";
+import { ActionButton } from "../action-button";
 
 type SupplierOption = { id: string; name: string };
 type ProductOption = { id: string; sku: string; name: string; unitPrice: string };
@@ -184,7 +185,7 @@ export function PurchasesOrdersManager({
           <div className="space-y-3">
             <div className="flex items-center justify-between">
               <p className="text-sm font-medium text-zinc-700">Lines</p>
-              <button type="button" onClick={addLine} className="text-sm font-medium text-zinc-600 hover:text-zinc-900">+ Add line</button>
+              <ActionButton type="button" size="sm" icon="plus" onClick={addLine} label="+ Add line" />
             </div>
             {lines.map((line, index) => (
               <div key={index} className="grid gap-3 rounded-xl border border-zinc-200 p-4 md:grid-cols-4">
@@ -198,23 +199,27 @@ export function PurchasesOrdersManager({
                 <div className="flex items-center gap-2">
                   <input className="w-full rounded-md border border-zinc-300 px-3 py-2 text-sm" placeholder="Taxes % (e.g. 20)" value={line.taxes} onChange={(e) => updateLine(index, "taxes", e.target.value)} />
                   {lines.length > 1 ? (
-                    <button type="button" onClick={() => removeLine(index)} className="text-xs text-red-600">Remove</button>
+                    <ActionButton type="button" size="sm" tone="danger" icon="delete" onClick={() => removeLine(index)} label="Remove" />
                   ) : null}
                 </div>
               </div>
             ))}
           </div>
 
-          <button disabled={!canManagePurchasing || submitting} className="rounded-md bg-zinc-900 px-4 py-2 text-sm font-medium text-white disabled:opacity-40">
-            {submitting ? "Creating..." : "Create PO"}
-          </button>
+          <ActionButton
+            type="submit"
+            tone="primary"
+            icon="save"
+            disabled={!canManagePurchasing || submitting}
+            label={submitting ? "Creating..." : "Create PO"}
+          />
         </form>
       </div>
 
       <div className="rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm">
         <div className="mb-4 flex items-center justify-between">
           <h2 className="text-lg font-semibold text-zinc-900">Purchase Orders</h2>
-          <button type="button" onClick={loadOrders} className="rounded-md border border-zinc-300 px-3 py-2 text-sm">Refresh</button>
+          <ActionButton type="button" icon="refresh" onClick={loadOrders} label="Refresh" />
         </div>
 
         {loading ? (
@@ -238,13 +243,13 @@ export function PurchasesOrdersManager({
                 </div>
                 <div className="mt-3 flex flex-wrap gap-2 text-xs">
                   {order.status === "DRAFT" ? (
-                    <button className="rounded-md border border-zinc-300 px-2 py-1" onClick={() => setOrderStatus(order.id, "SENT")}>Mark sent</button>
+                    <ActionButton size="sm" icon="apply" onClick={() => setOrderStatus(order.id, "SENT")} label="Mark sent" />
                   ) : null}
                   {order.status === "SENT" ? (
-                    <button className="rounded-md border border-blue-200 px-2 py-1 text-blue-700" onClick={() => setOrderStatus(order.id, "CONFIRMED")}>Confirm</button>
+                    <ActionButton size="sm" icon="right" onClick={() => setOrderStatus(order.id, "CONFIRMED")} label="Confirm" />
                   ) : null}
                   {(order.status === "DRAFT" || order.status === "SENT") ? (
-                    <button className="rounded-md border border-red-200 px-2 py-1 text-red-600" onClick={() => setOrderStatus(order.id, "CANCELLED")}>Cancel</button>
+                    <ActionButton size="sm" tone="danger" icon="close" onClick={() => setOrderStatus(order.id, "CANCELLED")} label="Cancel" />
                   ) : null}
                 </div>
               </div>
@@ -255,8 +260,8 @@ export function PurchasesOrdersManager({
         <div className="mt-4 flex items-center justify-between text-sm text-zinc-600">
           <span>Page {page} of {totalPages}</span>
           <div className="flex gap-2">
-            <button disabled={page <= 1} onClick={() => setPage((p) => Math.max(1, p - 1))} className="rounded-md border border-zinc-300 px-3 py-1 disabled:opacity-40">Previous</button>
-            <button disabled={page >= totalPages} onClick={() => setPage((p) => Math.min(totalPages, p + 1))} className="rounded-md border border-zinc-300 px-3 py-1 disabled:opacity-40">Next</button>
+            <ActionButton size="sm" icon="left" disabled={page <= 1} onClick={() => setPage((p) => Math.max(1, p - 1))} label="Previous" />
+            <ActionButton size="sm" icon="right" disabled={page >= totalPages} onClick={() => setPage((p) => Math.min(totalPages, p + 1))} label="Next" />
           </div>
         </div>
       </div>

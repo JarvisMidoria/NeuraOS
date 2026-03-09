@@ -35,6 +35,13 @@ const STATUS_LABELS: Record<string, { en: string; fr: string }> = {
   CANCELLED: { en: "Cancelled", fr: "Annule" },
 };
 
+const ANALYTICS_METRIC_LINKS: Record<string, string> = {
+  sales: "/admin/sales/orders",
+  purchases: "/admin/purchases/orders",
+  quoteConv: "/admin/sales/quotes",
+  openPo: "/admin/purchases/orders",
+};
+
 export default async function AdminAnalyticsPage({ searchParams }: AnalyticsPageProps) {
   const session = await auth();
   const user = session?.user;
@@ -112,25 +119,25 @@ export default async function AdminAnalyticsPage({ searchParams }: AnalyticsPage
       </section>
 
       <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        <article className="rounded-2xl border border-zinc-200 bg-white p-5 shadow-sm">
+        <Link href={ANALYTICS_METRIC_LINKS.sales} className="rounded-2xl border border-zinc-200 bg-white p-5 shadow-sm transition hover:bg-zinc-50">
           <p className="text-sm text-zinc-500">{text.sales}</p>
           <p className="mt-2 text-3xl font-semibold text-zinc-900">{formatCurrency(snapshot.metrics.salesTotal, locale, currencyCode, 0)}</p>
-        </article>
-        <article className="rounded-2xl border border-zinc-200 bg-white p-5 shadow-sm">
+        </Link>
+        <Link href={ANALYTICS_METRIC_LINKS.purchases} className="rounded-2xl border border-zinc-200 bg-white p-5 shadow-sm transition hover:bg-zinc-50">
           <p className="text-sm text-zinc-500">{text.purchases}</p>
           <p className="mt-2 text-3xl font-semibold text-zinc-900">{formatCurrency(snapshot.metrics.purchaseTotal, locale, currencyCode, 0)}</p>
-        </article>
-        <article className="rounded-2xl border border-zinc-200 bg-white p-5 shadow-sm">
+        </Link>
+        <Link href={ANALYTICS_METRIC_LINKS.quoteConv} className="rounded-2xl border border-zinc-200 bg-white p-5 shadow-sm transition hover:bg-zinc-50">
           <p className="text-sm text-zinc-500">{text.quoteConv}</p>
           <p className="mt-2 text-3xl font-semibold text-zinc-900">{snapshot.metrics.conversionRate.toFixed(1)}%</p>
           <p className="mt-1 text-xs text-zinc-500">
             {snapshot.metrics.quoteConverted}/{snapshot.metrics.quoteSent}
           </p>
-        </article>
-        <article className="rounded-2xl border border-zinc-200 bg-white p-5 shadow-sm">
+        </Link>
+        <Link href={ANALYTICS_METRIC_LINKS.openPo} className="rounded-2xl border border-zinc-200 bg-white p-5 shadow-sm transition hover:bg-zinc-50">
           <p className="text-sm text-zinc-500">{text.openPo}</p>
           <p className="mt-2 text-3xl font-semibold text-zinc-900">{formatNumber(snapshot.metrics.openPurchaseCount, locale)}</p>
-        </article>
+        </Link>
       </section>
 
       <section className="grid gap-6 xl:grid-cols-3">
@@ -194,11 +201,11 @@ export default async function AdminAnalyticsPage({ searchParams }: AnalyticsPage
               <div className="mt-3 space-y-2">
                 {snapshot.topClients.length === 0 && <p className="text-sm text-zinc-500">{text.noData}</p>}
                 {snapshot.topClients.map((client) => (
-                  <div key={client.id} className="rounded-lg border border-zinc-100 p-3">
+                  <Link key={client.id} href="/admin/clients" className="block rounded-lg border border-zinc-100 p-3 transition hover:bg-zinc-50">
                     <p className="text-sm font-semibold text-zinc-900">{client.name}</p>
                     <p className="text-xs text-zinc-500">{client.orders} {text.orders}</p>
                     <p className="mt-1 text-sm text-zinc-800">{formatCurrency(client.total, locale, currencyCode)}</p>
-                  </div>
+                  </Link>
                 ))}
               </div>
             </div>
@@ -207,11 +214,11 @@ export default async function AdminAnalyticsPage({ searchParams }: AnalyticsPage
               <div className="mt-3 space-y-2">
                 {snapshot.topProducts.length === 0 && <p className="text-sm text-zinc-500">{text.noData}</p>}
                 {snapshot.topProducts.map((product) => (
-                  <div key={product.id} className="rounded-lg border border-zinc-100 p-3">
+                  <Link key={product.id} href="/admin/products" className="block rounded-lg border border-zinc-100 p-3 transition hover:bg-zinc-50">
                     <p className="text-sm font-semibold text-zinc-900">{product.sku} · {product.name}</p>
                     <p className="text-xs text-zinc-500">{formatNumber(product.quantity, locale)} {text.units}</p>
                     <p className="mt-1 text-sm text-zinc-800">{formatCurrency(product.revenue, locale, currencyCode)}</p>
-                  </div>
+                  </Link>
                 ))}
               </div>
             </div>

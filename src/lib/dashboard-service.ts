@@ -343,7 +343,7 @@ export async function getDashboardSnapshot(companyId: string, monthsInput?: numb
       status: po.status,
       total: decimalToNumber(po.totalAmount),
       date: po.orderDate.toISOString(),
-      href: `/admin`,
+      href: `/admin/purchases/orders`,
     })),
   ]
     .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
@@ -372,7 +372,7 @@ export async function getDashboardSnapshot(companyId: string, monthsInput?: numb
       count: receiptsOverdue,
       severity: receiptsOverdue > 0 ? "high" : "low",
       description: "Follow up with suppliers on late inbound shipments.",
-      href: "/admin",
+      href: "/admin/purchases/receipts",
     },
   ];
 
