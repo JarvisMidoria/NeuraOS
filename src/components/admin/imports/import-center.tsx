@@ -2,6 +2,7 @@
 
 import type { ChangeEvent, DragEvent } from "react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { ActionButton } from "../action-button";
 
 type IngestionAction = {
   id: string;
@@ -191,22 +192,21 @@ export function ImportCenter({ lang }: { lang: "en" | "fr" }) {
           >
             {text.dropHint}
           </div>
-          <button
+          <ActionButton
             type="button"
-            className="liquid-btn-primary px-4 py-2 text-sm"
+            icon="upload"
+            tone="primary"
             onClick={() => fileInputRef.current?.click()}
             disabled={uploading}
-          >
-            {uploading ? text.loading : text.chooseFile}
-          </button>
-          <button
+            label={uploading ? text.loading : text.chooseFile}
+          />
+          <ActionButton
             type="button"
+            icon="refresh"
             onClick={fetchJobs}
-            className="liquid-pill px-4 py-2 text-sm"
             disabled={loading}
-          >
-            {text.refresh}
-          </button>
+            label={text.refresh}
+          />
         </div>
 
         {pendingFile ? (
@@ -214,22 +214,23 @@ export function ImportCenter({ lang }: { lang: "en" | "fr" }) {
             <span className="liquid-surface rounded-full px-3 py-1 text-[var(--admin-text)]">
               {text.selectedFile}: {pendingFile.name} ({Math.max(1, Math.round(pendingFile.size / 1024))} KB)
             </span>
-            <button
+            <ActionButton
               type="button"
-              className="liquid-btn-primary px-3 py-1.5 text-xs"
+              icon="apply"
+              tone="primary"
+              size="sm"
               onClick={onConfirmImport}
               disabled={uploading}
-            >
-              {uploading ? text.loading : text.confirmImport}
-            </button>
-            <button
+              label={uploading ? text.loading : text.confirmImport}
+            />
+            <ActionButton
               type="button"
-              className="liquid-pill px-3 py-1.5 text-xs"
+              icon="close"
+              size="sm"
               onClick={() => setPendingFile(null)}
               disabled={uploading}
-            >
-              {text.clearSelection}
-            </button>
+              label={text.clearSelection}
+            />
           </div>
         ) : null}
 
@@ -310,13 +311,14 @@ export function ImportCenter({ lang }: { lang: "en" | "fr" }) {
 
               {canApply ? (
                 <div className="mt-3">
-                  <button
+                  <ActionButton
                     type="button"
-                    className="liquid-pill liquid-selected px-3 py-1.5 text-xs"
+                    icon="apply"
+                    size="sm"
+                    className="liquid-selected"
                     onClick={() => applyJob(job.id)}
-                  >
-                    {text.apply}
-                  </button>
+                    label={text.apply}
+                  />
                 </div>
               ) : null}
             </article>

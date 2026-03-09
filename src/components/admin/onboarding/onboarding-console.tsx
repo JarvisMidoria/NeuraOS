@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { ActionButton } from "../action-button";
 
 type ChecklistItem = {
   id: string;
@@ -85,9 +86,7 @@ export function OnboardingConsole({ lang }: { lang: "en" | "fr" }) {
     return (
       <div className="space-y-3">
         <p className="text-sm text-rose-400">{error ?? text.loadingError}</p>
-        <button onClick={load} className="rounded-md border border-zinc-300 px-3 py-1.5 text-sm text-zinc-700 hover:bg-zinc-50">
-          {text.refresh}
-        </button>
+        <ActionButton onClick={load} icon="refresh" label={text.refresh} />
       </div>
     );
   }
@@ -100,9 +99,7 @@ export function OnboardingConsole({ lang }: { lang: "en" | "fr" }) {
             <h2 className="text-xl font-semibold text-zinc-900">{text.title}</h2>
             <p className="text-sm text-zinc-500">{text.subtitle}</p>
           </div>
-          <button onClick={load} className="rounded-md border border-zinc-300 px-3 py-1.5 text-sm text-zinc-700 hover:bg-zinc-50">
-            {text.refresh}
-          </button>
+          <ActionButton onClick={load} icon="refresh" label={text.refresh} />
         </div>
 
         <div className="mt-4">

@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import { ActionButton } from "../action-button";
 
 type Warehouse = {
   id: string;
@@ -132,9 +133,13 @@ export function WarehousesManager({ lang }: { lang: "en" | "fr" }) {
             <p className="text-sm text-zinc-500">{t.formHelp}</p>
           </div>
           {formData.id && (
-            <button type="button" className="text-sm font-medium text-zinc-600 hover:text-zinc-900" onClick={resetForm}>
-              {t.cancelEdit}
-            </button>
+            <ActionButton
+              type="button"
+              icon="close"
+              size="sm"
+              onClick={resetForm}
+              label={t.cancelEdit}
+            />
           )}
         </div>
 
@@ -158,17 +163,17 @@ export function WarehousesManager({ lang }: { lang: "en" | "fr" }) {
             />
           </div>
           <div className="md:col-span-2 flex items-center gap-3">
-            <button
+            <ActionButton
               type="submit"
+              icon="save"
+              tone="primary"
               disabled={isSubmitting}
-              className="rounded-md bg-zinc-900 px-4 py-2 text-sm font-medium text-white disabled:opacity-70"
+              className="disabled:opacity-70"
             >
               {isSubmitting ? t.saving : formData.id ? t.update : t.create}
-            </button>
+            </ActionButton>
             {formData.id && (
-              <button type="button" onClick={resetForm} className="text-sm font-medium text-zinc-600 hover:text-zinc-900">
-                {t.reset}
-              </button>
+              <ActionButton type="button" icon="close" onClick={resetForm} label={t.reset} />
             )}
           </div>
         </form>
@@ -182,9 +187,7 @@ export function WarehousesManager({ lang }: { lang: "en" | "fr" }) {
               {warehouses.length} {t.total}
             </p>
           </div>
-          <button type="button" onClick={loadWarehouses} className="rounded-md border border-zinc-300 px-3 py-2 text-sm">
-            {t.refresh}
-          </button>
+          <ActionButton type="button" icon="refresh" onClick={loadWarehouses} label={t.refresh} />
         </div>
 
         {loading ? (
@@ -198,12 +201,23 @@ export function WarehousesManager({ lang }: { lang: "en" | "fr" }) {
                   <p className="text-xs text-zinc-500">{warehouse.location ?? t.noLocation}</p>
                 </div>
                 <div className="flex gap-3 text-xs">
-                  <button className="text-zinc-600 hover:text-zinc-900" onClick={() => handleEdit(warehouse)}>
-                    {t.edit}
-                  </button>
-                  <button className="text-red-600 hover:text-red-800" onClick={() => handleDelete(warehouse)}>
-                    {t.delete}
-                  </button>
+                  <ActionButton
+                    icon="edit"
+                    iconOnly
+                    size="icon"
+                    onClick={() => handleEdit(warehouse)}
+                    label={t.edit}
+                    title={t.edit}
+                  />
+                  <ActionButton
+                    icon="delete"
+                    iconOnly
+                    size="icon"
+                    tone="danger"
+                    onClick={() => handleDelete(warehouse)}
+                    label={t.delete}
+                    title={t.delete}
+                  />
                 </div>
               </div>
             ))}

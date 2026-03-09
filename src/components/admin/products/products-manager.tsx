@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { ActionButton } from "../action-button";
 
 type Category = {
   id: string;
@@ -283,13 +284,13 @@ export function ProductsManager({
             </p>
           </div>
           {formData.id && (
-            <button
+            <ActionButton
               type="button"
+              icon="close"
+              size="sm"
               onClick={resetForm}
-              className="text-sm font-medium text-zinc-600 hover:text-zinc-900"
-            >
-              {t.cancelEdit}
-            </button>
+              label={t.cancelEdit}
+            />
           )}
         </div>
 
@@ -425,21 +426,22 @@ export function ProductsManager({
           )}
 
           <div className="md:col-span-2 flex items-center gap-3">
-            <button
+            <ActionButton
               type="submit"
+              icon="save"
+              tone="primary"
               disabled={isSubmitting}
-              className="rounded-md bg-zinc-900 px-4 py-2 text-sm font-medium text-white disabled:opacity-70"
+              className="disabled:opacity-70"
             >
               {isSubmitting ? t.saving : formData.id ? t.update : t.createBtn}
-            </button>
+            </ActionButton>
             {formData.id && (
-              <button
+              <ActionButton
                 type="button"
+                icon="close"
                 onClick={resetForm}
-                className="text-sm font-medium text-zinc-600 hover:text-zinc-900"
-              >
-                {t.reset}
-              </button>
+                label={t.reset}
+              />
             )}
           </div>
         </form>
@@ -466,13 +468,12 @@ export function ProductsManager({
                 </option>
               ))}
             </select>
-            <button
+            <ActionButton
               type="button"
+              icon="refresh"
               onClick={loadProducts}
-              className="rounded-md border border-zinc-300 px-3 py-2 text-sm"
-            >
-              {t.refresh}
-            </button>
+              label={t.refresh}
+            />
           </div>
         </div>
 
@@ -510,12 +511,23 @@ export function ProductsManager({
                     </div>
                   </div>
                   <div className="flex items-center gap-2 text-xs md:justify-end">
-                    <button className="text-zinc-600 hover:text-zinc-900" onClick={() => handleEdit(product)}>
-                      {t.editRow}
-                    </button>
-                    <button className="text-red-600 hover:text-red-800" onClick={() => handleDelete(product.id)}>
-                      {t.deleteRow}
-                    </button>
+                    <ActionButton
+                      icon="edit"
+                      iconOnly
+                      size="icon"
+                      onClick={() => handleEdit(product)}
+                      label={t.editRow}
+                      title={t.editRow}
+                    />
+                    <ActionButton
+                      icon="delete"
+                      iconOnly
+                      size="icon"
+                      tone="danger"
+                      onClick={() => handleDelete(product.id)}
+                      label={t.deleteRow}
+                      title={t.deleteRow}
+                    />
                   </div>
                 </div>
               </div>
@@ -528,22 +540,24 @@ export function ProductsManager({
             {t.page} {page} {t.of} {totalPages}
           </span>
           <div className="flex gap-2">
-            <button
+            <ActionButton
               type="button"
+              icon="left"
+              size="sm"
               disabled={page <= 1}
               onClick={() => setPage((prev) => Math.max(1, prev - 1))}
-              className="rounded-md border border-zinc-300 px-3 py-1 disabled:opacity-40"
-            >
-              {t.previous}
-            </button>
-            <button
+              className="disabled:opacity-40"
+              label={t.previous}
+            />
+            <ActionButton
               type="button"
+              icon="right"
+              size="sm"
               disabled={page >= totalPages}
               onClick={() => setPage((prev) => Math.min(totalPages, prev + 1))}
-              className="rounded-md border border-zinc-300 px-3 py-1 disabled:opacity-40"
-            >
-              {t.next}
-            </button>
+              className="disabled:opacity-40"
+              label={t.next}
+            />
           </div>
         </div>
       </div>

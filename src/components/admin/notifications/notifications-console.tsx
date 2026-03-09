@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { ActionButton, ActionLinkButton } from "../action-button";
 
 type NotificationItem = {
   id: string;
@@ -96,15 +97,9 @@ export function NotificationsConsole({ lang }: { lang: "en" | "fr" }) {
         </div>
 
         <div className="mt-4 flex flex-wrap gap-2">
-          <button onClick={() => load(false)} className="rounded-md border border-zinc-300 px-3 py-1.5 text-sm text-zinc-700 hover:bg-zinc-50">
-            {text.refresh}
-          </button>
-          <button onClick={() => load(true)} className="rounded-md border border-zinc-300 px-3 py-1.5 text-sm text-zinc-700 hover:bg-zinc-50">
-            {text.sync}
-          </button>
-          <button onClick={markAllRead} className="rounded-md border border-zinc-300 px-3 py-1.5 text-sm text-zinc-700 hover:bg-zinc-50">
-            {text.markAll}
-          </button>
+          <ActionButton onClick={() => load(false)} icon="refresh" label={text.refresh} />
+          <ActionButton onClick={() => load(true)} icon="refresh" label={text.sync} />
+          <ActionButton onClick={markAllRead} icon="apply" label={text.markAll} />
         </div>
       </section>
 
@@ -128,17 +123,20 @@ export function NotificationsConsole({ lang }: { lang: "en" | "fr" }) {
                 <span>{new Date(item.createdAt).toLocaleString(lang === "fr" ? "fr-FR" : "en-US")}</span>
                 <div className="flex items-center gap-2">
                   {item.href && (
-                    <a href={item.href} className="rounded border border-zinc-300 px-2 py-1 text-zinc-700 hover:bg-zinc-50">
-                      {text.open}
-                    </a>
+                    <ActionLinkButton
+                      href={item.href}
+                      icon="right"
+                      label={text.open}
+                      className="px-2 py-1 text-xs"
+                    />
                   )}
                   {!item.readAt && (
-                    <button
+                    <ActionButton
                       onClick={() => markOneRead(item.id)}
-                      className="rounded border border-zinc-300 px-2 py-1 text-zinc-700 hover:bg-zinc-50"
-                    >
-                      {text.markRead}
-                    </button>
+                      icon="apply"
+                      size="sm"
+                      label={text.markRead}
+                    />
                   )}
                 </div>
               </div>

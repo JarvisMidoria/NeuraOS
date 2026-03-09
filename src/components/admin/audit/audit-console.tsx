@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { ActionButton, ActionLinkButton } from "../action-button";
 
 type AuditRow = {
   id: string;
@@ -137,19 +138,8 @@ export function AuditConsole({ lang }: { lang: "en" | "fr" }) {
               </option>
             ))}
           </select>
-          <a
-            href={csvHref}
-            className="rounded-lg border border-zinc-300 px-3 py-2 text-center text-sm text-zinc-700 hover:bg-zinc-50"
-          >
-            {text.exportCsv}
-          </a>
-          <button
-            type="button"
-            onClick={load}
-            className="rounded-lg border border-zinc-300 px-3 py-2 text-sm text-zinc-700 hover:bg-zinc-50"
-          >
-            {text.refresh}
-          </button>
+          <ActionLinkButton href={csvHref} icon="download" label={text.exportCsv} />
+          <ActionButton type="button" icon="refresh" onClick={load} label={text.refresh} />
         </div>
       </section>
 
@@ -203,22 +193,24 @@ export function AuditConsole({ lang }: { lang: "en" | "fr" }) {
             {text.page} {page}/{totalPages} · {total}
           </span>
           <div className="flex items-center gap-2">
-            <button
+            <ActionButton
               type="button"
+              icon="left"
+              size="sm"
               disabled={page <= 1}
               onClick={() => setPage((prev) => Math.max(1, prev - 1))}
-              className="rounded border border-zinc-300 px-2 py-1 disabled:cursor-not-allowed disabled:opacity-40"
-            >
-              {text.previous}
-            </button>
-            <button
+              className="disabled:cursor-not-allowed disabled:opacity-40"
+              label={text.previous}
+            />
+            <ActionButton
               type="button"
+              icon="right"
+              size="sm"
               disabled={page >= totalPages}
               onClick={() => setPage((prev) => Math.min(totalPages, prev + 1))}
-              className="rounded border border-zinc-300 px-2 py-1 disabled:cursor-not-allowed disabled:opacity-40"
-            >
-              {text.next}
-            </button>
+              className="disabled:cursor-not-allowed disabled:opacity-40"
+              label={text.next}
+            />
           </div>
         </div>
       </section>
