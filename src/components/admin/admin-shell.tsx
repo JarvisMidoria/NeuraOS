@@ -112,7 +112,7 @@ export function AdminShell({ children }: { children: ReactNode }) {
         onClick={() => setMobileOpen(false)}
       />
       <aside
-        className={`admin-mobile-drawer fixed inset-y-0 left-0 z-50 w-[88%] max-w-[320px] overflow-y-auto border-r px-4 py-5 transition-transform duration-200 will-change-transform lg:hidden ${
+        className={`admin-mobile-drawer fixed inset-y-0 left-0 z-50 w-[73%] max-w-[266px] overflow-y-auto border-r px-4 py-5 transition-transform duration-200 will-change-transform lg:hidden ${
           mobileOpen ? "translate-x-0" : "-translate-x-full"
         }`}
       >
@@ -127,7 +127,7 @@ export function AdminShell({ children }: { children: ReactNode }) {
             ×
           </button>
         </div>
-        <div className="mb-3 flex items-center gap-2">
+        <div className="mb-3 flex items-center justify-center gap-2">
           <WorkspaceModeToggle lang={lang} />
           <button
             type="button"

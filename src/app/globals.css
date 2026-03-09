@@ -264,8 +264,8 @@ html[data-admin-bg-preset="FROZEN_ROSE"] {
 
 .admin-shell .admin-mobile-drawer {
   background:
-    linear-gradient(145deg, rgba(255, 255, 255, 0.18), rgba(255, 255, 255, 0.03)),
-    var(--admin-drawer-bg);
+    linear-gradient(145deg, rgba(255, 255, 255, 0.16), rgba(255, 255, 255, 0.04)),
+    var(--admin-topbar-bg);
 }
 
 .admin-shell .bg-white {
