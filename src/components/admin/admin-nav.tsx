@@ -6,26 +6,30 @@ import { useEffect, useMemo, useState } from "react";
 
 const SIDEBAR_TRACK_WIDTH = "w-[196px]";
 
+type NavSectionKey = "pilotage" | "sales" | "procurement" | "data" | "settings";
+
+const SECTION_ORDER: NavSectionKey[] = ["pilotage", "sales", "procurement", "data", "settings"];
+
 const NAV_ITEMS = [
-  { key: "overview", href: "/admin", en: "Overview", fr: "Apercu" },
-  { key: "analytics", href: "/admin/analytics", en: "Analytics", fr: "Analytics" },
-  { key: "notifications", href: "/admin/notifications", en: "Notifications", fr: "Notifications" },
-  { key: "onboarding", href: "/admin/onboarding", en: "Onboarding", fr: "Onboarding" },
-  { key: "billing", href: "/admin/billing", en: "Billing", fr: "Facturation" },
-  { key: "documents", href: "/admin/documents", en: "Documents", fr: "Documents" },
-  { key: "products", href: "/admin/products", en: "Products", fr: "Produits" },
-  { key: "stock", href: "/admin/stock", en: "Inventory", fr: "Stock" },
-  { key: "quotes", href: "/admin/sales/quotes", en: "Quotes", fr: "Devis" },
-  { key: "orders", href: "/admin/sales/orders", en: "Orders", fr: "Commandes" },
-  { key: "purchases", href: "/admin/purchases/orders", en: "Purchases", fr: "Achats" },
-  { key: "receipts", href: "/admin/purchases/receipts", en: "Receipts", fr: "Receptions" },
-  { key: "replenishment", href: "/admin/purchases/replenishment", en: "Replenishment", fr: "Reappro" },
-  { key: "clients", href: "/admin/clients", en: "Clients", fr: "Clients" },
-  { key: "suppliers", href: "/admin/suppliers", en: "Suppliers", fr: "Fournisseurs" },
-  { key: "warehouses", href: "/admin/warehouses", en: "Warehouses", fr: "Entrepots" },
-  { key: "imports", href: "/admin/imports", en: "Imports", fr: "Imports" },
-  { key: "settings", href: "/admin/settings", en: "Settings", fr: "Parametres" },
-  { key: "audit", href: "/admin/audit", en: "Audit Log", fr: "Journal audit" },
+  { key: "overview", href: "/admin", en: "Overview", fr: "Apercu", section: "pilotage" as const },
+  { key: "analytics", href: "/admin/analytics", en: "Analytics", fr: "Analytics", section: "pilotage" as const },
+  { key: "notifications", href: "/admin/notifications", en: "Notifications", fr: "Notifications", section: "pilotage" as const },
+  { key: "quotes", href: "/admin/sales/quotes", en: "Quotes", fr: "Devis", section: "sales" as const },
+  { key: "orders", href: "/admin/sales/orders", en: "Orders", fr: "Commandes", section: "sales" as const },
+  { key: "clients", href: "/admin/clients", en: "Clients", fr: "Clients", section: "sales" as const },
+  { key: "documents", href: "/admin/documents", en: "Documents", fr: "Documents", section: "sales" as const },
+  { key: "products", href: "/admin/products", en: "Products", fr: "Produits", section: "procurement" as const },
+  { key: "stock", href: "/admin/stock", en: "Inventory", fr: "Stock", section: "procurement" as const },
+  { key: "purchases", href: "/admin/purchases/orders", en: "Purchases", fr: "Achats", section: "procurement" as const },
+  { key: "receipts", href: "/admin/purchases/receipts", en: "Receipts", fr: "Receptions", section: "procurement" as const },
+  { key: "replenishment", href: "/admin/purchases/replenishment", en: "Replenishment", fr: "Reappro", section: "procurement" as const },
+  { key: "suppliers", href: "/admin/suppliers", en: "Suppliers", fr: "Fournisseurs", section: "procurement" as const },
+  { key: "warehouses", href: "/admin/warehouses", en: "Warehouses", fr: "Entrepots", section: "procurement" as const },
+  { key: "imports", href: "/admin/imports", en: "Imports", fr: "Imports", section: "data" as const },
+  { key: "audit", href: "/admin/audit", en: "Audit Log", fr: "Journal audit", section: "data" as const },
+  { key: "onboarding", href: "/admin/onboarding", en: "Onboarding", fr: "Onboarding", section: "data" as const },
+  { key: "billing", href: "/admin/billing", en: "Billing", fr: "Facturation", section: "settings" as const },
+  { key: "settings", href: "/admin/settings", en: "Settings", fr: "Parametres", section: "settings" as const },
 ] as const;
 
 const SIMULATION_NAV_KEYS = new Set([
@@ -86,6 +90,13 @@ export function AdminNav({ onNavigate }: AdminNavProps) {
       french: "FR",
       darkLabel: lang === "fr" ? "Mode nuit" : "Dark mode",
       lightLabel: lang === "fr" ? "Mode jour" : "Light mode",
+      groups: {
+        pilotage: lang === "fr" ? "Pilotage" : "Pilotage",
+        sales: lang === "fr" ? "Ventes" : "Sales",
+        procurement: lang === "fr" ? "Achats & Stock" : "Purchasing & Stock",
+        data: lang === "fr" ? "Donnees" : "Data",
+        settings: lang === "fr" ? "Parametres" : "Settings",
+      } as Record<NavSectionKey, string>,
     }),
     [lang],
   );
@@ -139,6 +150,27 @@ export function AdminNav({ onNavigate }: AdminNavProps) {
     return NAV_ITEMS.filter((item) => SIMULATION_NAV_KEYS.has(item.key));
   }, [workspaceMode, canUseSimulation]);
 
+  const navSections = useMemo(
+    () =>
+      SECTION_ORDER.map((section) => ({
+        section,
+        items: navItems.filter((item) => item.section === section),
+      })).filter((group) => group.items.length > 0),
+    [navItems],
+  );
+
+  const [expandedSections, setExpandedSections] = useState<NavSectionKey[]>(SECTION_ORDER);
+
+  useEffect(() => {
+    setExpandedSections((prev) => prev.filter((section) => navSections.some((group) => group.section === section)));
+  }, [navSections]);
+
+  useEffect(() => {
+    const currentSection = navSections.find((group) => group.items.some((item) => isActive(pathname, item.href)))?.section;
+    if (!currentSection) return;
+    setExpandedSections((prev) => (prev.includes(currentSection) ? prev : [...prev, currentSection]));
+  }, [navSections, pathname]);
+
   useEffect(() => {
     const normalized = query.trim();
     if (normalized.length < 1) {
@@ -185,6 +217,10 @@ export function AdminNav({ onNavigate }: AdminNavProps) {
     setTheme(value);
     document.documentElement.setAttribute("data-admin-theme", value);
     savePreference("neura_theme", value);
+  };
+
+  const toggleSection = (section: NavSectionKey) => {
+    setExpandedSections((prev) => (prev.includes(section) ? prev.filter((item) => item !== section) : [...prev, section]));
   };
 
   return (
@@ -298,22 +334,55 @@ export function AdminNav({ onNavigate }: AdminNavProps) {
         </div>
       </div>
 
-      <nav className="mx-auto flex flex-col items-start gap-1 pb-4">
-        {navItems.map((item) => {
-          const active = isActive(pathname, item.href);
+      <nav className={`mx-auto flex flex-col items-start gap-2 pb-4 ${SIDEBAR_TRACK_WIDTH}`}>
+        {navSections.map((group) => {
+          const sectionActive = group.items.some((item) => isActive(pathname, item.href));
+          const sectionExpanded = expandedSections.includes(group.section);
           return (
-            <Link
-              key={item.href}
-              href={item.href}
-              onClick={onNavigate}
-              className={`liquid-pill ${SIDEBAR_TRACK_WIDTH} max-w-full px-3 py-1.5 text-sm transition ${
-                active
-                  ? "liquid-selected"
-                  : "text-[var(--admin-muted)] hover:border-[var(--accent)] hover:bg-[color-mix(in_srgb,var(--accent)_12%,var(--admin-soft-bg))] hover:text-[var(--admin-text)]"
-              }`}
-            >
-              {lang === "fr" ? item.fr : item.en}
-            </Link>
+            <div key={group.section} className="w-full">
+              <button
+                type="button"
+                onClick={() => toggleSection(group.section)}
+                className={`liquid-pill flex w-full items-center justify-between px-3 py-1.5 text-xs font-medium uppercase tracking-[0.16em] transition ${
+                  sectionActive
+                    ? "liquid-selected"
+                    : "text-[var(--admin-muted)] hover:border-[var(--accent)] hover:bg-[color-mix(in_srgb,var(--accent)_12%,var(--admin-soft-bg))] hover:text-[var(--admin-text)]"
+                }`}
+                aria-expanded={sectionExpanded}
+              >
+                <span>{text.groups[group.section]}</span>
+                <svg
+                  aria-hidden
+                  viewBox="0 0 20 20"
+                  className={`h-3.5 w-3.5 fill-none stroke-current transition ${sectionExpanded ? "rotate-180" : ""}`}
+                  strokeWidth="1.9"
+                >
+                  <path d="m4 7 6 6 6-6" />
+                </svg>
+              </button>
+
+              {sectionExpanded ? (
+                <div className="mt-1 space-y-1 pl-2">
+                  {group.items.map((item) => {
+                    const active = isActive(pathname, item.href);
+                    return (
+                      <Link
+                        key={item.href}
+                        href={item.href}
+                        onClick={onNavigate}
+                        className={`liquid-pill flex w-full items-center px-3 py-1.5 text-sm transition ${
+                          active
+                            ? "liquid-selected"
+                            : "text-[var(--admin-muted)] hover:border-[var(--accent)] hover:bg-[color-mix(in_srgb,var(--accent)_12%,var(--admin-soft-bg))] hover:text-[var(--admin-text)]"
+                        }`}
+                      >
+                        {lang === "fr" ? item.fr : item.en}
+                      </Link>
+                    );
+                  })}
+                </div>
+              ) : null}
+            </div>
           );
         })}
       </nav>
