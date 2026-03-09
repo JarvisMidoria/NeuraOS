@@ -24,7 +24,7 @@
   --admin-elevated-soft: rgba(20, 30, 54, 0.7);
   --admin-shadow: none;
   --admin-topbar-bg: rgba(10, 18, 36, 0.72);
-  --admin-drawer-bg: rgba(10, 18, 36, 0.92);
+  --admin-drawer-bg: #1a2236;
   --admin-modal-bg: rgba(10, 18, 34, 0.94);
   --admin-modal-border: rgba(255, 255, 255, 0.2);
   --admin-warning-bg: rgba(255, 185, 67, 0.14);
@@ -119,7 +119,7 @@ body {
   --admin-elevated-soft: rgba(245, 248, 255, 0.92);
   --admin-shadow: none;
   --admin-topbar-bg: rgba(245, 249, 255, 0.7);
-  --admin-drawer-bg: rgba(245, 249, 255, 0.9);
+  --admin-drawer-bg: #f3f7ff;
   --admin-modal-bg: rgba(248, 251, 255, 0.97);
   --admin-modal-border: rgba(15, 23, 42, 0.16);
   --admin-warning-bg: rgba(255, 243, 214, 0.92);
@@ -263,9 +263,9 @@ html[data-admin-bg-preset="FROZEN_ROSE"] {
 }
 
 .admin-shell .admin-mobile-drawer {
-  background:
-    linear-gradient(145deg, rgba(255, 255, 255, 0.16), rgba(255, 255, 255, 0.04)),
-    var(--admin-topbar-bg);
+  background: var(--admin-drawer-bg);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
 }
 
 .admin-shell .bg-white {
