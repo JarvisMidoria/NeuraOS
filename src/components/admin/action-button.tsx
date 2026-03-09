@@ -180,12 +180,14 @@ export function ActionLinkButton({
   icon,
   label,
   tone = "neutral",
+  iconOnly = false,
   className,
   ...props
 }: Omit<ComponentPropsWithoutRef<"a">, "children"> & {
   icon?: ActionIconName;
   label: string;
   tone?: ActionTone;
+  iconOnly?: boolean;
 }) {
   const toneClass =
     tone === "primary"
@@ -194,17 +196,21 @@ export function ActionLinkButton({
         ? "liquid-pill border-rose-300/40 text-red-600"
         : "liquid-pill text-[var(--admin-text)]";
 
+  const ariaLabel = props["aria-label"] ?? (iconOnly ? label : undefined);
+
   return (
     <a
       {...props}
+      aria-label={ariaLabel}
       className={join(
-        "inline-flex items-center gap-1.5 px-3.5 py-2 text-sm font-medium transition",
+        "inline-flex items-center gap-1.5 text-sm font-medium transition",
+        iconOnly ? "h-8 w-8 justify-center p-0" : "px-3.5 py-2",
         toneClass,
         className,
       )}
     >
       {icon ? <ActionIcon name={icon} /> : null}
-      {label}
+      {!iconOnly ? label : null}
     </a>
   );
 }

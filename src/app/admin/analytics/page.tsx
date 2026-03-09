@@ -120,24 +120,28 @@ export default async function AdminAnalyticsPage({ searchParams }: AnalyticsPage
       </section>
 
       <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        <Link href={ANALYTICS_METRIC_LINKS.sales} className="rounded-2xl border border-zinc-200 bg-white p-5 shadow-sm transition hover:bg-zinc-50">
+        <Link href={ANALYTICS_METRIC_LINKS.sales} className="group rounded-2xl border border-zinc-200 bg-white p-5 shadow-sm transition hover:border-indigo-200 hover:bg-zinc-50">
           <p className="text-sm text-zinc-500">{text.sales}</p>
           <p className="mt-2 text-3xl font-semibold text-zinc-900">{formatCurrency(snapshot.metrics.salesTotal, locale, currencyCode, 0)}</p>
+          <p className="mt-2 text-xs font-medium text-indigo-600 transition group-hover:translate-x-0.5">↗</p>
         </Link>
-        <Link href={ANALYTICS_METRIC_LINKS.purchases} className="rounded-2xl border border-zinc-200 bg-white p-5 shadow-sm transition hover:bg-zinc-50">
+        <Link href={ANALYTICS_METRIC_LINKS.purchases} className="group rounded-2xl border border-zinc-200 bg-white p-5 shadow-sm transition hover:border-indigo-200 hover:bg-zinc-50">
           <p className="text-sm text-zinc-500">{text.purchases}</p>
           <p className="mt-2 text-3xl font-semibold text-zinc-900">{formatCurrency(snapshot.metrics.purchaseTotal, locale, currencyCode, 0)}</p>
+          <p className="mt-2 text-xs font-medium text-indigo-600 transition group-hover:translate-x-0.5">↗</p>
         </Link>
-        <Link href={ANALYTICS_METRIC_LINKS.quoteConv} className="rounded-2xl border border-zinc-200 bg-white p-5 shadow-sm transition hover:bg-zinc-50">
+        <Link href={ANALYTICS_METRIC_LINKS.quoteConv} className="group rounded-2xl border border-zinc-200 bg-white p-5 shadow-sm transition hover:border-indigo-200 hover:bg-zinc-50">
           <p className="text-sm text-zinc-500">{text.quoteConv}</p>
           <p className="mt-2 text-3xl font-semibold text-zinc-900">{snapshot.metrics.conversionRate.toFixed(1)}%</p>
           <p className="mt-1 text-xs text-zinc-500">
             {snapshot.metrics.quoteConverted}/{snapshot.metrics.quoteSent}
           </p>
+          <p className="mt-2 text-xs font-medium text-indigo-600 transition group-hover:translate-x-0.5">↗</p>
         </Link>
-        <Link href={ANALYTICS_METRIC_LINKS.openPo} className="rounded-2xl border border-zinc-200 bg-white p-5 shadow-sm transition hover:bg-zinc-50">
+        <Link href={ANALYTICS_METRIC_LINKS.openPo} className="group rounded-2xl border border-zinc-200 bg-white p-5 shadow-sm transition hover:border-indigo-200 hover:bg-zinc-50">
           <p className="text-sm text-zinc-500">{text.openPo}</p>
           <p className="mt-2 text-3xl font-semibold text-zinc-900">{formatNumber(snapshot.metrics.openPurchaseCount, locale)}</p>
+          <p className="mt-2 text-xs font-medium text-indigo-600 transition group-hover:translate-x-0.5">↗</p>
         </Link>
       </section>
 

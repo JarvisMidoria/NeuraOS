@@ -1,8 +1,7 @@
 "use client";
 
-import Link from "next/link";
 import { useState } from "react";
-import { ActionButton } from "../action-button";
+import { ActionButton, ActionLinkButton } from "../action-button";
 
 type Warehouse = {
   id: string;
@@ -464,15 +463,13 @@ export function StockConsole({ warehouses, products, lowStock, lang }: StockCons
                   </span>
                 </div>
                 <div className="mt-3 flex flex-wrap gap-2">
-                  <Link href="/admin/products" className="rounded-md border border-zinc-300 px-2.5 py-1 text-xs text-zinc-700 hover:bg-zinc-50">
-                    {t.openProducts}
-                  </Link>
-                  <Link
+                  <ActionLinkButton href="/admin/products" icon="right" label={t.openProducts} className="px-2.5 py-1 text-xs" />
+                  <ActionLinkButton
                     href="/admin/purchases/replenishment"
-                    className="rounded-md border border-zinc-300 px-2.5 py-1 text-xs text-zinc-700 hover:bg-zinc-50"
-                  >
-                    {t.openReplenishment}
-                  </Link>
+                    icon="right"
+                    label={t.openReplenishment}
+                    className="px-2.5 py-1 text-xs"
+                  />
                 </div>
               </div>
             ))}
@@ -519,9 +516,7 @@ export function StockConsole({ warehouses, products, lowStock, lang }: StockCons
                 )}
               </div>
               <div className="mt-3 flex flex-wrap gap-2">
-                <Link href="/admin/products" className="rounded-md border border-zinc-300 px-2.5 py-1 text-xs text-zinc-700 hover:bg-zinc-50">
-                  {t.openProducts}
-                </Link>
+                <ActionLinkButton href="/admin/products" icon="right" label={t.openProducts} className="px-2.5 py-1 text-xs" />
               </div>
             </div>
           ))}

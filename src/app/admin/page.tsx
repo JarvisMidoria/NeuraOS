@@ -168,8 +168,14 @@ export default async function AdminDashboard({ searchParams }: AdminDashboardPro
           <Link
             key={kpi.id}
             href={KPI_LINKS[kpi.id] ?? "/admin"}
-            className="group rounded-2xl border border-zinc-200 bg-white p-5 shadow-sm transition hover:bg-zinc-50"
+            className="group relative rounded-2xl border border-zinc-200 bg-white p-5 shadow-sm transition hover:border-indigo-200 hover:bg-zinc-50"
           >
+            <span className="absolute right-4 top-4 inline-flex h-7 w-7 items-center justify-center rounded-full border border-zinc-200 text-zinc-500 transition group-hover:border-indigo-200 group-hover:text-indigo-600">
+              <svg aria-hidden viewBox="0 0 24 24" className="h-3.5 w-3.5 fill-none stroke-current" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M9 5H19V15" />
+                <path d="M19 5L5 19" />
+              </svg>
+            </span>
             <p className="text-sm text-zinc-500">
               {lang === "fr"
                 ? kpi.label
@@ -199,9 +205,6 @@ export default async function AdminDashboard({ searchParams }: AdminDashboardPro
                 </span>
               )}
             </div>
-            <p className="mt-3 text-xs font-medium text-indigo-600 group-hover:text-indigo-700">
-              {lang === "fr" ? "Ouvrir" : "Open"} ↗
-            </p>
           </Link>
         ))}
       </section>
@@ -263,7 +266,7 @@ export default async function AdminDashboard({ searchParams }: AdminDashboardPro
                 <Link
                   key={item.id}
                   href="/admin/stock"
-                  className="block rounded-xl border border-zinc-100 p-4 transition hover:bg-zinc-50"
+                  className="group block rounded-xl border border-zinc-100 p-4 transition hover:border-indigo-200 hover:bg-zinc-50"
                 >
                   <p className="text-sm font-semibold text-zinc-900">
                     {item.sku} · {item.name}
@@ -288,6 +291,12 @@ export default async function AdminDashboard({ searchParams }: AdminDashboardPro
                   <p className="mt-2 text-xs text-rose-600">
                     {text.suggested}: {formatMetric(Math.ceil(deficit), "number", locale, currencyCode)}
                   </p>
+                  <div className="mt-2 flex justify-end text-indigo-600 opacity-0 transition group-hover:opacity-100">
+                    <svg aria-hidden viewBox="0 0 24 24" className="h-4 w-4 fill-none stroke-current" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M9 5H19V15" />
+                      <path d="M19 5L5 19" />
+                    </svg>
+                  </div>
                 </Link>
               );
             })}
@@ -308,9 +317,9 @@ export default async function AdminDashboard({ searchParams }: AdminDashboardPro
               <Link
                 key={`${doc.type}-${doc.id}`}
                 href={doc.href}
-                className="block rounded-2xl border border-zinc-100 p-4 transition hover:bg-zinc-50"
+                className="group block rounded-2xl border border-zinc-100 p-4 transition hover:border-indigo-200 hover:bg-zinc-50"
               >
-                <div className="grid gap-2 sm:grid-cols-[minmax(120px,1fr)_minmax(170px,1fr)_auto_120px] sm:items-center sm:gap-4">
+                <div className="grid gap-2 sm:grid-cols-[minmax(120px,1fr)_minmax(170px,1fr)_auto_120px_auto] sm:items-center sm:gap-4">
                   <div className="flex min-w-[7rem] flex-col">
                     <span className="text-xs uppercase tracking-wide text-zinc-500">
                       {(TYPE_LABELS[doc.type]?.[lang] ?? doc.type) as string}
@@ -329,6 +338,12 @@ export default async function AdminDashboard({ searchParams }: AdminDashboardPro
                   <p className="text-sm font-semibold text-zinc-900 sm:text-right">
                     {doc.total === null ? "—" : formatMetric(doc.total, "currency", locale, currencyCode)}
                   </p>
+                  <span className="inline-flex h-7 w-7 items-center justify-center rounded-full border border-zinc-200 text-zinc-500 transition group-hover:border-indigo-200 group-hover:text-indigo-600">
+                    <svg aria-hidden viewBox="0 0 24 24" className="h-3.5 w-3.5 fill-none stroke-current" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M9 5H19V15" />
+                      <path d="M19 5L5 19" />
+                    </svg>
+                  </span>
                 </div>
               </Link>
             ))}
@@ -347,7 +362,7 @@ export default async function AdminDashboard({ searchParams }: AdminDashboardPro
           </div>
           <div className="mt-4 space-y-4">
             {snapshot.operationalTodo.map((task) => (
-              <Link key={task.id} href={task.href} className="block rounded-2xl border border-zinc-100 p-4 hover:bg-zinc-50">
+              <Link key={task.id} href={task.href} className="group block rounded-2xl border border-zinc-100 p-4 transition hover:border-indigo-200 hover:bg-zinc-50">
                 <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                   <p className="font-semibold text-zinc-900">
                     {lang === "fr"
@@ -377,6 +392,12 @@ export default async function AdminDashboard({ searchParams }: AdminDashboardPro
                         .replace("Follow up with suppliers on late inbound shipments.", "Relancer les fournisseurs sur les livraisons en retard.")
                     : task.description}
                 </p>
+                <div className="mt-2 flex justify-end text-indigo-600 opacity-0 transition group-hover:opacity-100">
+                  <svg aria-hidden viewBox="0 0 24 24" className="h-4 w-4 fill-none stroke-current" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M9 5H19V15" />
+                    <path d="M19 5L5 19" />
+                  </svg>
+                </div>
               </Link>
             ))}
             </div>

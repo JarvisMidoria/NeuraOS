@@ -132,15 +132,18 @@ export function NotificationsConsole({ lang }: { lang: "en" | "fr" }) {
                       href={item.href}
                       icon="right"
                       label={text.open}
-                      className="px-2 py-1 text-xs"
+                      iconOnly
+                      className="h-8 w-8 text-zinc-700"
                     />
                   )}
                   {!item.readAt && (
                     <ActionButton
                       onClick={() => markOneRead(item.id)}
                       icon="apply"
-                      size="sm"
+                      size="icon"
+                      iconOnly
                       label={text.markRead}
+                      className="h-8 w-8 text-zinc-700"
                     />
                   )}
                 </div>

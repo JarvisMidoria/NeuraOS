@@ -24,6 +24,42 @@ type SectionText = {
   date: string;
 };
 
+function ActionLink({
+  href,
+  label,
+  external = false,
+}: {
+  href: string;
+  label: string;
+  external?: boolean;
+}) {
+  return (
+    <Link
+      href={href}
+      target={external ? "_blank" : undefined}
+      className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-zinc-300 text-zinc-700 transition hover:border-indigo-300 hover:bg-indigo-50 hover:text-indigo-700"
+      aria-label={label}
+      title={label}
+    >
+      <svg aria-hidden viewBox="0 0 24 24" className="h-4 w-4 fill-none stroke-current" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round">
+        {external ? (
+          <>
+            <path d="M14 4H20V10" />
+            <path d="M10 14L20 4" />
+            <path d="M20 14V18A2 2 0 0 1 18 20H6A2 2 0 0 1 4 18V6A2 2 0 0 1 6 4H10" />
+          </>
+        ) : (
+          <>
+            <path d="M12 3V15" />
+            <path d="M7 10L12 15L17 10" />
+            <path d="M4 20H20" />
+          </>
+        )}
+      </svg>
+    </Link>
+  );
+}
+
 function DocumentsSection({
   label,
   rows,
@@ -60,15 +96,9 @@ function DocumentsSection({
                   </p>
                 </div>
                 <div className="flex items-center gap-2">
-                  <Link href={row.hrefSource} className="rounded-md border border-zinc-300 px-3 py-1.5 text-sm text-zinc-700 hover:bg-zinc-50">
-                    {text.openSource}
-                  </Link>
-                  <Link href={row.hrefClean} target="_blank" className="rounded-md border border-zinc-300 px-3 py-1.5 text-sm text-zinc-700 hover:bg-zinc-50">
-                    {text.clean}
-                  </Link>
-                  <Link href={row.hrefCompact} target="_blank" className="rounded-md border border-zinc-300 px-3 py-1.5 text-sm text-zinc-700 hover:bg-zinc-50">
-                    {text.compact}
-                  </Link>
+                  <ActionLink href={row.hrefSource} label={text.openSource} />
+                  <ActionLink href={row.hrefClean} label={text.clean} external />
+                  <ActionLink href={row.hrefCompact} label={text.compact} external />
                 </div>
               </div>
             </article>

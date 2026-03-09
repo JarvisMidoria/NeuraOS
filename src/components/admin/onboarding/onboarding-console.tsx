@@ -1,8 +1,7 @@
 "use client";
 
-import Link from "next/link";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { ActionButton } from "../action-button";
+import { ActionButton, ActionLinkButton } from "../action-button";
 import { AdminToolbar, AdminToolbarGroup } from "../admin-toolbar";
 
 type ChecklistItem = {
@@ -152,9 +151,13 @@ export function OnboardingConsole({ lang }: { lang: "en" | "fr" }) {
                 <span className={`rounded-full px-2 py-0.5 text-xs font-semibold ${item.done ? "bg-emerald-100 text-emerald-700" : "bg-amber-100 text-amber-700"}`}>
                   {item.done ? text.done : text.pending}
                 </span>
-                <Link href={checklistHref(item.id)} className="rounded-md border border-zinc-300 px-2 py-1 text-xs text-zinc-700 hover:bg-zinc-50">
-                  {text.open}
-                </Link>
+                <ActionLinkButton
+                  href={checklistHref(item.id)}
+                  icon="right"
+                  label={text.open}
+                  iconOnly
+                  className="h-7 w-7 text-zinc-700"
+                />
               </div>
             </div>
           ))}
