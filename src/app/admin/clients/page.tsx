@@ -57,12 +57,18 @@ export default async function AdminClientsPage() {
                 <div className="flex items-start justify-between gap-2">
                   <p className="text-sm font-semibold text-zinc-900">{client.name}</p>
                   <div className="flex gap-1">
-                    <span className="rounded-full bg-sky-100 px-2 py-0.5 text-[11px] font-medium text-sky-700">
+                    <Link
+                      href={`/admin/sales/quotes?clientId=${encodeURIComponent(client.id)}`}
+                      className="rounded-full bg-sky-100 px-2 py-0.5 text-[11px] font-medium text-sky-700 transition hover:bg-sky-200"
+                    >
                       Q {client._count.salesQuotes}
-                    </span>
-                    <span className="rounded-full bg-indigo-100 px-2 py-0.5 text-[11px] font-medium text-indigo-700">
+                    </Link>
+                    <Link
+                      href={`/admin/sales/orders?clientId=${encodeURIComponent(client.id)}`}
+                      className="rounded-full bg-indigo-100 px-2 py-0.5 text-[11px] font-medium text-indigo-700 transition hover:bg-indigo-200"
+                    >
                       O {client._count.salesOrders}
-                    </span>
+                    </Link>
                   </div>
                 </div>
                 <div className="mt-1 space-y-1 text-xs text-zinc-500">

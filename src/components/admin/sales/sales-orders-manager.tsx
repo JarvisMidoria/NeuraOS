@@ -81,6 +81,8 @@ const STATUS_BADGE_CLASSES: Record<string, string> = {
   REJECTED: "bg-rose-100 text-rose-700",
 };
 
+const ORDER_FILTER_STATUSES = ["DRAFT", "APPROVED", "CONFIRMED", "REJECTED"] as const;
+
 export function SalesOrdersManager({
   clients,
   products,
@@ -94,6 +96,7 @@ export function SalesOrdersManager({
   const [page, setPage] = useState(1);
   const [total, setTotal] = useState(0);
   const [clientFilter, setClientFilter] = useState("all");
+  const [statusFilter, setStatusFilter] = useState("all");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
@@ -150,6 +153,7 @@ export function SalesOrdersManager({
       tvaLabel: lang === "fr" ? "TVA" : "VAT",
       openDeliveryNote: lang === "fr" ? "Bon livraison" : "Delivery note",
       allClients: lang === "fr" ? "Tous les clients" : "All clients",
+      allStatuses: lang === "fr" ? "Tous les statuts" : "All statuses",
     }),
     [lang],
   );
@@ -163,6 +167,15 @@ export function SalesOrdersManager({
     }
   }, [clients, searchParams]);
 
+  useEffect(() => {
+    const preselectStatus = (searchParams.get("status") ?? "").toUpperCase();
+    if (!preselectStatus) return;
+    if (ORDER_FILTER_STATUSES.includes(preselectStatus as (typeof ORDER_FILTER_STATUSES)[number])) {
+      setStatusFilter(preselectStatus);
+      setPage(1);
+    }
+  }, [searchParams]);
+
   const loadOrders = useCallback(async () => {
     setLoading(true);
     setError(null);
@@ -170,6 +183,9 @@ export function SalesOrdersManager({
       const params = new URLSearchParams({ page: page.toString(), pageSize: PAGE_SIZE.toString() });
       if (clientFilter !== "all") {
         params.set("clientId", clientFilter);
+      }
+      if (statusFilter !== "all") {
+        params.set("status", statusFilter);
       }
       const response = await fetch(`/api/sales/orders?${params.toString()}`);
       if (!response.ok) {
@@ -183,7 +199,7 @@ export function SalesOrdersManager({
     } finally {
       setLoading(false);
     }
-  }, [clientFilter, page, t.loadFailed]);
+  }, [clientFilter, page, statusFilter, t.loadFailed]);
 
   useEffect(() => {
     loadOrders();
@@ -426,6 +442,21 @@ export function SalesOrdersManager({
               {clients.map((client) => (
                 <option key={client.id} value={client.id}>
                   {client.name}
+                </option>
+              ))}
+            </select>
+            <select
+              className="rounded-md border border-zinc-300 px-3 py-2 text-sm"
+              value={statusFilter}
+              onChange={(event) => {
+                setStatusFilter(event.target.value);
+                setPage(1);
+              }}
+            >
+              <option value="all">{t.allStatuses}</option>
+              {ORDER_FILTER_STATUSES.map((status) => (
+                <option key={status} value={status}>
+                  {(STATUS_LABELS[status]?.[lang] ?? status) as string}
                 </option>
               ))}
             </select>
