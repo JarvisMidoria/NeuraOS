@@ -1,3 +1,12 @@
+UPDATE "Company"
+SET "productUnitMode" = 'PER_PRODUCT'
+WHERE "productUnitMode" IS NULL
+   OR UPPER("productUnitMode") NOT IN ('GLOBAL', 'PER_PRODUCT');
+
+UPDATE "Company"
+SET "productUnitMode" = UPPER("productUnitMode")
+WHERE "productUnitMode" IN ('global', 'per_product');
+
 DO $$
 BEGIN
   CREATE TYPE "ProductUnitMode" AS ENUM ('GLOBAL', 'PER_PRODUCT');
@@ -15,27 +24,12 @@ BEGIN
       AND column_name = 'productUnitMode'
       AND udt_name <> 'ProductUnitMode'
   ) THEN
-    IF NOT EXISTS (
-      SELECT 1
-      FROM information_schema.columns
-      WHERE table_schema = 'public'
-        AND table_name = 'Company'
-        AND column_name = '__productUnitMode_new'
-    ) THEN
-      ALTER TABLE "Company"
-        ADD COLUMN "__productUnitMode_new" "ProductUnitMode" NOT NULL DEFAULT 'PER_PRODUCT';
-    END IF;
+    ALTER TABLE "Company"
+      ALTER COLUMN "productUnitMode" DROP DEFAULT;
 
-    UPDATE "Company"
-    SET "__productUnitMode_new" = CASE
-      WHEN "productUnitMode" IS NULL THEN 'PER_PRODUCT'::"ProductUnitMode"
-      WHEN UPPER("productUnitMode"::text) = 'GLOBAL' THEN 'GLOBAL'::"ProductUnitMode"
-      WHEN UPPER("productUnitMode"::text) = 'PER_PRODUCT' THEN 'PER_PRODUCT'::"ProductUnitMode"
-      ELSE 'PER_PRODUCT'::"ProductUnitMode"
-    END;
-
-    ALTER TABLE "Company" DROP COLUMN "productUnitMode";
-    ALTER TABLE "Company" RENAME COLUMN "__productUnitMode_new" TO "productUnitMode";
+    ALTER TABLE "Company"
+      ALTER COLUMN "productUnitMode" TYPE "ProductUnitMode"
+      USING (UPPER("productUnitMode")::"ProductUnitMode");
   END IF;
 END $$;
 

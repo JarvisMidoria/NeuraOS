@@ -5,13 +5,6 @@ const prisma = new PrismaClient();
 
 async function resetDatabase() {
   await prisma.$transaction([
-    prisma.employeeDocument.deleteMany(),
-    prisma.employeePositionHistory.deleteMany(),
-    prisma.employee.deleteMany(),
-    prisma.position.deleteMany(),
-    prisma.department.deleteMany(),
-    prisma.location.deleteMany(),
-    prisma.entity.deleteMany(),
     prisma.ingestionAction.deleteMany(),
     prisma.ingestionJob.deleteMany(),
     prisma.customFieldValue.deleteMany(),
@@ -76,9 +69,6 @@ async function main() {
     { code: "MANAGE_PURCHASING", description: "Handle POs and receipts" },
     { code: "MANAGE_SALES", description: "Handle quotes" },
     { code: "MANAGE_WAREHOUSE", description: "Adjust stock" },
-    { code: "HR_ADMIN", description: "Full HR administration access" },
-    { code: "HR_MANAGER", description: "Access own team HR data" },
-    { code: "HR_EMPLOYEE", description: "Access own employee profile" },
     { code: "ADMIN", description: "Full administrative rights" },
   ];
 
@@ -93,7 +83,6 @@ async function main() {
       })
     )
   );
-  const permissionByCode = new Map(permissions.map((permission) => [permission.code, permission]));
 
   const adminRole = await prisma.role.create({
     data: {
@@ -113,51 +102,6 @@ async function main() {
         },
       })
     )
-  );
-
-  const hrAdminRole = await prisma.role.create({
-    data: {
-      companyId: company.id,
-      name: "HR Admin",
-      description: "Full HR access",
-    },
-  });
-  const managerRole = await prisma.role.create({
-    data: {
-      companyId: company.id,
-      name: "Manager",
-      description: "Access own team and operational views",
-    },
-  });
-  const employeeRole = await prisma.role.create({
-    data: {
-      companyId: company.id,
-      name: "Employee",
-      description: "Access own profile only",
-    },
-  });
-
-  const rolePermissionPairs: Array<{ roleId: string; permissionCode: string }> = [
-    { roleId: hrAdminRole.id, permissionCode: "HR_ADMIN" },
-    { roleId: managerRole.id, permissionCode: "HR_MANAGER" },
-    { roleId: managerRole.id, permissionCode: "VIEW_DASHBOARD" },
-    { roleId: employeeRole.id, permissionCode: "HR_EMPLOYEE" },
-  ];
-
-  await Promise.all(
-    rolePermissionPairs
-      .map(({ roleId, permissionCode }) => {
-        const permission = permissionByCode.get(permissionCode);
-        if (!permission) return null;
-        return prisma.rolePermission.create({
-          data: {
-            companyId: company.id,
-            roleId,
-            permissionId: permission.id,
-          },
-        });
-      })
-      .filter(Boolean) as Promise<unknown>[],
   );
 
   const passwordHash = await bcrypt.hash("admin123", 10);
@@ -316,123 +260,6 @@ async function main() {
       },
     }),
   ]);
-
-  const mainEntity = await prisma.entity.create({
-    data: {
-      companyId: company.id,
-      name: "Acme Holding",
-      legalName: "Acme Manufacturing LLC",
-      code: "ACME-HQ",
-    },
-  });
-
-  const hqLocation = await prisma.location.create({
-    data: {
-      companyId: company.id,
-      name: "HQ Casablanca",
-      city: "Casablanca",
-      country: "MA",
-    },
-  });
-
-  const operationsDepartment = await prisma.department.create({
-    data: {
-      companyId: company.id,
-      entityId: mainEntity.id,
-      name: "Operations",
-      code: "OPS",
-    },
-  });
-
-  const operationsManagerPosition = await prisma.position.create({
-    data: {
-      companyId: company.id,
-      departmentId: operationsDepartment.id,
-      title: "Operations Manager",
-    },
-  });
-  const salesCoordinatorPosition = await prisma.position.create({
-    data: {
-      companyId: company.id,
-      departmentId: operationsDepartment.id,
-      title: "Sales Coordinator",
-    },
-  });
-
-  const adminEmployee = await prisma.employee.create({
-    data: {
-      companyId: company.id,
-      userId: adminUser.id,
-      employeeCode: "EMP-0001",
-      firstName: "Acme",
-      lastName: "Admin",
-      email: "admin@acme.local",
-      phone: "+212600000001",
-      hireDate: new Date("2025-01-02"),
-      contractType: "PERMANENT",
-      status: "ACTIVE",
-      departmentId: operationsDepartment.id,
-      positionId: operationsManagerPosition.id,
-      locationId: hqLocation.id,
-      entityId: mainEntity.id,
-    },
-  });
-
-  await prisma.department.update({
-    where: { id: operationsDepartment.id },
-    data: { managerEmployeeId: adminEmployee.id },
-  });
-
-  const teamEmployee = await prisma.employee.create({
-    data: {
-      companyId: company.id,
-      employeeCode: "EMP-0002",
-      firstName: "Nora",
-      lastName: "Textile",
-      email: "nora@acme.local",
-      phone: "+212600000002",
-      hireDate: new Date("2025-05-18"),
-      contractType: "FIXED_TERM",
-      status: "ACTIVE",
-      managerId: adminEmployee.id,
-      departmentId: operationsDepartment.id,
-      positionId: salesCoordinatorPosition.id,
-      locationId: hqLocation.id,
-      entityId: mainEntity.id,
-      salary: new Prisma.Decimal(18000),
-    },
-  });
-
-  await prisma.employeePositionHistory.createMany({
-    data: [
-      {
-        companyId: company.id,
-        employeeId: adminEmployee.id,
-        departmentId: operationsDepartment.id,
-        positionId: operationsManagerPosition.id,
-        locationId: hqLocation.id,
-        entityId: mainEntity.id,
-        status: "ACTIVE",
-        contractType: "PERMANENT",
-        startDate: new Date("2025-01-02"),
-        notes: "Initial assignment",
-      },
-      {
-        companyId: company.id,
-        employeeId: teamEmployee.id,
-        departmentId: operationsDepartment.id,
-        positionId: salesCoordinatorPosition.id,
-        locationId: hqLocation.id,
-        entityId: mainEntity.id,
-        managerId: adminEmployee.id,
-        status: "ACTIVE",
-        contractType: "FIXED_TERM",
-        salary: new Prisma.Decimal(18000),
-        startDate: new Date("2025-05-18"),
-        notes: "Onboarded in sales operations",
-      },
-    ],
-  });
 
   await prisma.stockMovement.createMany({
     data: [
