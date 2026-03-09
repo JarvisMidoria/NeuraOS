@@ -255,7 +255,7 @@ html[data-admin-bg-preset="FROZEN_ROSE"] {
 }
 
 .admin-shell .admin-nav-sticky {
-  background: transparent;
+  background: var(--admin-drawer-bg);
   backdrop-filter: none;
   -webkit-backdrop-filter: none;
 }
