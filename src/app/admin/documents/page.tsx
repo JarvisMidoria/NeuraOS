@@ -11,12 +11,14 @@ type Row = {
   date: Date;
   hrefClean: string;
   hrefCompact: string;
+  hrefSource: string;
 };
 
 type SectionText = {
   templates: string;
   clean: string;
   compact: string;
+  openSource: string;
   empty: string;
   counterpart: string;
   date: string;
@@ -58,18 +60,13 @@ function DocumentsSection({
                   </p>
                 </div>
                 <div className="flex items-center gap-2">
-                  <Link
-                    href={row.hrefClean}
-                    target="_blank"
-                    className="rounded-md border border-zinc-300 px-3 py-1.5 text-sm text-zinc-700 hover:bg-zinc-50"
-                  >
+                  <Link href={row.hrefSource} className="rounded-md border border-zinc-300 px-3 py-1.5 text-sm text-zinc-700 hover:bg-zinc-50">
+                    {text.openSource}
+                  </Link>
+                  <Link href={row.hrefClean} target="_blank" className="rounded-md border border-zinc-300 px-3 py-1.5 text-sm text-zinc-700 hover:bg-zinc-50">
                     {text.clean}
                   </Link>
-                  <Link
-                    href={row.hrefCompact}
-                    target="_blank"
-                    className="rounded-md border border-zinc-300 px-3 py-1.5 text-sm text-zinc-700 hover:bg-zinc-50"
-                  >
+                  <Link href={row.hrefCompact} target="_blank" className="rounded-md border border-zinc-300 px-3 py-1.5 text-sm text-zinc-700 hover:bg-zinc-50">
                     {text.compact}
                   </Link>
                 </div>
@@ -101,7 +98,7 @@ export default async function AdminDocumentsPage() {
         id: true,
         quoteNumber: true,
         quoteDate: true,
-        client: { select: { name: true } },
+        client: { select: { id: true, name: true } },
       },
     }),
     prisma.salesOrder.findMany({
@@ -112,7 +109,7 @@ export default async function AdminDocumentsPage() {
         id: true,
         orderNumber: true,
         orderDate: true,
-        client: { select: { name: true } },
+        client: { select: { id: true, name: true } },
       },
     }),
     prisma.purchaseOrder.findMany({
@@ -123,7 +120,7 @@ export default async function AdminDocumentsPage() {
         id: true,
         poNumber: true,
         orderDate: true,
-        supplier: { select: { name: true } },
+        supplier: { select: { id: true, name: true } },
       },
     }),
   ]);
@@ -135,6 +132,7 @@ export default async function AdminDocumentsPage() {
     date: quote.quoteDate,
     hrefClean: `/api/documents/sales-quotes/${quote.id}/pdf?template=clean`,
     hrefCompact: `/api/documents/sales-quotes/${quote.id}/pdf?template=compact`,
+    hrefSource: `/admin/sales/quotes?clientId=${encodeURIComponent(quote.client.id)}`,
   }));
 
   const orderRows: Row[] = orders.map((order) => ({
@@ -144,6 +142,7 @@ export default async function AdminDocumentsPage() {
     date: order.orderDate,
     hrefClean: `/api/documents/sales-orders/${order.id}/delivery-note?template=clean`,
     hrefCompact: `/api/documents/sales-orders/${order.id}/delivery-note?template=compact`,
+    hrefSource: `/admin/sales/orders?clientId=${encodeURIComponent(order.client.id)}`,
   }));
 
   const purchaseRows: Row[] = purchases.map((order) => ({
@@ -153,6 +152,7 @@ export default async function AdminDocumentsPage() {
     date: order.orderDate,
     hrefClean: `/api/documents/purchase-orders/${order.id}/pdf?template=clean`,
     hrefCompact: `/api/documents/purchase-orders/${order.id}/pdf?template=compact`,
+    hrefSource: "/admin/purchases/orders",
   }));
 
   const text = {
@@ -164,6 +164,7 @@ export default async function AdminDocumentsPage() {
     templates: lang === "fr" ? "Templates" : "Templates",
     clean: lang === "fr" ? "Clean" : "Clean",
     compact: lang === "fr" ? "Compact" : "Compact",
+    openSource: lang === "fr" ? "Ouvrir source" : "Open source",
     quotes: lang === "fr" ? "Devis" : "Sales Quotes",
     delivery: lang === "fr" ? "Bons de livraison" : "Delivery Notes",
     purchases: lang === "fr" ? "Bons de commande" : "Purchase Orders",

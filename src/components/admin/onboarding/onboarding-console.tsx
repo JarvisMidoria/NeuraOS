@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { ActionButton } from "../action-button";
 
@@ -23,6 +24,28 @@ type Payload = {
   };
 };
 
+function checklistHref(id: string) {
+  switch (id) {
+    case "users":
+      return "/admin/settings";
+    case "products":
+      return "/admin/products";
+    case "warehouses":
+      return "/admin/warehouses";
+    case "suppliers":
+      return "/admin/suppliers";
+    case "taxes":
+    case "stockRules":
+      return "/admin/settings";
+    case "firstQuote":
+      return "/admin/sales/quotes";
+    case "firstPO":
+      return "/admin/purchases/orders";
+    default:
+      return "/admin";
+  }
+}
+
 export function OnboardingConsole({ lang }: { lang: "en" | "fr" }) {
   const [loading, setLoading] = useState(true);
   const [payload, setPayload] = useState<Payload["data"] | null>(null);
@@ -43,6 +66,7 @@ export function OnboardingConsole({ lang }: { lang: "en" | "fr" }) {
       loadingError: lang === "fr" ? "Impossible de charger les donnees." : "Failed to load data.",
       done: lang === "fr" ? "Termine" : "Done",
       pending: lang === "fr" ? "A faire" : "Pending",
+      open: lang === "fr" ? "Ouvrir" : "Open",
     }),
     [lang],
   );
@@ -121,9 +145,14 @@ export function OnboardingConsole({ lang }: { lang: "en" | "fr" }) {
                 <p className="text-sm font-medium text-zinc-900">{item.label}</p>
                 <p className="text-xs text-zinc-500">{item.value}/{item.target}</p>
               </div>
-              <span className={`rounded-full px-2 py-0.5 text-xs font-semibold ${item.done ? "bg-emerald-100 text-emerald-700" : "bg-amber-100 text-amber-700"}`}>
-                {item.done ? text.done : text.pending}
-              </span>
+              <div className="flex items-center gap-2">
+                <span className={`rounded-full px-2 py-0.5 text-xs font-semibold ${item.done ? "bg-emerald-100 text-emerald-700" : "bg-amber-100 text-amber-700"}`}>
+                  {item.done ? text.done : text.pending}
+                </span>
+                <Link href={checklistHref(item.id)} className="rounded-md border border-zinc-300 px-2 py-1 text-xs text-zinc-700 hover:bg-zinc-50">
+                  {text.open}
+                </Link>
+              </div>
             </div>
           ))}
         </div>

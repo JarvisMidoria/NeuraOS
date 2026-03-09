@@ -11,25 +11,25 @@ type NavSectionKey = "pilotage" | "sales" | "procurement" | "data" | "settings";
 const SECTION_ORDER: NavSectionKey[] = ["pilotage", "sales", "procurement", "data", "settings"];
 
 const NAV_ITEMS = [
-  { key: "overview", href: "/admin", en: "Overview", fr: "Apercu", section: "pilotage" as const },
-  { key: "analytics", href: "/admin/analytics", en: "Analytics", fr: "Analytics", section: "pilotage" as const },
-  { key: "notifications", href: "/admin/notifications", en: "Notifications", fr: "Notifications", section: "pilotage" as const },
-  { key: "quotes", href: "/admin/sales/quotes", en: "Quotes", fr: "Devis", section: "sales" as const },
-  { key: "orders", href: "/admin/sales/orders", en: "Orders", fr: "Commandes", section: "sales" as const },
-  { key: "clients", href: "/admin/clients", en: "Clients", fr: "Clients", section: "sales" as const },
-  { key: "documents", href: "/admin/documents", en: "Documents", fr: "Documents", section: "sales" as const },
-  { key: "products", href: "/admin/products", en: "Products", fr: "Produits", section: "procurement" as const },
-  { key: "stock", href: "/admin/stock", en: "Inventory", fr: "Stock", section: "procurement" as const },
-  { key: "purchases", href: "/admin/purchases/orders", en: "Purchases", fr: "Achats", section: "procurement" as const },
-  { key: "receipts", href: "/admin/purchases/receipts", en: "Receipts", fr: "Receptions", section: "procurement" as const },
-  { key: "replenishment", href: "/admin/purchases/replenishment", en: "Replenishment", fr: "Reappro", section: "procurement" as const },
-  { key: "suppliers", href: "/admin/suppliers", en: "Suppliers", fr: "Fournisseurs", section: "procurement" as const },
-  { key: "warehouses", href: "/admin/warehouses", en: "Warehouses", fr: "Entrepots", section: "procurement" as const },
-  { key: "imports", href: "/admin/imports", en: "Imports", fr: "Imports", section: "data" as const },
-  { key: "audit", href: "/admin/audit", en: "Audit Log", fr: "Journal audit", section: "data" as const },
-  { key: "onboarding", href: "/admin/onboarding", en: "Onboarding", fr: "Onboarding", section: "data" as const },
-  { key: "billing", href: "/admin/billing", en: "Billing", fr: "Facturation", section: "settings" as const },
-  { key: "settings", href: "/admin/settings", en: "Settings", fr: "Parametres", section: "settings" as const },
+  { key: "overview", href: "/admin", en: "Overview", fr: "Apercu", section: "pilotage" as const, core: true },
+  { key: "analytics", href: "/admin/analytics", en: "Analytics", fr: "Analytics", section: "pilotage" as const, core: true },
+  { key: "notifications", href: "/admin/notifications", en: "Notifications", fr: "Notifications", section: "pilotage" as const, core: true },
+  { key: "quotes", href: "/admin/sales/quotes", en: "Quotes", fr: "Devis", section: "sales" as const, core: true },
+  { key: "orders", href: "/admin/sales/orders", en: "Orders", fr: "Commandes", section: "sales" as const, core: true },
+  { key: "clients", href: "/admin/clients", en: "Clients", fr: "Clients", section: "sales" as const, core: true },
+  { key: "documents", href: "/admin/documents", en: "Documents", fr: "Documents", section: "sales" as const, core: false },
+  { key: "products", href: "/admin/products", en: "Products", fr: "Produits", section: "procurement" as const, core: true },
+  { key: "stock", href: "/admin/stock", en: "Inventory", fr: "Stock", section: "procurement" as const, core: true },
+  { key: "purchases", href: "/admin/purchases/orders", en: "Purchases", fr: "Achats", section: "procurement" as const, core: true },
+  { key: "receipts", href: "/admin/purchases/receipts", en: "Receipts", fr: "Receptions", section: "procurement" as const, core: false },
+  { key: "replenishment", href: "/admin/purchases/replenishment", en: "Replenishment", fr: "Reappro", section: "procurement" as const, core: false },
+  { key: "suppliers", href: "/admin/suppliers", en: "Suppliers", fr: "Fournisseurs", section: "procurement" as const, core: true },
+  { key: "warehouses", href: "/admin/warehouses", en: "Warehouses", fr: "Entrepots", section: "procurement" as const, core: false },
+  { key: "imports", href: "/admin/imports", en: "Imports", fr: "Imports", section: "data" as const, core: true },
+  { key: "audit", href: "/admin/audit", en: "Audit Log", fr: "Journal audit", section: "data" as const, core: false },
+  { key: "onboarding", href: "/admin/onboarding", en: "Onboarding", fr: "Onboarding", section: "data" as const, core: false },
+  { key: "billing", href: "/admin/billing", en: "Billing", fr: "Facturation", section: "settings" as const, core: true },
+  { key: "settings", href: "/admin/settings", en: "Settings", fr: "Parametres", section: "settings" as const, core: true },
 ] as const;
 
 const SIMULATION_NAV_KEYS = new Set([
@@ -97,6 +97,8 @@ export function AdminNav({ onNavigate }: AdminNavProps) {
         data: lang === "fr" ? "Donnees" : "Data",
         settings: lang === "fr" ? "Parametres" : "Settings",
       } as Record<NavSectionKey, string>,
+      showMore: lang === "fr" ? "Plus" : "More",
+      showLess: lang === "fr" ? "Moins" : "Less",
     }),
     [lang],
   );
@@ -159,17 +161,33 @@ export function AdminNav({ onNavigate }: AdminNavProps) {
     [navItems],
   );
 
-  const [expandedSections, setExpandedSections] = useState<NavSectionKey[]>(SECTION_ORDER);
+  const [expandedSections, setExpandedSections] = useState<NavSectionKey[]>([]);
+  const [showAllBySection, setShowAllBySection] = useState<NavSectionKey[]>([]);
 
   useEffect(() => {
-    setExpandedSections((prev) => prev.filter((section) => navSections.some((group) => group.section === section)));
-  }, [navSections]);
+    setExpandedSections((prev) => {
+      const allowed = new Set(navSections.map((group) => group.section));
+      const filtered = prev.filter((section) => allowed.has(section));
+      const currentSection = navSections.find((group) => group.items.some((item) => isActive(pathname, item.href)))?.section;
 
-  useEffect(() => {
-    const currentSection = navSections.find((group) => group.items.some((item) => isActive(pathname, item.href)))?.section;
-    if (!currentSection) return;
-    setExpandedSections((prev) => (prev.includes(currentSection) ? prev : [...prev, currentSection]));
+      if (currentSection) {
+        if (filtered.includes(currentSection)) return filtered;
+        if (filtered.length === 0) return [currentSection];
+        return [...filtered, currentSection];
+      }
+
+      if (filtered.length > 0) return filtered;
+      const firstSection = navSections[0]?.section;
+      return firstSection ? [firstSection] : [];
+    });
   }, [navSections, pathname]);
+
+  useEffect(() => {
+    setShowAllBySection((prev) => {
+      const allowed = new Set(navSections.map((group) => group.section));
+      return prev.filter((section) => allowed.has(section));
+    });
+  }, [navSections]);
 
   useEffect(() => {
     const normalized = query.trim();
@@ -221,6 +239,10 @@ export function AdminNav({ onNavigate }: AdminNavProps) {
 
   const toggleSection = (section: NavSectionKey) => {
     setExpandedSections((prev) => (prev.includes(section) ? prev.filter((item) => item !== section) : [...prev, section]));
+  };
+
+  const toggleShowAll = (section: NavSectionKey) => {
+    setShowAllBySection((prev) => (prev.includes(section) ? prev.filter((item) => item !== section) : [...prev, section]));
   };
 
   return (
@@ -338,6 +360,10 @@ export function AdminNav({ onNavigate }: AdminNavProps) {
         {navSections.map((group) => {
           const sectionActive = group.items.some((item) => isActive(pathname, item.href));
           const sectionExpanded = expandedSections.includes(group.section);
+          const activeExtraItem = group.items.some((item) => !item.core && isActive(pathname, item.href));
+          const showAllItems = showAllBySection.includes(group.section) || activeExtraItem;
+          const visibleItems = showAllItems ? group.items : group.items.filter((item) => item.core || isActive(pathname, item.href));
+          const hiddenCount = group.items.length - visibleItems.length;
           return (
             <div key={group.section} className="w-full">
               <button
@@ -363,7 +389,7 @@ export function AdminNav({ onNavigate }: AdminNavProps) {
 
               {sectionExpanded ? (
                 <div className="mt-1 space-y-1 pl-2">
-                  {group.items.map((item) => {
+                  {visibleItems.map((item) => {
                     const active = isActive(pathname, item.href);
                     return (
                       <Link
@@ -380,6 +406,15 @@ export function AdminNav({ onNavigate }: AdminNavProps) {
                       </Link>
                     );
                   })}
+                  {hiddenCount > 0 ? (
+                    <button
+                      type="button"
+                      onClick={() => toggleShowAll(group.section)}
+                      className="liquid-pill flex w-full items-center justify-center px-3 py-1.5 text-xs text-[var(--admin-muted)] transition hover:text-[var(--admin-text)]"
+                    >
+                      {showAllItems ? text.showLess : `${text.showMore} (${hiddenCount})`}
+                    </button>
+                  ) : null}
                 </div>
               ) : null}
             </div>

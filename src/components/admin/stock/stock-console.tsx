@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useState } from "react";
 import { ActionButton } from "../action-button";
 
@@ -117,6 +118,8 @@ export function StockConsole({ warehouses, products, lowStock, lang }: StockCons
     total: lang === "fr" ? "Total" : "Total",
     warehouses: lang === "fr" ? "Entrepots" : "Warehouses",
     noMovements: lang === "fr" ? "Aucun mouvement" : "No movements yet",
+    openProducts: lang === "fr" ? "Ouvrir produits" : "Open products",
+    openReplenishment: lang === "fr" ? "Ouvrir reappro" : "Open replenishment",
   };
 
   const formatUnit = (unit?: string) => {
@@ -460,6 +463,17 @@ export function StockConsole({ warehouses, products, lowStock, lang }: StockCons
                     {t.threshold}: {withUnit(item.lowStockThreshold, item.unitOfMeasure)}
                   </span>
                 </div>
+                <div className="mt-3 flex flex-wrap gap-2">
+                  <Link href="/admin/products" className="rounded-md border border-zinc-300 px-2.5 py-1 text-xs text-zinc-700 hover:bg-zinc-50">
+                    {t.openProducts}
+                  </Link>
+                  <Link
+                    href="/admin/purchases/replenishment"
+                    className="rounded-md border border-zinc-300 px-2.5 py-1 text-xs text-zinc-700 hover:bg-zinc-50"
+                  >
+                    {t.openReplenishment}
+                  </Link>
+                </div>
               </div>
             ))}
           </div>
@@ -503,6 +517,11 @@ export function StockConsole({ warehouses, products, lowStock, lang }: StockCons
                 ) : (
                   <span className="text-zinc-400">{t.noMovements}</span>
                 )}
+              </div>
+              <div className="mt-3 flex flex-wrap gap-2">
+                <Link href="/admin/products" className="rounded-md border border-zinc-300 px-2.5 py-1 text-xs text-zinc-700 hover:bg-zinc-50">
+                  {t.openProducts}
+                </Link>
               </div>
             </div>
           ))}

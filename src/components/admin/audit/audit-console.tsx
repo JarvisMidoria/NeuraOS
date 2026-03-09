@@ -30,6 +30,23 @@ type Payload = {
 
 const PAGE_SIZE = 30;
 
+function entityHref(entity: string) {
+  const key = String(entity || "").toLowerCase();
+  if (key === "product") return "/admin/products";
+  if (key === "supplier") return "/admin/suppliers";
+  if (key === "warehouse") return "/admin/warehouses";
+  if (key === "salesquote") return "/admin/sales/quotes";
+  if (key === "salesorder") return "/admin/sales/orders";
+  if (key === "purchaseorder") return "/admin/purchases/orders";
+  if (key === "goodsreceipt") return "/admin/purchases/receipts";
+  if (key === "stockmovement") return "/admin/stock";
+  if (key === "taxrule" || key === "stockrule" || key === "role" || key === "user" || key === "customfielddefinition") {
+    return "/admin/settings";
+  }
+  if (key === "ingestion_job") return "/admin/imports";
+  return "";
+}
+
 export function AuditConsole({ lang }: { lang: "en" | "fr" }) {
   const [rows, setRows] = useState<AuditRow[]>([]);
   const [page, setPage] = useState(1);
@@ -177,7 +194,19 @@ export function AuditConsole({ lang }: { lang: "en" | "fr" }) {
                     <td className="px-3 py-2 text-zinc-700">{new Date(row.createdAt).toLocaleString(lang === "fr" ? "fr-FR" : "en-US")}</td>
                     <td className="px-3 py-2 font-medium text-zinc-900">{row.action}</td>
                     <td className="px-3 py-2 text-zinc-700">{row.entity}</td>
-                    <td className="px-3 py-2 text-zinc-700">{row.entityId}</td>
+                    <td className="px-3 py-2 text-zinc-700">
+                      {entityHref(row.entity) ? (
+                        <a
+                          href={entityHref(row.entity)}
+                          className="underline underline-offset-2 hover:text-zinc-900"
+                          title={row.entityId}
+                        >
+                          {row.entityId}
+                        </a>
+                      ) : (
+                        row.entityId
+                      )}
+                    </td>
                     <td className="px-3 py-2 text-zinc-700">{row.user?.name ?? "System"}</td>
                     <td className="max-w-[320px] px-3 py-2 text-xs text-zinc-600">
                       <pre className="overflow-auto whitespace-pre-wrap">{row.metadata ? JSON.stringify(row.metadata) : "-"}</pre>

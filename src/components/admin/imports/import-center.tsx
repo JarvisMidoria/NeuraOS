@@ -2,7 +2,7 @@
 
 import type { ChangeEvent, DragEvent } from "react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { ActionButton } from "../action-button";
+import { ActionButton, ActionLinkButton } from "../action-button";
 
 type IngestionAction = {
   id: string;
@@ -43,6 +43,30 @@ async function parseApiJson<T>(res: Response): Promise<T> {
   return (await res.json()) as T;
 }
 
+function moduleHrefForDocType(docType: string) {
+  switch (String(docType).toUpperCase()) {
+    case "PRODUCTS":
+    case "STOCK_ADJUSTMENT":
+      return "/admin/products";
+    case "CLIENTS":
+    case "SALES_QUOTE":
+    case "SALES_ORDER":
+      return "/admin/sales/quotes";
+    case "SUPPLIERS":
+    case "PURCHASE_ORDER":
+      return "/admin/purchases/orders";
+    case "WAREHOUSES":
+      return "/admin/warehouses";
+    case "EMPLOYEES":
+    case "DEPARTMENTS":
+    case "POSITIONS":
+    case "ENTITIES":
+      return "/admin/onboarding";
+    default:
+      return "/admin/imports";
+  }
+}
+
 export function ImportCenter({ lang }: { lang: "en" | "fr" }) {
   const [jobs, setJobs] = useState<IngestionJob[]>([]);
   const [loading, setLoading] = useState(false);
@@ -80,6 +104,7 @@ export function ImportCenter({ lang }: { lang: "en" | "fr" }) {
       type: lang === "fr" ? "Type" : "Type",
       source: lang === "fr" ? "Source" : "Source",
       status: lang === "fr" ? "Statut" : "Status",
+      openModule: lang === "fr" ? "Ouvrir module" : "Open module",
     }),
     [lang],
   );
@@ -310,7 +335,7 @@ export function ImportCenter({ lang }: { lang: "en" | "fr" }) {
               ) : null}
 
               {canApply ? (
-                <div className="mt-3">
+                <div className="mt-3 flex flex-wrap gap-2">
                   <ActionButton
                     type="button"
                     icon="apply"
@@ -319,8 +344,13 @@ export function ImportCenter({ lang }: { lang: "en" | "fr" }) {
                     onClick={() => applyJob(job.id)}
                     label={text.apply}
                   />
+                  <ActionLinkButton href={moduleHrefForDocType(job.docType)} icon="right" label={text.openModule} />
                 </div>
-              ) : null}
+              ) : (
+                <div className="mt-3">
+                  <ActionLinkButton href={moduleHrefForDocType(job.docType)} icon="right" label={text.openModule} />
+                </div>
+              )}
             </article>
           );
         })}
