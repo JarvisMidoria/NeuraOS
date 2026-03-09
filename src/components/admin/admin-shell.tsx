@@ -35,44 +35,10 @@ export function AdminShell({ children }: { children: ReactNode }) {
   }, [mobileOpen]);
 
   useEffect(() => {
-    let canceled = false;
-    const applyBackground = (preset?: string | null, imageUrl?: string | null) => {
-      const root = document.documentElement;
-      const safePreset = String(preset || "FROZEN_INDIGO").toUpperCase();
-      root.setAttribute("data-admin-bg-preset", safePreset);
-      if (imageUrl && imageUrl.trim()) {
-        root.setAttribute("data-admin-bg-source", "IMAGE");
-        root.style.setProperty("--admin-upload-bg-image", `url("${imageUrl}")`);
-      } else {
-        root.setAttribute("data-admin-bg-source", "PRESET");
-        root.style.removeProperty("--admin-upload-bg-image");
-      }
-    };
-
-    const loadBackground = async () => {
-      try {
-        const res = await fetch("/api/settings/company", { cache: "no-store" });
-        if (!res.ok) return;
-        const payload = (await res.json()) as {
-          data?: { backgroundPreset?: string | null; backgroundImageUrl?: string | null };
-        };
-        if (canceled) return;
-        applyBackground(payload.data?.backgroundPreset, payload.data?.backgroundImageUrl);
-      } catch {
-        applyBackground("FROZEN_INDIGO", null);
-      }
-    };
-
-    const onUpdated = () => {
-      void loadBackground();
-    };
-
-    void loadBackground();
-    window.addEventListener("neura:company-settings-updated", onUpdated);
-    return () => {
-      canceled = true;
-      window.removeEventListener("neura:company-settings-updated", onUpdated);
-    };
+    const root = document.documentElement;
+    root.removeAttribute("data-admin-bg-preset");
+    root.removeAttribute("data-admin-bg-source");
+    root.style.removeProperty("--admin-upload-bg-image");
   }, []);
 
   useEffect(() => {
@@ -132,7 +98,7 @@ export function AdminShell({ children }: { children: ReactNode }) {
       </header>
 
       <div className="mx-auto grid min-h-[calc(100vh-57px)] w-full max-w-[1400px] grid-cols-1 pt-[calc(57px+env(safe-area-inset-top))] lg:min-h-screen lg:grid-cols-[240px_1fr] lg:pt-0">
-        <aside className="admin-sidebar admin-sidebar-scroll sticky top-0 hidden h-screen self-start overflow-y-auto border-r border-[var(--admin-border)] px-5 py-6 lg:block">
+        <aside className="admin-sidebar hidden self-start border-r border-[var(--admin-border)] px-5 py-6 lg:block">
           <AdminNav />
         </aside>
 
@@ -150,7 +116,7 @@ export function AdminShell({ children }: { children: ReactNode }) {
           mobileOpen ? "translate-x-0" : "-translate-x-full"
         }`}
       >
-        <div className="sticky top-0 z-10 mb-3 flex items-center justify-end bg-transparent pb-2 pt-1">
+        <div className="mb-3 flex items-center justify-end bg-transparent pb-2 pt-1">
           <button
             type="button"
             onClick={() => setMobileOpen(false)}

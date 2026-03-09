@@ -31,10 +31,9 @@
   --admin-warning-border: rgba(255, 196, 92, 0.44);
   --admin-warning-text: #f7d271;
   --admin-bg-gradient-dark:
-    radial-gradient(circle at 8% 12%, rgba(111, 138, 255, 0.34) 0%, rgba(111, 138, 255, 0) 40%),
-    radial-gradient(circle at 86% 16%, rgba(82, 204, 255, 0.22) 0%, rgba(82, 204, 255, 0) 44%),
-    radial-gradient(circle at 52% 118%, rgba(255, 186, 126, 0.16) 0%, rgba(255, 186, 126, 0) 46%),
-    linear-gradient(180deg, #111e3c 0%, #0c1730 54%, #091225 100%);
+    radial-gradient(circle at 10% 10%, rgba(92, 110, 145, 0.22) 0%, rgba(92, 110, 145, 0) 38%),
+    radial-gradient(circle at 88% 18%, rgba(84, 100, 132, 0.18) 0%, rgba(84, 100, 132, 0) 40%),
+    linear-gradient(180deg, #121722 0%, #0f141e 54%, #0c1119 100%);
   --admin-bg-gradient-light:
     radial-gradient(circle at 8% 12%, rgba(169, 197, 255, 0.36) 0%, rgba(169, 197, 255, 0) 40%),
     radial-gradient(circle at 84% 18%, rgba(142, 229, 255, 0.3) 0%, rgba(142, 229, 255, 0) 42%),
@@ -566,20 +565,20 @@ html[data-admin-bg-preset="FROZEN_ROSE"] {
   scrollbar-color: rgba(156, 172, 208, 0.35) transparent;
 }
 
-.admin-shell .admin-sidebar-scroll {
+.admin-shell {
   scrollbar-width: thin;
   scrollbar-color: rgba(156, 172, 208, 0.35) transparent;
 }
 
-.admin-shell .admin-sidebar-scroll::-webkit-scrollbar {
+.admin-shell::-webkit-scrollbar {
   width: 5px;
 }
 
-.admin-shell .admin-sidebar-scroll::-webkit-scrollbar-track {
+.admin-shell::-webkit-scrollbar-track {
   background: transparent;
 }
 
-.admin-shell .admin-sidebar-scroll::-webkit-scrollbar-thumb {
+.admin-shell::-webkit-scrollbar-thumb {
   border-radius: 999px;
   background: rgba(156, 172, 208, 0.35);
 }

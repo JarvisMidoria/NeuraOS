@@ -189,7 +189,7 @@ export function AdminNav({ onNavigate }: AdminNavProps) {
 
   return (
     <>
-      <div className="admin-nav-sticky sticky top-0 z-20 mb-4 pb-2">
+      <div className="admin-nav-sticky z-20 mb-4 pb-2">
         <div className="mb-4 text-center">
           <p className="break-words text-3xl font-semibold tracking-tight text-[var(--admin-text)]">{companyName}</p>
           <p className="mt-1 text-[11px] text-[var(--admin-muted)]">Powered by NeuraOS</p>
