@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { ALLOWED_CURRENCY_CODES } from "@/lib/currency";
+import { ActionButton } from "../action-button";
 
 type CompanySettings = {
   id: string;
@@ -285,7 +286,15 @@ export function SettingsConsole({ lang = "en" }: { lang?: "en" | "fr" }) {
     setError(null);
     setStatus(null);
     try {
-      const { backgroundPreset: _ignoredPreset, backgroundMode: _ignoredMode, backgroundImageUrl: _ignoredImage, ...payload } = companyForm;
+      const payload = {
+        name: companyForm.name,
+        domain: companyForm.domain,
+        currencyCode: companyForm.currencyCode,
+        productUnitMode: companyForm.productUnitMode,
+        defaultProductUnit: companyForm.defaultProductUnit,
+        locale: companyForm.locale,
+        timezone: companyForm.timezone,
+      };
       const res = await fetch("/api/settings/company", {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
@@ -632,7 +641,7 @@ export function SettingsConsole({ lang = "en" }: { lang?: "en" | "fr" }) {
           <p className="text-xs text-zinc-500 md:col-span-2">
             {tCompany.helper}
           </p>
-          <button className="w-fit rounded-md bg-zinc-900 px-4 py-2 text-sm font-medium text-white">{tCompany.save}</button>
+          <ActionButton type="submit" tone="primary" icon="save" className="w-fit" label={tCompany.save} />
         </form>
       </section>
 
@@ -771,26 +780,16 @@ export function SettingsConsole({ lang = "en" }: { lang?: "en" | "fr" }) {
             </p>
           ) : null}
           <div className="flex flex-wrap gap-2">
-            <button
+            <ActionButton
+              type="submit"
+              tone="primary"
+              icon="save"
+              className="w-fit disabled:cursor-not-allowed disabled:opacity-50"
               disabled={sharedUnavailable && llmForm.accessMode === "SHARED" && llmForm.isEnabled}
-              className="w-fit rounded-md bg-zinc-900 px-4 py-2 text-sm font-medium text-white disabled:cursor-not-allowed disabled:opacity-50"
-            >
-              Save AI settings
-            </button>
-            <button
-              type="button"
-              className="rounded-md border border-zinc-300 px-4 py-2 text-sm font-medium text-zinc-700"
-              onClick={testLlm}
-            >
-              Test connection
-            </button>
-            <button
-              type="button"
-              className="rounded-md border border-red-200 px-4 py-2 text-sm font-medium text-red-600"
-              onClick={deleteLlm}
-            >
-              Remove config
-            </button>
+              label="Save AI settings"
+            />
+            <ActionButton type="button" icon="refresh" onClick={testLlm} label="Test connection" />
+            <ActionButton type="button" tone="danger" icon="delete" onClick={deleteLlm} label="Remove config" />
           </div>
         </form>
       </section>
@@ -869,9 +868,7 @@ export function SettingsConsole({ lang = "en" }: { lang?: "en" | "fr" }) {
                 : "Telegram bot token"
             }
           />
-          <button className="w-fit rounded-md bg-zinc-900 px-4 py-2 text-sm font-medium text-white">
-            Save messaging settings
-          </button>
+          <ActionButton type="submit" tone="primary" icon="save" className="w-fit" label="Save messaging settings" />
         </form>
       </section>
 
@@ -884,7 +881,7 @@ export function SettingsConsole({ lang = "en" }: { lang?: "en" | "fr" }) {
               Allow negative stock
             </label>
             <input className="max-w-xs rounded-md border border-zinc-300 px-3 py-2 text-sm" value={stockRule.defaultLowStockThreshold ?? ""} onChange={(e) => setStockRule((p) => (p ? { ...p, defaultLowStockThreshold: e.target.value } : p))} placeholder="Default low-stock threshold" />
-            <button className="w-fit rounded-md bg-zinc-900 px-4 py-2 text-sm font-medium text-white">Save stock rules</button>
+            <ActionButton type="submit" tone="primary" icon="save" className="w-fit" label="Save stock rules" />
           </form>
         ) : null}
       </section>
@@ -896,7 +893,7 @@ export function SettingsConsole({ lang = "en" }: { lang?: "en" | "fr" }) {
           <input className="rounded-md border border-zinc-300 px-3 py-2 text-sm" value={taxForm.label} onChange={(e) => setTaxForm((p) => ({ ...p, label: e.target.value }))} placeholder="Label" />
           <input type="number" step="0.001" className="rounded-md border border-zinc-300 px-3 py-2 text-sm" value={taxForm.rate} onChange={(e) => setTaxForm((p) => ({ ...p, rate: e.target.value }))} placeholder="Rate" />
           <label className="inline-flex items-center gap-2 text-sm text-zinc-700"><input type="checkbox" checked={taxForm.isDefault} onChange={(e) => setTaxForm((p) => ({ ...p, isDefault: e.target.checked }))} />Default</label>
-          <button className="rounded-md bg-zinc-900 px-4 py-2 text-sm font-medium text-white">Add tax</button>
+          <ActionButton type="submit" tone="primary" icon="plus" label="Add tax" />
         </form>
         <div className="mt-4 space-y-2">
           {taxes.map((tax) => (
@@ -905,9 +902,19 @@ export function SettingsConsole({ lang = "en" }: { lang?: "en" | "fr" }) {
                 <span className="font-semibold">{tax.code}</span> · {tax.label} · {tax.rate}%
               </div>
               <div className="flex gap-2 text-xs">
-                <button className="rounded border px-2 py-1" onClick={() => toggleTax(tax, { isDefault: true })}>{tax.isDefault ? "Default" : "Set default"}</button>
-                <button className="rounded border px-2 py-1" onClick={() => toggleTax(tax, { isActive: !tax.isActive })}>{tax.isActive ? "Disable" : "Enable"}</button>
-                <button className="rounded border border-red-200 px-2 py-1 text-red-600" onClick={() => deleteTax(tax.id)}>Delete</button>
+                <ActionButton
+                  size="sm"
+                  icon="apply"
+                  onClick={() => toggleTax(tax, { isDefault: true })}
+                  label={tax.isDefault ? "Default" : "Set default"}
+                />
+                <ActionButton
+                  size="sm"
+                  icon={tax.isActive ? "close" : "apply"}
+                  onClick={() => toggleTax(tax, { isActive: !tax.isActive })}
+                  label={tax.isActive ? "Disable" : "Enable"}
+                />
+                <ActionButton size="sm" tone="danger" icon="delete" onClick={() => deleteTax(tax.id)} label="Delete" />
               </div>
             </div>
           ))}
@@ -938,7 +945,7 @@ export function SettingsConsole({ lang = "en" }: { lang?: "en" | "fr" }) {
               </label>
             ))}
           </div>
-          <button className="w-fit rounded-md bg-zinc-900 px-4 py-2 text-sm font-medium text-white">Create role</button>
+          <ActionButton type="submit" tone="primary" icon="plus" className="w-fit" label="Create role" />
         </form>
 
         <div className="mt-4 space-y-2">
@@ -946,7 +953,7 @@ export function SettingsConsole({ lang = "en" }: { lang?: "en" | "fr" }) {
             <div key={role.id} className="rounded-xl border border-zinc-100 p-3">
               <div className="flex items-center justify-between gap-2">
                 <p className="text-sm font-semibold">{role.name} <span className="text-zinc-500">({role.userCount} users)</span></p>
-                <button className="text-xs text-red-600" onClick={() => deleteRole(role.id)}>Delete</button>
+                <ActionButton size="sm" tone="danger" icon="delete" onClick={() => deleteRole(role.id)} label="Delete" />
               </div>
               <p className="text-xs text-zinc-500">{role.description ?? "No description"}</p>
               <div className="mt-2 flex flex-wrap gap-1 text-xs">
@@ -983,7 +990,7 @@ export function SettingsConsole({ lang = "en" }: { lang?: "en" | "fr" }) {
               </label>
             ))}
           </div>
-          <button className="w-fit rounded-md bg-zinc-900 px-4 py-2 text-sm font-medium text-white">Create user</button>
+          <ActionButton type="submit" tone="primary" icon="plus" className="w-fit" label="Create user" />
         </form>
 
         <div className="mt-4 space-y-2">
@@ -995,8 +1002,13 @@ export function SettingsConsole({ lang = "en" }: { lang?: "en" | "fr" }) {
                   <p className="text-xs text-zinc-500">{user.email}</p>
                 </div>
                 <div className="flex gap-2 text-xs">
-                  <button className="rounded border px-2 py-1" onClick={() => patchUser(user.id, { isActive: !user.isActive })}>{user.isActive ? "Deactivate" : "Activate"}</button>
-                  <button className="rounded border border-red-200 px-2 py-1 text-red-600" onClick={() => deleteUser(user.id)}>Delete</button>
+                  <ActionButton
+                    size="sm"
+                    icon={user.isActive ? "close" : "apply"}
+                    onClick={() => patchUser(user.id, { isActive: !user.isActive })}
+                    label={user.isActive ? "Deactivate" : "Activate"}
+                  />
+                  <ActionButton size="sm" tone="danger" icon="delete" onClick={() => deleteUser(user.id)} label="Delete" />
                 </div>
               </div>
               <div className="mt-2 flex flex-wrap gap-1 text-xs">
@@ -1023,7 +1035,7 @@ export function SettingsConsole({ lang = "en" }: { lang?: "en" | "fr" }) {
           <input className="rounded-md border border-zinc-300 px-3 py-2 text-sm" value={fieldForm.label} onChange={(e) => setFieldForm((p) => ({ ...p, label: e.target.value }))} placeholder="Label" />
           <input className="rounded-md border border-zinc-300 px-3 py-2 text-sm" value={fieldForm.fieldType} onChange={(e) => setFieldForm((p) => ({ ...p, fieldType: e.target.value }))} placeholder="Type (text|number|date)" />
           <label className="inline-flex items-center gap-2 text-sm text-zinc-700"><input type="checkbox" checked={fieldForm.isRequired} onChange={(e) => setFieldForm((p) => ({ ...p, isRequired: e.target.checked }))} />Required</label>
-          <button className="w-fit rounded-md bg-zinc-900 px-4 py-2 text-sm font-medium text-white">Create field</button>
+          <ActionButton type="submit" tone="primary" icon="plus" className="w-fit" label="Create field" />
         </form>
 
         <div className="mt-4 space-y-2">
@@ -1032,7 +1044,7 @@ export function SettingsConsole({ lang = "en" }: { lang?: "en" | "fr" }) {
               <div className="text-sm">
                 <span className="font-semibold">{field.entityType}</span> · {field.label} ({field.fieldKey}) · {field.fieldType} {field.isRequired ? "· required" : ""}
               </div>
-              <button className="text-xs text-red-600" onClick={() => deleteCustomField(field.id)}>Delete</button>
+              <ActionButton size="sm" tone="danger" icon="delete" onClick={() => deleteCustomField(field.id)} label="Delete" />
             </div>
           ))}
         </div>

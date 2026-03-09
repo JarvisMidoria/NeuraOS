@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { ActionButton } from "../action-button";
 
 type Subscription = {
   id: string;
@@ -241,9 +242,14 @@ export function SaasConsole() {
           <input className="rounded-md border border-zinc-300 px-3 py-2 text-sm" placeholder="Seats" type="number" min={1} value={tenantForm.seatLimit} onChange={(e) => setTenantForm((p) => ({ ...p, seatLimit: Number(e.target.value) || 1 }))} />
           <input className="rounded-md border border-zinc-300 px-3 py-2 text-sm" placeholder="Billing email" value={tenantForm.billingEmail} onChange={(e) => setTenantForm((p) => ({ ...p, billingEmail: e.target.value }))} />
           <input className="rounded-md border border-zinc-300 px-3 py-2 text-sm" type="date" value={tenantForm.renewsAt} onChange={(e) => setTenantForm((p) => ({ ...p, renewsAt: e.target.value }))} />
-          <button className="rounded-md bg-zinc-900 px-4 py-2 text-sm font-medium text-white hover:bg-zinc-800 disabled:opacity-40" disabled={creating}>
-            {creating ? "Creating..." : text.create}
-          </button>
+          <ActionButton
+            type="submit"
+            tone="primary"
+            icon="plus"
+            disabled={creating}
+            className="disabled:opacity-40"
+            label={creating ? "Creating..." : text.create}
+          />
         </form>
       </section>
 
@@ -255,9 +261,7 @@ export function SaasConsole() {
             value={query}
             onChange={(e) => setQuery(e.target.value)}
           />
-          <button onClick={load} className="rounded-md border border-zinc-300 px-3 py-2 text-sm text-zinc-700 hover:bg-zinc-50">
-            {text.refresh}
-          </button>
+          <ActionButton onClick={load} icon="refresh" label={text.refresh} />
         </div>
 
         <div className="space-y-4">
@@ -330,37 +334,26 @@ export function SaasConsole() {
                   >
                     {tenant.llm?.isEnabled ? text.aiOn : text.aiOff}
                   </span>
-                  <button
+                  <ActionButton
                     type="button"
+                    size="sm"
+                    icon={tenant.llm?.isEnabled ? "close" : "apply"}
                     onClick={() => toggleTenantAi(tenant.id, !(tenant.llm?.isEnabled ?? false))}
-                    className="rounded-md border border-zinc-300 px-2 py-1 text-xs text-zinc-700 hover:bg-zinc-50"
-                  >
-                    {tenant.llm?.isEnabled ? "Turn OFF" : "Turn ON"}
-                  </button>
+                    label={tenant.llm?.isEnabled ? "Turn OFF" : "Turn ON"}
+                  />
                 </div>
 
                 <div className="mt-3 flex flex-wrap gap-2">
-                  <button
+                  <ActionButton type="button" size="sm" icon="close" onClick={() => runLifecycleAction(tenant.id, "suspend")} label={text.suspend} />
+                  <ActionButton type="button" size="sm" icon="close" onClick={() => runLifecycleAction(tenant.id, "cancel")} label={text.cancel} />
+                  <ActionButton
                     type="button"
-                    onClick={() => runLifecycleAction(tenant.id, "suspend")}
-                    className="rounded-md border border-zinc-300 px-2 py-1 text-xs text-zinc-700 hover:bg-zinc-50"
-                  >
-                    {text.suspend}
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => runLifecycleAction(tenant.id, "cancel")}
-                    className="rounded-md border border-zinc-300 px-2 py-1 text-xs text-zinc-700 hover:bg-zinc-50"
-                  >
-                    {text.cancel}
-                  </button>
-                  <button
-                    type="button"
+                    size="sm"
+                    tone="danger"
+                    icon="delete"
                     onClick={() => runLifecycleAction(tenant.id, "deleteLogical")}
-                    className="rounded-md border border-zinc-300 px-2 py-1 text-xs text-zinc-700 hover:bg-zinc-50"
-                  >
-                    {text.deleteLogical}
-                  </button>
+                    label={text.deleteLogical}
+                  />
                 </div>
 
                 {savingId === tenant.id && <p className="mt-2 text-xs text-zinc-500">{text.save}...</p>}
