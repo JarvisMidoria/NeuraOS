@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { ActionButton, ActionIcon } from "../action-button";
 
 type BillingConsoleProps = {
   currentPlan: string;
@@ -89,28 +90,34 @@ export function BillingConsole({ currentPlan, currentStatus, renewsAt }: Billing
           </div>
         </div>
 
-        <button
+        <ActionButton
           onClick={openPortal}
           disabled={portalLoading}
-          className="mt-4 rounded-md border border-zinc-300 px-3 py-2 text-sm text-zinc-700 hover:bg-zinc-50 disabled:opacity-50"
-        >
-          {portalLoading ? "Loading..." : text.openPortal}
-        </button>
+          icon="right"
+          className="mt-4 disabled:opacity-50"
+          label={portalLoading ? "Loading..." : text.openPortal}
+        />
       </section>
 
       <section className="rounded-2xl border border-zinc-200 bg-white p-5 shadow-sm">
         <h3 className="text-lg font-semibold text-zinc-900">{text.upgrade}</h3>
         <div className="mt-3 grid gap-3 sm:grid-cols-3">
           {PLANS.map((plan) => (
-            <button
+            <ActionButton
               key={plan}
               onClick={() => openCheckout(plan)}
               disabled={loadingPlan !== null}
-              className="rounded-lg border border-zinc-300 px-4 py-3 text-left hover:bg-zinc-50 disabled:opacity-50"
+              className="w-full justify-between rounded-lg px-4 py-3 text-left disabled:opacity-50"
+              aria-label={`${text.upgrade} ${plan}`}
             >
-              <p className="text-sm font-semibold text-zinc-900">{plan}</p>
-              <p className="mt-1 text-xs text-zinc-500">{loadingPlan === plan ? "Opening checkout..." : "Start subscription"}</p>
-            </button>
+              <span className="flex flex-col items-start">
+                <span className="text-sm font-semibold text-[var(--admin-text)]">{plan}</span>
+                <span className="mt-1 text-xs text-[var(--admin-muted)]">
+                  {loadingPlan === plan ? "Opening checkout..." : "Start subscription"}
+                </span>
+              </span>
+              <ActionIcon name={loadingPlan === plan ? "refresh" : "right"} className={loadingPlan === plan ? "animate-spin" : ""} />
+            </ActionButton>
           ))}
         </div>
       </section>
