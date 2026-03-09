@@ -482,7 +482,19 @@ export function ProductsManager({
         ) : (
           <div className="space-y-3">
             {products.map((product) => (
-              <div key={product.id} className="rounded-2xl border border-zinc-100 p-4">
+              <div
+                key={product.id}
+                role="button"
+                tabIndex={0}
+                onClick={() => handleEdit(product)}
+                onKeyDown={(event) => {
+                  if (event.key === "Enter" || event.key === " ") {
+                    event.preventDefault();
+                    handleEdit(product);
+                  }
+                }}
+                className="rounded-2xl border border-zinc-100 p-4 transition hover:border-zinc-300 cursor-pointer"
+              >
                 <div className="grid gap-3 md:grid-cols-[1fr_auto] md:items-start">
                   <div className="space-y-2">
                     <p className="font-mono text-xs text-zinc-500">{product.sku}</p>
@@ -515,7 +527,10 @@ export function ProductsManager({
                       icon="edit"
                       iconOnly
                       size="icon"
-                      onClick={() => handleEdit(product)}
+                      onClick={(event) => {
+                        event.stopPropagation();
+                        handleEdit(product);
+                      }}
                       label={t.editRow}
                       title={t.editRow}
                     />
@@ -524,7 +539,10 @@ export function ProductsManager({
                       iconOnly
                       size="icon"
                       tone="danger"
-                      onClick={() => handleDelete(product.id)}
+                      onClick={(event) => {
+                        event.stopPropagation();
+                        handleDelete(product.id);
+                      }}
                       label={t.deleteRow}
                       title={t.deleteRow}
                     />

@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { formatCurrency } from "@/lib/currency";
-import { ActionButton } from "../action-button";
+import { ActionButton, ActionLinkButton } from "../action-button";
 
 type SupplierOption = { id: string; name: string };
 type ProductOption = { id: string; sku: string; name: string; unitPrice: string };
@@ -242,6 +242,14 @@ export function PurchasesOrdersManager({
                   ))}
                 </div>
                 <div className="mt-3 flex flex-wrap gap-2 text-xs">
+                  <ActionLinkButton
+                    icon="download"
+                    href={`/api/documents/purchase-orders/${order.id}/pdf`}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="px-2 py-1 text-xs"
+                    label="PO PDF"
+                  />
                   {order.status === "DRAFT" ? (
                     <ActionButton size="sm" icon="apply" onClick={() => setOrderStatus(order.id, "SENT")} label="Mark sent" />
                   ) : null}

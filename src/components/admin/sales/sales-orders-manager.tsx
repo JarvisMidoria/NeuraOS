@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { formatCurrency } from "@/lib/currency";
-import { ActionButton } from "../action-button";
+import { ActionButton, ActionLinkButton } from "../action-button";
 
 type ClientOption = {
   id: string;
@@ -145,6 +145,7 @@ export function SalesOrdersManager({
       previous: lang === "fr" ? "Precedent" : "Previous",
       next: lang === "fr" ? "Suivant" : "Next",
       tvaLabel: lang === "fr" ? "TVA" : "VAT",
+      openDeliveryNote: lang === "fr" ? "Bon livraison" : "Delivery note",
     }),
     [lang],
   );
@@ -431,6 +432,14 @@ export function SalesOrdersManager({
                     ))}
                   </div>
                   <div className="flex flex-wrap gap-2 text-xs">
+                    <ActionLinkButton
+                      icon="download"
+                      href={`/api/documents/sales-orders/${order.id}/delivery-note`}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="px-2 py-1 text-xs"
+                      label={t.openDeliveryNote}
+                    />
                     {order.status === "DRAFT" && canManageSales && (
                       <ActionButton
                         size="sm"

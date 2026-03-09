@@ -195,7 +195,19 @@ export function WarehousesManager({ lang }: { lang: "en" | "fr" }) {
         ) : (
           <div className="space-y-3">
             {warehouses.map((warehouse) => (
-              <div key={warehouse.id} className="flex items-center justify-between rounded-2xl border border-zinc-100 p-4 text-sm">
+              <div
+                key={warehouse.id}
+                role="button"
+                tabIndex={0}
+                onClick={() => handleEdit(warehouse)}
+                onKeyDown={(event) => {
+                  if (event.key === "Enter" || event.key === " ") {
+                    event.preventDefault();
+                    handleEdit(warehouse);
+                  }
+                }}
+                className="flex items-center justify-between rounded-2xl border border-zinc-100 p-4 text-sm transition hover:border-zinc-300 cursor-pointer"
+              >
                 <div>
                   <p className="font-medium text-zinc-900">{warehouse.name}</p>
                   <p className="text-xs text-zinc-500">{warehouse.location ?? t.noLocation}</p>
@@ -205,7 +217,10 @@ export function WarehousesManager({ lang }: { lang: "en" | "fr" }) {
                     icon="edit"
                     iconOnly
                     size="icon"
-                    onClick={() => handleEdit(warehouse)}
+                    onClick={(event) => {
+                      event.stopPropagation();
+                      handleEdit(warehouse);
+                    }}
                     label={t.edit}
                     title={t.edit}
                   />
@@ -214,7 +229,10 @@ export function WarehousesManager({ lang }: { lang: "en" | "fr" }) {
                     iconOnly
                     size="icon"
                     tone="danger"
-                    onClick={() => handleDelete(warehouse)}
+                    onClick={(event) => {
+                      event.stopPropagation();
+                      handleDelete(warehouse);
+                    }}
                     label={t.delete}
                     title={t.delete}
                   />

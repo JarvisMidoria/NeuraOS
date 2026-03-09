@@ -104,6 +104,16 @@ export function SuppliersManager({ lang = "en" }: { lang?: "en" | "fr" }) {
     }
   };
 
+  const startEdit = (supplier: Supplier) => {
+    setForm({
+      id: supplier.id,
+      name: supplier.name,
+      email: supplier.email ?? "",
+      phone: supplier.phone ?? "",
+      address: supplier.address ?? "",
+    });
+  };
+
   return (
     <div className="space-y-6">
       {status ? <div className="rounded-md bg-emerald-50 px-4 py-2 text-sm text-emerald-700">{status}</div> : null}
@@ -133,7 +143,19 @@ export function SuppliersManager({ lang = "en" }: { lang?: "en" | "fr" }) {
         ) : (
           <div className="space-y-3">
             {suppliers.map((supplier) => (
-              <div key={supplier.id} className="rounded-2xl border border-zinc-100 p-4">
+              <div
+                key={supplier.id}
+                role="button"
+                tabIndex={0}
+                onClick={() => startEdit(supplier)}
+                onKeyDown={(event) => {
+                  if (event.key === "Enter" || event.key === " ") {
+                    event.preventDefault();
+                    startEdit(supplier);
+                  }
+                }}
+                className="rounded-2xl border border-zinc-100 p-4 transition hover:border-zinc-300 cursor-pointer"
+              >
                 <div className="flex items-center justify-between gap-3">
                   <div>
                     <p className="font-semibold text-zinc-900">{supplier.name}</p>
@@ -147,7 +169,10 @@ export function SuppliersManager({ lang = "en" }: { lang?: "en" | "fr" }) {
                       size="icon"
                       label={t.edit}
                       title={t.edit}
-                      onClick={() => setForm({ id: supplier.id, name: supplier.name, email: supplier.email ?? "", phone: supplier.phone ?? "", address: supplier.address ?? "" })}
+                      onClick={(event) => {
+                        event.stopPropagation();
+                        startEdit(supplier);
+                      }}
                     />
                     <ActionButton
                       icon="delete"
@@ -156,7 +181,10 @@ export function SuppliersManager({ lang = "en" }: { lang?: "en" | "fr" }) {
                       tone="danger"
                       label={t.delete}
                       title={t.delete}
-                      onClick={() => remove(supplier)}
+                      onClick={(event) => {
+                        event.stopPropagation();
+                        remove(supplier);
+                      }}
                     />
                   </div>
                 </div>

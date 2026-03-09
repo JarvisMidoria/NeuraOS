@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { formatCurrency } from "@/lib/currency";
-import { ActionButton } from "../action-button";
+import { ActionButton, ActionLinkButton } from "../action-button";
 
 type ClientOption = {
   id: string;
@@ -164,6 +164,8 @@ export function SalesQuotesManager({
       next: lang === "fr" ? "Suivant" : "Next",
       qtyLong: lang === "fr" ? "Qte" : "Qty",
       tvaLabel: lang === "fr" ? "TVA" : "VAT",
+      openQuotePdf: lang === "fr" ? "PDF devis" : "Quote PDF",
+      openDeliveryNote: lang === "fr" ? "Bon livraison" : "Delivery note",
     }),
     [lang],
   );
@@ -490,6 +492,14 @@ export function SalesQuotesManager({
                     ))}
                   </div>
                   <div className="flex flex-wrap gap-2 text-xs">
+                    <ActionLinkButton
+                      icon="download"
+                      href={`/api/documents/sales-quotes/${quote.id}/pdf`}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="px-2 py-1 text-xs"
+                      label={t.openQuotePdf}
+                    />
                     {quote.status === "DRAFT" && (
                       <ActionButton size="sm" icon="apply" onClick={() => handleStatusChange(quote.id, "SENT")} label={t.markSent} />
                     )}
@@ -515,9 +525,19 @@ export function SalesQuotesManager({
                       <ActionButton size="sm" icon="right" onClick={() => handleConvert(quote.id)} label={t.convert} />
                     )}
                     {quote.convertedOrder && (
-                      <span className="text-xs text-zinc-500">
-                        SO-{quote.convertedOrder.orderNumber} ({(STATUS_LABELS[quote.convertedOrder.status]?.[lang] ?? quote.convertedOrder.status) as string})
-                      </span>
+                      <>
+                        <span className="text-xs text-zinc-500">
+                          SO-{quote.convertedOrder.orderNumber} ({(STATUS_LABELS[quote.convertedOrder.status]?.[lang] ?? quote.convertedOrder.status) as string})
+                        </span>
+                        <ActionLinkButton
+                          icon="download"
+                          href={`/api/documents/sales-orders/${quote.convertedOrder.id}/delivery-note`}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="px-2 py-1 text-xs"
+                          label={t.openDeliveryNote}
+                        />
+                      </>
                     )}
                   </div>
                 </div>
