@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { ActionButton, ActionLinkButton } from "../action-button";
+import { AdminToolbar, AdminToolbarGroup } from "../admin-toolbar";
 
 type NotificationItem = {
   id: string;
@@ -86,20 +87,24 @@ export function NotificationsConsole({ lang }: { lang: "en" | "fr" }) {
   return (
     <div className="space-y-6">
       <section className="rounded-2xl border border-zinc-200 bg-white p-5 shadow-sm">
-        <div className="flex flex-wrap items-center justify-between gap-3">
+        <AdminToolbar>
           <div>
             <h1 className="text-2xl font-semibold text-zinc-900">{text.title}</h1>
             <p className="text-sm text-zinc-500">{text.subtitle}</p>
           </div>
-          <span className="rounded-full bg-zinc-900 px-3 py-1 text-xs font-medium text-white">
-            {text.unread}: {unread}
-          </span>
-        </div>
+          <AdminToolbarGroup align="end">
+            <span className="rounded-full bg-zinc-900 px-3 py-1 text-xs font-medium text-white">
+              {text.unread}: {unread}
+            </span>
+          </AdminToolbarGroup>
+        </AdminToolbar>
 
-        <div className="mt-4 flex flex-wrap gap-2">
-          <ActionButton onClick={() => load(false)} icon="refresh" label={text.refresh} />
-          <ActionButton onClick={() => load(true)} icon="refresh" label={text.sync} />
-          <ActionButton onClick={markAllRead} icon="apply" label={text.markAll} />
+        <div className="mt-4">
+          <AdminToolbarGroup>
+            <ActionButton onClick={() => load(false)} icon="refresh" label={text.refresh} />
+            <ActionButton onClick={() => load(true)} icon="refresh" label={text.sync} />
+            <ActionButton onClick={markAllRead} icon="apply" label={text.markAll} />
+          </AdminToolbarGroup>
         </div>
       </section>
 

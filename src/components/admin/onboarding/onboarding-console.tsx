@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { ActionButton } from "../action-button";
+import { AdminToolbar, AdminToolbarGroup } from "../admin-toolbar";
 
 type ChecklistItem = {
   id: string;
@@ -118,13 +119,15 @@ export function OnboardingConsole({ lang }: { lang: "en" | "fr" }) {
   return (
     <div className="space-y-6">
       <section className="rounded-2xl border border-zinc-200 bg-white p-5 shadow-sm">
-        <div className="flex items-center justify-between">
+        <AdminToolbar>
           <div>
             <h2 className="text-xl font-semibold text-zinc-900">{text.title}</h2>
             <p className="text-sm text-zinc-500">{text.subtitle}</p>
           </div>
-          <ActionButton onClick={load} icon="refresh" label={text.refresh} />
-        </div>
+          <AdminToolbarGroup align="end">
+            <ActionButton onClick={load} icon="refresh" label={text.refresh} />
+          </AdminToolbarGroup>
+        </AdminToolbar>
 
         <div className="mt-4">
           <p className="text-sm text-zinc-600">

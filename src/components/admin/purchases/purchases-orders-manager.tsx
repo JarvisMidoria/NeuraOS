@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { formatCurrency } from "@/lib/currency";
 import { ActionButton, ActionLinkButton } from "../action-button";
+import { AdminToolbar, AdminToolbarGroup } from "../admin-toolbar";
 
 type SupplierOption = { id: string; name: string };
 type ProductOption = { id: string; sku: string; name: string; unitPrice: string };
@@ -217,9 +218,13 @@ export function PurchasesOrdersManager({
       </div>
 
       <div className="rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm">
-        <div className="mb-4 flex items-center justify-between">
-          <h2 className="text-lg font-semibold text-zinc-900">Purchase Orders</h2>
-          <ActionButton type="button" icon="refresh" onClick={loadOrders} label="Refresh" />
+        <div className="mb-4">
+          <AdminToolbar>
+            <h2 className="text-lg font-semibold text-zinc-900">Purchase Orders</h2>
+            <AdminToolbarGroup align="end">
+              <ActionButton type="button" icon="refresh" onClick={loadOrders} label="Refresh" />
+            </AdminToolbarGroup>
+          </AdminToolbar>
         </div>
 
         {loading ? (

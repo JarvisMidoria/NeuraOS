@@ -431,6 +431,56 @@ html[data-admin-bg-preset="FROZEN_ROSE"] {
   backdrop-filter: blur(calc(var(--liquid-blur) - 4px));
 }
 
+.admin-toolbar {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+@media (min-width: 768px) {
+  .admin-toolbar {
+    align-items: center;
+    flex-direction: row;
+    justify-content: space-between;
+  }
+}
+
+.admin-toolbar-group {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+  min-width: 0;
+}
+
+.admin-toolbar-control {
+  min-height: 2.5rem;
+  border-radius: 0.85rem;
+  border: 1px solid var(--admin-border);
+  background:
+    linear-gradient(145deg, rgba(255, 255, 255, 0.14), rgba(255, 255, 255, 0.01)),
+    var(--admin-input-bg);
+  color: var(--admin-text);
+  box-shadow: inset 0 1px 0 var(--liquid-highlight);
+  backdrop-filter: blur(calc(var(--liquid-blur) - 4px));
+  -webkit-backdrop-filter: blur(calc(var(--liquid-blur) - 4px));
+  padding: 0.5rem 0.875rem;
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+}
+
+.admin-toolbar-control::placeholder {
+  color: color-mix(in srgb, var(--admin-muted) 92%, transparent);
+}
+
+.admin-toolbar-control:focus {
+  outline: none;
+  border-color: color-mix(in srgb, var(--accent) 55%, var(--admin-border));
+  box-shadow:
+    inset 0 1px 0 var(--liquid-highlight),
+    0 0 0 1px color-mix(in srgb, var(--accent) 35%, transparent);
+}
+
 .admin-shell button {
   cursor: pointer;
 }

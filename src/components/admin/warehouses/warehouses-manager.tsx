@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { ActionButton } from "../action-button";
+import { AdminToolbar, AdminToolbarGroup } from "../admin-toolbar";
 
 type Warehouse = {
   id: string;
@@ -180,14 +181,18 @@ export function WarehousesManager({ lang }: { lang: "en" | "fr" }) {
       </div>
 
       <div className="rounded-xl border border-zinc-200 bg-white p-6 shadow-sm">
-        <div className="mb-4 flex items-center justify-between">
-          <div>
-            <h2 className="text-lg font-semibold text-zinc-900">{t.warehouses}</h2>
-            <p className="text-sm text-zinc-500">
-              {warehouses.length} {t.total}
-            </p>
-          </div>
-          <ActionButton type="button" icon="refresh" onClick={loadWarehouses} label={t.refresh} />
+        <div className="mb-4">
+          <AdminToolbar>
+            <div>
+              <h2 className="text-lg font-semibold text-zinc-900">{t.warehouses}</h2>
+              <p className="text-sm text-zinc-500">
+                {warehouses.length} {t.total}
+              </p>
+            </div>
+            <AdminToolbarGroup align="end">
+              <ActionButton type="button" icon="refresh" onClick={loadWarehouses} label={t.refresh} />
+            </AdminToolbarGroup>
+          </AdminToolbar>
         </div>
 
         {loading ? (

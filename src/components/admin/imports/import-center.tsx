@@ -3,6 +3,7 @@
 import type { ChangeEvent, DragEvent } from "react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { ActionButton, ActionLinkButton } from "../action-button";
+import { AdminToolbar, AdminToolbarGroup } from "../admin-toolbar";
 
 type IngestionAction = {
   id: string;
@@ -209,29 +210,33 @@ export function ImportCenter({ lang }: { lang: "en" | "fr" }) {
     <div className="space-y-5">
       <section className="liquid-surface rounded-2xl p-4 sm:p-5">
         <p className="text-sm text-[var(--admin-muted)]">{text.subtitle}</p>
-        <div className="mt-4 grid gap-3 sm:grid-cols-[1fr_auto_auto] sm:items-center">
-          <div
-            className="liquid-surface rounded-xl border border-dashed border-[var(--admin-border)] p-4 text-sm text-[var(--admin-muted)]"
-            onDragOver={(e) => e.preventDefault()}
-            onDrop={onDrop}
-          >
-            {text.dropHint}
-          </div>
-          <ActionButton
-            type="button"
-            icon="upload"
-            tone="primary"
-            onClick={() => fileInputRef.current?.click()}
-            disabled={uploading}
-            label={uploading ? text.loading : text.chooseFile}
-          />
-          <ActionButton
-            type="button"
-            icon="refresh"
-            onClick={fetchJobs}
-            disabled={loading}
-            label={text.refresh}
-          />
+        <div className="mt-4">
+          <AdminToolbar>
+            <div
+              className="liquid-surface min-w-[240px] flex-1 rounded-xl border border-dashed border-[var(--admin-border)] p-4 text-sm text-[var(--admin-muted)]"
+              onDragOver={(e) => e.preventDefault()}
+              onDrop={onDrop}
+            >
+              {text.dropHint}
+            </div>
+            <AdminToolbarGroup align="end">
+              <ActionButton
+                type="button"
+                icon="upload"
+                tone="primary"
+                onClick={() => fileInputRef.current?.click()}
+                disabled={uploading}
+                label={uploading ? text.loading : text.chooseFile}
+              />
+              <ActionButton
+                type="button"
+                icon="refresh"
+                onClick={fetchJobs}
+                disabled={loading}
+                label={text.refresh}
+              />
+            </AdminToolbarGroup>
+          </AdminToolbar>
         </div>
 
         {pendingFile ? (

@@ -4,6 +4,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { formatCurrency } from "@/lib/currency";
 import { ActionButton, ActionLinkButton } from "../action-button";
 import { useSearchParams } from "next/navigation";
+import { AdminToolbar, AdminToolbarGroup, AdminToolbarSelect } from "../admin-toolbar";
 
 type ClientOption = {
   id: string;
@@ -422,46 +423,46 @@ export function SalesOrdersManager({
       </div>
 
       <div className="rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm">
-        <div className="mb-4 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-          <div>
-            <h2 className="text-lg font-semibold text-zinc-900">{t.orders}</h2>
-            <p className="text-sm text-zinc-500">
-              {t.showing} {Math.min(orders.length, PAGE_SIZE)} {t.of} {total} {lang === "fr" ? "commandes" : "orders"}
-            </p>
-          </div>
-          <div className="flex items-center gap-3">
-            <select
-              className="rounded-md border border-zinc-300 px-3 py-2 text-sm"
-              value={clientFilter}
-              onChange={(event) => {
-                setClientFilter(event.target.value);
-                setPage(1);
-              }}
-            >
-              <option value="all">{t.allClients}</option>
-              {clients.map((client) => (
-                <option key={client.id} value={client.id}>
-                  {client.name}
-                </option>
-              ))}
-            </select>
-            <select
-              className="rounded-md border border-zinc-300 px-3 py-2 text-sm"
-              value={statusFilter}
-              onChange={(event) => {
-                setStatusFilter(event.target.value);
-                setPage(1);
-              }}
-            >
-              <option value="all">{t.allStatuses}</option>
-              {ORDER_FILTER_STATUSES.map((status) => (
-                <option key={status} value={status}>
-                  {(STATUS_LABELS[status]?.[lang] ?? status) as string}
-                </option>
-              ))}
-            </select>
-            <ActionButton type="button" icon="refresh" onClick={loadOrders} label={t.refresh} />
-          </div>
+        <div className="mb-4">
+          <AdminToolbar>
+            <div>
+              <h2 className="text-lg font-semibold text-zinc-900">{t.orders}</h2>
+              <p className="text-sm text-zinc-500">
+                {t.showing} {Math.min(orders.length, PAGE_SIZE)} {t.of} {total} {lang === "fr" ? "commandes" : "orders"}
+              </p>
+            </div>
+            <AdminToolbarGroup align="end">
+              <AdminToolbarSelect
+                value={clientFilter}
+                onChange={(event) => {
+                  setClientFilter(event.target.value);
+                  setPage(1);
+                }}
+              >
+                <option value="all">{t.allClients}</option>
+                {clients.map((client) => (
+                  <option key={client.id} value={client.id}>
+                    {client.name}
+                  </option>
+                ))}
+              </AdminToolbarSelect>
+              <AdminToolbarSelect
+                value={statusFilter}
+                onChange={(event) => {
+                  setStatusFilter(event.target.value);
+                  setPage(1);
+                }}
+              >
+                <option value="all">{t.allStatuses}</option>
+                {ORDER_FILTER_STATUSES.map((status) => (
+                  <option key={status} value={status}>
+                    {(STATUS_LABELS[status]?.[lang] ?? status) as string}
+                  </option>
+                ))}
+              </AdminToolbarSelect>
+              <ActionButton type="button" icon="refresh" onClick={loadOrders} label={t.refresh} />
+            </AdminToolbarGroup>
+          </AdminToolbar>
         </div>
         {loading ? (
           <p className="text-sm text-zinc-500">{t.loading}</p>

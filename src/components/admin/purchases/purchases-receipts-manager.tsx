@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { formatCurrency } from "@/lib/currency";
 import { ActionButton } from "../action-button";
+import { AdminToolbar, AdminToolbarGroup } from "../admin-toolbar";
 
 type Warehouse = { id: string; name: string };
 
@@ -197,9 +198,13 @@ export function PurchasesReceiptsManager({ warehouses, currencyCode }: { warehou
       </div>
 
       <div className="rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm">
-        <div className="mb-4 flex items-center justify-between">
-          <h2 className="text-lg font-semibold text-zinc-900">Receipts</h2>
-          <ActionButton type="button" icon="refresh" onClick={loadData} label="Refresh" />
+        <div className="mb-4">
+          <AdminToolbar>
+            <h2 className="text-lg font-semibold text-zinc-900">Receipts</h2>
+            <AdminToolbarGroup align="end">
+              <ActionButton type="button" icon="refresh" onClick={loadData} label="Refresh" />
+            </AdminToolbarGroup>
+          </AdminToolbar>
         </div>
 
         {loading ? (

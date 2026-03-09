@@ -2,6 +2,12 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { ActionButton, ActionLinkButton } from "../action-button";
+import {
+  AdminToolbar,
+  AdminToolbarGroup,
+  AdminToolbarInput,
+  AdminToolbarSelect,
+} from "../admin-toolbar";
 
 type AuditRow = {
   id: string;
@@ -115,49 +121,53 @@ export function AuditConsole({ lang }: { lang: "en" | "fr" }) {
   return (
     <div className="space-y-6">
       <section className="rounded-2xl border border-zinc-200 bg-white p-5 shadow-sm">
-        <div className="grid gap-3 lg:grid-cols-[1fr_180px_220px_auto_auto] lg:items-center">
-          <input
-            value={query}
-            onChange={(event) => {
-              setPage(1);
-              setQuery(event.target.value);
-            }}
-            placeholder={text.search}
-            className="rounded-lg border border-zinc-300 px-3 py-2 text-sm"
-          />
-          <select
-            value={entity}
-            onChange={(event) => {
-              setPage(1);
-              setEntity(event.target.value);
-            }}
-            className="rounded-lg border border-zinc-300 px-3 py-2 text-sm"
-          >
-            <option value="">{text.entity}: {text.all}</option>
-            {entities.map((item) => (
-              <option key={item} value={item}>
-                {item}
-              </option>
-            ))}
-          </select>
-          <select
-            value={action}
-            onChange={(event) => {
-              setPage(1);
-              setAction(event.target.value);
-            }}
-            className="rounded-lg border border-zinc-300 px-3 py-2 text-sm"
-          >
-            <option value="">{text.action}: {text.all}</option>
-            {actions.map((item) => (
-              <option key={item} value={item}>
-                {item}
-              </option>
-            ))}
-          </select>
-          <ActionLinkButton href={csvHref} icon="download" label={text.exportCsv} />
-          <ActionButton type="button" icon="refresh" onClick={load} label={text.refresh} />
-        </div>
+        <AdminToolbar>
+          <AdminToolbarGroup className="w-full flex-1">
+            <AdminToolbarInput
+              value={query}
+              onChange={(event) => {
+                setPage(1);
+                setQuery(event.target.value);
+              }}
+              placeholder={text.search}
+              className="min-w-[220px] flex-1 md:min-w-[280px]"
+            />
+            <AdminToolbarSelect
+              value={entity}
+              onChange={(event) => {
+                setPage(1);
+                setEntity(event.target.value);
+              }}
+              className="min-w-[170px]"
+            >
+              <option value="">{text.entity}: {text.all}</option>
+              {entities.map((item) => (
+                <option key={item} value={item}>
+                  {item}
+                </option>
+              ))}
+            </AdminToolbarSelect>
+            <AdminToolbarSelect
+              value={action}
+              onChange={(event) => {
+                setPage(1);
+                setAction(event.target.value);
+              }}
+              className="min-w-[190px]"
+            >
+              <option value="">{text.action}: {text.all}</option>
+              {actions.map((item) => (
+                <option key={item} value={item}>
+                  {item}
+                </option>
+              ))}
+            </AdminToolbarSelect>
+          </AdminToolbarGroup>
+          <AdminToolbarGroup align="end">
+            <ActionLinkButton href={csvHref} icon="download" label={text.exportCsv} />
+            <ActionButton type="button" icon="refresh" onClick={load} label={text.refresh} />
+          </AdminToolbarGroup>
+        </AdminToolbar>
       </section>
 
       <section className="rounded-2xl border border-zinc-200 bg-white p-5 shadow-sm">

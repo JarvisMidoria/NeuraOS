@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { ActionButton } from "../action-button";
+import { AdminToolbar, AdminToolbarGroup } from "../admin-toolbar";
 
 type Supplier = {
   id: string;
@@ -134,9 +135,13 @@ export function SuppliersManager({ lang = "en" }: { lang?: "en" | "fr" }) {
       </div>
 
       <div className="rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm">
-        <div className="mb-4 flex items-center justify-between">
-          <h2 className="text-lg font-semibold text-zinc-900">{t.suppliers}</h2>
-          <ActionButton type="button" icon="refresh" onClick={load} label={t.refresh} />
+        <div className="mb-4">
+          <AdminToolbar>
+            <h2 className="text-lg font-semibold text-zinc-900">{t.suppliers}</h2>
+            <AdminToolbarGroup align="end">
+              <ActionButton type="button" icon="refresh" onClick={load} label={t.refresh} />
+            </AdminToolbarGroup>
+          </AdminToolbar>
         </div>
         {loading ? (
           <p className="text-sm text-zinc-500">{t.loading}</p>
