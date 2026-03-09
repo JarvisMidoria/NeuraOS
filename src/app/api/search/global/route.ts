@@ -37,7 +37,6 @@ const PAGE_SUGGESTIONS: Array<{
   { id: "page-hr", type: "page", title: "Core HR", subtitle: "Employee base and org structure", href: "/admin/hr", keywords: ["hr", "human resources", "employee", "employees", "rh"] },
   { id: "page-hr-employees", type: "page", title: "HR Employees", subtitle: "Employee records", href: "/admin/hr/employees", keywords: ["employee", "employees", "staff", "team", "salarie"] },
   { id: "page-hr-structure", type: "page", title: "HR Structure", subtitle: "Departments, entities, locations", href: "/admin/hr/structure", keywords: ["department", "entity", "position", "location", "org"] },
-  { id: "page-hr-imports", type: "page", title: "HR Imports", subtitle: "HR onboarding import center", href: "/admin/hr/imports", keywords: ["hr import", "import rh", "employee import", "onboarding rh"] },
 ];
 
 const TYPE_KEYWORDS: Record<SearchItemType, string[]> = {
