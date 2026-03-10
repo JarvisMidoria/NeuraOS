@@ -293,39 +293,49 @@ export function ImportCenter({ lang }: { lang: "en" | "fr" }) {
           const warnings = Array.isArray(job.analysis?.warnings) ? job.analysis?.warnings : [];
           const confidence = typeof job.analysis?.confidence === "number" ? job.analysis.confidence : null;
           const canApply = job.status === "READY_APPLY" || job.status === "ANALYZED";
+          const statusClass =
+            job.status === "APPLIED"
+              ? "border-emerald-300 bg-emerald-100/80 text-emerald-700"
+              : job.status === "FAILED"
+                ? "border-rose-300 bg-rose-100/80 text-rose-700"
+                : job.status === "READY_APPLY" || job.status === "ANALYZED"
+                  ? "border-sky-300 bg-sky-100/80 text-sky-700"
+                  : "border-zinc-300 bg-zinc-100/80 text-zinc-700";
 
           return (
             <article key={job.id} className="liquid-surface rounded-2xl p-4">
-              <div className="grid gap-3 text-xs text-[var(--admin-muted)] sm:grid-cols-[minmax(0,2fr)_minmax(0,1fr)_minmax(0,1fr)_minmax(0,1fr)_minmax(0,1.2fr)]">
-                <div className="min-w-0">
-                  <p className="uppercase tracking-wide">{text.file}</p>
-                  <p className="mt-1 break-all text-sm text-[var(--admin-text)]" title={job.fileName ?? "-"}>
+              <div className="flex flex-wrap items-start justify-between gap-3">
+                <div className="min-w-0 flex-1">
+                  <p className="text-[11px] uppercase tracking-wide text-[var(--admin-muted)]">{text.file}</p>
+                  <p className="mt-1 truncate text-sm font-medium text-[var(--admin-text)]" title={job.fileName ?? "-"}>
                     {job.fileName || "-"}
                   </p>
                 </div>
-                <div className="min-w-0">
-                  <p className="uppercase tracking-wide">{text.type}</p>
-                  <p className="mt-1 break-words text-sm text-[var(--admin-text)]">{job.docType}</p>
-                </div>
-                <div className="min-w-0">
-                  <p className="uppercase tracking-wide">{text.source}</p>
-                  <p className="mt-1 break-words text-sm text-[var(--admin-text)]">{job.source}</p>
-                </div>
-                <div className="min-w-0">
-                  <p className="uppercase tracking-wide">{text.status}</p>
-                  <p className="mt-1 break-words text-sm text-[var(--admin-text)]">{job.status}</p>
-                </div>
-                <div className="min-w-0">
-                  <p className="uppercase tracking-wide">{text.createdAt}</p>
-                  <p className="mt-1 break-words text-sm text-[var(--admin-text)]">
-                    {new Date(job.createdAt).toLocaleString(lang === "fr" ? "fr-FR" : "en-US")}
-                  </p>
+                <div className="flex items-center gap-2">
+                  <span className={`rounded-full border px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wide ${statusClass}`}>
+                    {job.status}
+                  </span>
                 </div>
               </div>
 
-              <div className="mt-3 flex flex-wrap items-center gap-2 text-xs text-[var(--admin-muted)]">
-                <span>{text.actions}: {job.actions.length}</span>
-                {confidence !== null ? <span>{text.confidence}: {(confidence * 100).toFixed(0)}%</span> : null}
+              <div className="mt-2 flex flex-wrap items-center gap-2 text-xs text-[var(--admin-muted)]">
+                <span className="rounded-full bg-[var(--admin-soft-bg)] px-2.5 py-1">
+                  {text.type}: {job.docType}
+                </span>
+                <span className="rounded-full bg-[var(--admin-soft-bg)] px-2.5 py-1">
+                  {text.source}: {job.source}
+                </span>
+                <span className="rounded-full bg-[var(--admin-soft-bg)] px-2.5 py-1">
+                  {text.actions}: {job.actions.length}
+                </span>
+                {confidence !== null ? (
+                  <span className="rounded-full bg-[var(--admin-soft-bg)] px-2.5 py-1">
+                    {text.confidence}: {(confidence * 100).toFixed(0)}%
+                  </span>
+                ) : null}
+                <span className="rounded-full bg-[var(--admin-soft-bg)] px-2.5 py-1">
+                  {text.createdAt}: {new Date(job.createdAt).toLocaleString(lang === "fr" ? "fr-FR" : "en-US")}
+                </span>
               </div>
 
               {warnings.length ? (
