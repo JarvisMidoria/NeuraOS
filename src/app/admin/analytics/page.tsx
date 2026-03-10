@@ -192,11 +192,14 @@ export default async function AdminAnalyticsPage({ searchParams }: AnalyticsPage
                 <Link
                   key={entry.status}
                   href={`/admin/sales/quotes?status=${encodeURIComponent(entry.status)}`}
-                  className="flex items-center justify-between rounded-lg border border-zinc-100 px-3 py-2 transition hover:bg-zinc-50"
+                  className="group flex items-center justify-between rounded-lg border border-zinc-100 px-3 py-2 transition hover:border-indigo-200 hover:bg-zinc-50"
                   title={text.openQuotesFiltered}
                 >
                   <span className="text-sm text-zinc-700">{STATUS_LABELS[entry.status]?.[lang] ?? entry.status}</span>
-                  <span className="rounded-full bg-zinc-100 px-2 py-0.5 text-xs font-semibold text-zinc-700">{formatNumber(entry.count, locale)}</span>
+                  <div className="flex items-center gap-2">
+                    <span className="rounded-full bg-zinc-100 px-2 py-0.5 text-xs font-semibold text-zinc-700">{formatNumber(entry.count, locale)}</span>
+                    <span className="text-indigo-600 opacity-0 transition group-hover:opacity-100">↗</span>
+                  </div>
                 </Link>
               ))}
             </div>
@@ -211,10 +214,15 @@ export default async function AdminAnalyticsPage({ searchParams }: AnalyticsPage
               <div className="mt-3 space-y-2">
                 {snapshot.topClients.length === 0 && <p className="text-sm text-zinc-500">{text.noData}</p>}
                 {snapshot.topClients.map((client) => (
-                  <Link key={client.id} href="/admin/clients" className="block rounded-lg border border-zinc-100 p-3 transition hover:bg-zinc-50">
+                  <Link
+                    key={client.id}
+                    href={`/admin/sales/orders?clientId=${encodeURIComponent(client.id)}`}
+                    className="group block rounded-lg border border-zinc-100 p-3 transition hover:border-indigo-200 hover:bg-zinc-50"
+                  >
                     <p className="text-sm font-semibold text-zinc-900">{client.name}</p>
                     <p className="text-xs text-zinc-500">{client.orders} {text.orders}</p>
                     <p className="mt-1 text-sm text-zinc-800">{formatCurrency(client.total, locale, currencyCode)}</p>
+                    <div className="mt-1 flex justify-end text-indigo-600 opacity-0 transition group-hover:opacity-100">↗</div>
                   </Link>
                 ))}
               </div>
@@ -224,10 +232,11 @@ export default async function AdminAnalyticsPage({ searchParams }: AnalyticsPage
               <div className="mt-3 space-y-2">
                 {snapshot.topProducts.length === 0 && <p className="text-sm text-zinc-500">{text.noData}</p>}
                 {snapshot.topProducts.map((product) => (
-                  <Link key={product.id} href="/admin/products" className="block rounded-lg border border-zinc-100 p-3 transition hover:bg-zinc-50">
+                  <Link key={product.id} href="/admin/stock" className="group block rounded-lg border border-zinc-100 p-3 transition hover:border-indigo-200 hover:bg-zinc-50">
                     <p className="text-sm font-semibold text-zinc-900">{product.sku} · {product.name}</p>
                     <p className="text-xs text-zinc-500">{formatNumber(product.quantity, locale)} {text.units}</p>
                     <p className="mt-1 text-sm text-zinc-800">{formatCurrency(product.revenue, locale, currencyCode)}</p>
+                    <div className="mt-1 flex justify-end text-indigo-600 opacity-0 transition group-hover:opacity-100">↗</div>
                   </Link>
                 ))}
               </div>
@@ -239,17 +248,23 @@ export default async function AdminAnalyticsPage({ searchParams }: AnalyticsPage
           <div className="rounded-2xl border border-zinc-200 bg-white p-5 shadow-sm">
             <h2 className="text-lg font-semibold text-zinc-900">{text.stockAlerts}</h2>
             <div className="mt-3 space-y-2">
-              <Link href="/admin/stock" className="flex items-center justify-between rounded-lg border border-zinc-100 px-3 py-2 transition hover:bg-zinc-50">
+              <Link href="/admin/stock" className="group flex items-center justify-between rounded-lg border border-zinc-100 px-3 py-2 transition hover:border-indigo-200 hover:bg-zinc-50">
                 <span className="text-sm text-zinc-700">{text.lowStock}</span>
-                <span className="rounded-full bg-amber-100 px-2 py-0.5 text-xs font-semibold text-amber-700">
-                  {formatNumber(snapshot.stockAlerts.lowStockCount, locale)}
-                </span>
+                <div className="flex items-center gap-2">
+                  <span className="rounded-full bg-amber-100 px-2 py-0.5 text-xs font-semibold text-amber-700">
+                    {formatNumber(snapshot.stockAlerts.lowStockCount, locale)}
+                  </span>
+                  <span className="text-indigo-600 opacity-0 transition group-hover:opacity-100">↗</span>
+                </div>
               </Link>
-              <Link href="/admin/stock" className="flex items-center justify-between rounded-lg border border-zinc-100 px-3 py-2 transition hover:bg-zinc-50">
+              <Link href="/admin/stock" className="group flex items-center justify-between rounded-lg border border-zinc-100 px-3 py-2 transition hover:border-indigo-200 hover:bg-zinc-50">
                 <span className="text-sm text-zinc-700">{text.outStock}</span>
-                <span className="rounded-full bg-rose-100 px-2 py-0.5 text-xs font-semibold text-rose-700">
-                  {formatNumber(snapshot.stockAlerts.outOfStockCount, locale)}
-                </span>
+                <div className="flex items-center gap-2">
+                  <span className="rounded-full bg-rose-100 px-2 py-0.5 text-xs font-semibold text-rose-700">
+                    {formatNumber(snapshot.stockAlerts.outOfStockCount, locale)}
+                  </span>
+                  <span className="text-indigo-600 opacity-0 transition group-hover:opacity-100">↗</span>
+                </div>
               </Link>
             </div>
             <Link href="/admin/stock" className="mt-3 inline-flex text-sm font-medium text-indigo-600 hover:text-indigo-700">
@@ -261,19 +276,22 @@ export default async function AdminAnalyticsPage({ searchParams }: AnalyticsPage
             <h2 className="text-lg font-semibold text-zinc-900">{text.logistics}</h2>
             <div className="mt-3 space-y-2">
               {snapshot.logisticsTasks.map((task) => (
-                <Link key={task.id} href={task.href} className="flex items-center justify-between rounded-lg border border-zinc-100 px-3 py-2 hover:bg-zinc-50">
+                <Link key={task.id} href={task.href} className="group flex items-center justify-between rounded-lg border border-zinc-100 px-3 py-2 transition hover:border-indigo-200 hover:bg-zinc-50">
                   <span className="text-sm text-zinc-700">{task.label}</span>
-                  <span
-                    className={`rounded-full px-2 py-0.5 text-xs font-semibold ${
-                      task.severity === "high"
-                        ? "bg-rose-100 text-rose-700"
-                        : task.severity === "medium"
-                          ? "bg-amber-100 text-amber-700"
-                          : "bg-emerald-100 text-emerald-700"
-                    }`}
-                  >
-                    {formatNumber(task.count, locale)}
-                  </span>
+                  <div className="flex items-center gap-2">
+                    <span
+                      className={`rounded-full px-2 py-0.5 text-xs font-semibold ${
+                        task.severity === "high"
+                          ? "bg-rose-100 text-rose-700"
+                          : task.severity === "medium"
+                            ? "bg-amber-100 text-amber-700"
+                            : "bg-emerald-100 text-emerald-700"
+                      }`}
+                    >
+                      {formatNumber(task.count, locale)}
+                    </span>
+                    <span className="text-indigo-600 opacity-0 transition group-hover:opacity-100">↗</span>
+                  </div>
                 </Link>
               ))}
             </div>
