@@ -63,6 +63,7 @@ export function AuditConsole({ lang }: { lang: "en" | "fr" }) {
   const [action, setAction] = useState("");
   const [query, setQuery] = useState("");
   const [loading, setLoading] = useState(true);
+  const [expandedRows, setExpandedRows] = useState<string[]>([]);
 
   const text = useMemo(
     () => ({
@@ -78,6 +79,8 @@ export function AuditConsole({ lang }: { lang: "en" | "fr" }) {
       actor: lang === "fr" ? "Acteur" : "Actor",
       record: lang === "fr" ? "Ressource" : "Record",
       metadata: lang === "fr" ? "Contexte" : "Context",
+      showContext: lang === "fr" ? "Voir contexte" : "Show context",
+      hideContext: lang === "fr" ? "Masquer contexte" : "Hide context",
       page: lang === "fr" ? "Page" : "Page",
       previous: lang === "fr" ? "Precedent" : "Previous",
       next: lang === "fr" ? "Suivant" : "Next",
@@ -199,8 +202,11 @@ export function AuditConsole({ lang }: { lang: "en" | "fr" }) {
                 </tr>
               )}
               {!loading &&
-                rows.map((row) => (
-                  <tr key={row.id} className="rounded-lg border border-zinc-100 bg-zinc-50">
+                rows.map((row) => {
+                  const isExpanded = expandedRows.includes(row.id);
+                  const metadataString = row.metadata ? JSON.stringify(row.metadata) : "-";
+                  return (
+                  <tr key={row.id} className="rounded-lg border border-zinc-100 bg-zinc-50 align-top">
                     <td className="px-3 py-2 text-zinc-700">{new Date(row.createdAt).toLocaleString(lang === "fr" ? "fr-FR" : "en-US")}</td>
                     <td className="px-3 py-2 font-medium text-zinc-900">{row.action}</td>
                     <td className="px-3 py-2 text-zinc-700">{row.entity}</td>
@@ -219,10 +225,30 @@ export function AuditConsole({ lang }: { lang: "en" | "fr" }) {
                     </td>
                     <td className="px-3 py-2 text-zinc-700">{row.user?.name ?? "System"}</td>
                     <td className="max-w-[320px] px-3 py-2 text-xs text-zinc-600">
-                      <pre className="overflow-auto whitespace-pre-wrap">{row.metadata ? JSON.stringify(row.metadata) : "-"}</pre>
+                      <div className="space-y-2">
+                        <pre className={`whitespace-pre-wrap break-all ${isExpanded ? "max-h-48 overflow-auto" : "max-h-10 overflow-hidden"}`}>
+                          {metadataString}
+                        </pre>
+                        {metadataString !== "-" ? (
+                          <ActionButton
+                            type="button"
+                            size="icon"
+                            iconOnly
+                            icon={isExpanded ? "close" : "plus"}
+                            label={isExpanded ? text.hideContext : text.showContext}
+                            onClick={() =>
+                              setExpandedRows((prev) =>
+                                prev.includes(row.id)
+                                  ? prev.filter((id) => id !== row.id)
+                                  : [...prev, row.id],
+                              )
+                            }
+                          />
+                        ) : null}
+                      </div>
                     </td>
                   </tr>
-                ))}
+                )})}
             </tbody>
           </table>
         </div>
