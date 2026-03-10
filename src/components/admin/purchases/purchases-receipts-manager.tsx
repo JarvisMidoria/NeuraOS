@@ -4,6 +4,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { formatCurrency } from "@/lib/currency";
 import { ActionButton } from "../action-button";
 import { AdminToolbar, AdminToolbarGroup } from "../admin-toolbar";
+import { AdminModal } from "../admin-modal";
 
 type Warehouse = { id: string; name: string };
 
@@ -47,9 +48,8 @@ export function PurchasesReceiptsManager({ warehouses, currencyCode }: { warehou
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [status, setStatus] = useState<string | null>(null);
-  const [showCreator, setShowCreator] = useState(false);
+  const [isCreatorOpen, setIsCreatorOpen] = useState(false);
   const [showLines, setShowLines] = useState(true);
-  const [showReceiptsList, setShowReceiptsList] = useState(true);
 
   const [selectedOrderId, setSelectedOrderId] = useState("");
   const [selectedWarehouseId, setSelectedWarehouseId] = useState(warehouses[0]?.id ?? "");
@@ -108,6 +108,22 @@ export function PurchasesReceiptsManager({ warehouses, currencyCode }: { warehou
     });
   }, [selectedOrder]);
 
+  const resetCreator = () => {
+    setNotes("");
+    setQuantities({});
+    setShowLines(true);
+  };
+
+  const openCreator = () => {
+    resetCreator();
+    setIsCreatorOpen(true);
+  };
+
+  const closeCreator = () => {
+    resetCreator();
+    setIsCreatorOpen(false);
+  };
+
   const createReceipt = async (event: React.FormEvent) => {
     event.preventDefault();
     if (!selectedOrder) return;
@@ -143,8 +159,8 @@ export function PurchasesReceiptsManager({ warehouses, currencyCode }: { warehou
       if (!res.ok) throw new Error(body.error ?? "Failed to create receipt");
 
       setStatus("Receipt created");
-      setNotes("");
-      setQuantities({});
+      resetCreator();
+      setIsCreatorOpen(false);
       await loadData();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to create receipt");
@@ -159,87 +175,17 @@ export function PurchasesReceiptsManager({ warehouses, currencyCode }: { warehou
       {error ? <div className="rounded-md bg-red-50 px-4 py-2 text-sm text-red-700">{error}</div> : null}
 
       <div className="rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm">
-        <div className="mb-4 flex items-center justify-between gap-3">
-          <h2 className="text-lg font-semibold text-zinc-900">Create Goods Receipt</h2>
-          <ActionButton
-            type="button"
-            size="sm"
-            icon={showCreator ? "close" : "plus"}
-            onClick={() => setShowCreator((prev) => !prev)}
-            label={showCreator ? "Hide" : "Show"}
-          />
-        </div>
-        {showCreator ? (
-          <form onSubmit={createReceipt} className="mt-4 space-y-4">
-            <div className="grid gap-3 md:grid-cols-3">
-              <select value={selectedOrderId} onChange={(e) => setSelectedOrderId(e.target.value)} className="rounded-md border border-zinc-300 px-3 py-2 text-sm">
-                <option value="">Select PO</option>
-                {orders.map((order) => (
-                  <option key={order.id} value={order.id}>PO-{order.poNumber} · {order.supplier?.name}</option>
-                ))}
-              </select>
-              <select value={selectedWarehouseId} onChange={(e) => setSelectedWarehouseId(e.target.value)} className="rounded-md border border-zinc-300 px-3 py-2 text-sm">
-                {warehouses.map((warehouse) => (
-                  <option key={warehouse.id} value={warehouse.id}>{warehouse.name}</option>
-                ))}
-              </select>
-              <input className="rounded-md border border-zinc-300 px-3 py-2 text-sm" value={notes} onChange={(e) => setNotes(e.target.value)} placeholder="Notes" />
-            </div>
-
-            {selectedOrder ? (
-              <div className="space-y-2">
-                <div className="flex items-center justify-between gap-2">
-                  <p className="text-sm font-medium text-zinc-700">Lines</p>
-                  <ActionButton
-                    type="button"
-                    size="sm"
-                    icon={showLines ? "close" : "plus"}
-                    onClick={() => setShowLines((prev) => !prev)}
-                    label={showLines ? "Hide lines" : "Show lines"}
-                  />
-                </div>
-                {showLines
-                  ? selectedOrder.lines.map((line) => (
-                      <div key={line.id} className="grid gap-2 rounded-xl border border-zinc-100 p-3 md:grid-cols-[1fr_120px_120px] md:items-center">
-                        <div className="text-sm text-zinc-700">{line.product?.sku} — {line.product?.name}</div>
-                        <input type="number" step="0.01" className="rounded-md border border-zinc-300 px-3 py-2 text-sm" value={quantities[line.id] ?? line.quantity} onChange={(e) => setQuantities((prev) => ({ ...prev, [line.id]: e.target.value }))} />
-                        <div className="text-sm text-zinc-500">@ {formatCurrency(Number(line.unitPrice), locale, currencyCode)}</div>
-                      </div>
-                    ))
-                  : null}
-              </div>
-            ) : (
-              <p className="text-sm text-zinc-500">Pick a purchase order to receive lines.</p>
-            )}
-
-            <ActionButton
-              type="submit"
-              tone="primary"
-              icon="save"
-              disabled={!selectedOrder || submitting}
-              label={submitting ? "Creating..." : "Create receipt"}
-            />
-          </form>
-        ) : null}
-      </div>
-
-      <div className="rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm">
         <div className="mb-4">
           <AdminToolbar>
             <h2 className="text-lg font-semibold text-zinc-900">Receipts</h2>
             <AdminToolbarGroup align="end">
-              <ActionButton
-                type="button"
-                icon={showReceiptsList ? "close" : "plus"}
-                onClick={() => setShowReceiptsList((prev) => !prev)}
-                label={showReceiptsList ? "Hide" : "Show"}
-              />
+              <ActionButton type="button" icon="plus" tone="primary" onClick={openCreator} label="Add receipt" />
               <ActionButton type="button" icon="refresh" onClick={loadData} label="Refresh" />
             </AdminToolbarGroup>
           </AdminToolbar>
         </div>
 
-        {!showReceiptsList ? null : loading ? (
+        {loading ? (
           <p className="text-sm text-zinc-500">Loading receipts...</p>
         ) : (
           <div className="space-y-3">
@@ -263,16 +209,95 @@ export function PurchasesReceiptsManager({ warehouses, currencyCode }: { warehou
           </div>
         )}
 
-        {showReceiptsList ? (
-          <div className="mt-4 flex items-center justify-between text-sm text-zinc-600">
-            <span>Page {page} of {totalPages}</span>
-            <div className="flex gap-2">
-              <ActionButton size="sm" icon="left" disabled={page <= 1} onClick={() => setPage((p) => Math.max(1, p - 1))} label="Previous" />
-              <ActionButton size="sm" icon="right" disabled={page >= totalPages} onClick={() => setPage((p) => Math.min(totalPages, p + 1))} label="Next" />
-            </div>
+        <div className="mt-4 flex items-center justify-between text-sm text-zinc-600">
+          <span>Page {page} of {totalPages}</span>
+          <div className="flex gap-2">
+            <ActionButton size="sm" icon="left" disabled={page <= 1} onClick={() => setPage((p) => Math.max(1, p - 1))} label="Previous" />
+            <ActionButton size="sm" icon="right" disabled={page >= totalPages} onClick={() => setPage((p) => Math.min(totalPages, p + 1))} label="Next" />
           </div>
-        ) : null}
+        </div>
       </div>
+
+      <AdminModal open={isCreatorOpen} onClose={closeCreator} title="Create Goods Receipt">
+        <form onSubmit={createReceipt} className="mt-1 space-y-4">
+          <div className="grid gap-3 md:grid-cols-3">
+            <select
+              value={selectedOrderId}
+              onChange={(e) => setSelectedOrderId(e.target.value)}
+              className="rounded-md border border-zinc-300 px-3 py-2 text-sm"
+            >
+              <option value="">Select PO</option>
+              {orders.map((order) => (
+                <option key={order.id} value={order.id}>
+                  PO-{order.poNumber} · {order.supplier?.name}
+                </option>
+              ))}
+            </select>
+            <select
+              value={selectedWarehouseId}
+              onChange={(e) => setSelectedWarehouseId(e.target.value)}
+              className="rounded-md border border-zinc-300 px-3 py-2 text-sm"
+            >
+              {warehouses.map((warehouse) => (
+                <option key={warehouse.id} value={warehouse.id}>
+                  {warehouse.name}
+                </option>
+              ))}
+            </select>
+            <input
+              className="rounded-md border border-zinc-300 px-3 py-2 text-sm"
+              value={notes}
+              onChange={(e) => setNotes(e.target.value)}
+              placeholder="Notes"
+            />
+          </div>
+
+          {selectedOrder ? (
+            <div className="space-y-2">
+              <div className="flex items-center justify-between gap-2">
+                <p className="text-sm font-medium text-zinc-700">Lines</p>
+                <ActionButton
+                  type="button"
+                  size="sm"
+                  icon={showLines ? "close" : "plus"}
+                  onClick={() => setShowLines((prev) => !prev)}
+                  label={showLines ? "Hide lines" : "Show lines"}
+                />
+              </div>
+              {showLines
+                ? selectedOrder.lines.map((line) => (
+                    <div key={line.id} className="grid gap-2 rounded-xl border border-zinc-100 p-3 md:grid-cols-[1fr_120px_120px] md:items-center">
+                      <div className="text-sm text-zinc-700">
+                        {line.product?.sku} — {line.product?.name}
+                      </div>
+                      <input
+                        type="number"
+                        step="0.01"
+                        className="rounded-md border border-zinc-300 px-3 py-2 text-sm"
+                        value={quantities[line.id] ?? line.quantity}
+                        onChange={(e) => setQuantities((prev) => ({ ...prev, [line.id]: e.target.value }))}
+                      />
+                      <div className="text-sm text-zinc-500">@ {formatCurrency(Number(line.unitPrice), locale, currencyCode)}</div>
+                    </div>
+                  ))
+                : null}
+            </div>
+          ) : (
+            <p className="text-sm text-zinc-500">Pick a purchase order to receive lines.</p>
+          )}
+
+          <div className="flex items-center gap-2">
+            <ActionButton
+              type="submit"
+              tone="primary"
+              icon="save"
+              disabled={!selectedOrder || submitting}
+              label={submitting ? "Creating..." : "Create receipt"}
+            />
+            <ActionButton type="button" icon="close" onClick={closeCreator} label="Cancel" />
+          </div>
+        </form>
+      </AdminModal>
     </div>
   );
 }

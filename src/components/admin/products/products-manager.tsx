@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { ActionButton } from "../action-button";
 import { AdminToolbar, AdminToolbarGroup, AdminToolbarSelect } from "../admin-toolbar";
+import { AdminModal } from "../admin-modal";
 
 type Category = {
   id: string;
@@ -63,8 +64,7 @@ export function ProductsManager({
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [showEditor, setShowEditor] = useState(false);
-  const [showCatalog, setShowCatalog] = useState(true);
+  const [isEditorOpen, setIsEditorOpen] = useState(false);
 
   const [formData, setFormData] = useState({
     id: "",
@@ -124,8 +124,7 @@ export function ProductsManager({
       page: lang === "fr" ? "Page" : "Page",
       previous: lang === "fr" ? "Precedent" : "Previous",
       next: lang === "fr" ? "Suivant" : "Next",
-      showSection: lang === "fr" ? "Afficher" : "Show",
-      hideSection: lang === "fr" ? "Masquer" : "Hide",
+      addProduct: lang === "fr" ? "Ajouter produit" : "Add product",
     }),
     [lang],
   );
@@ -148,6 +147,16 @@ export function ProductsManager({
       restockAlertEnabled: false,
     });
     setCustomValues({});
+  };
+
+  const openCreate = () => {
+    resetForm();
+    setIsEditorOpen(true);
+  };
+
+  const closeEditor = () => {
+    resetForm();
+    setIsEditorOpen(false);
   };
 
   useEffect(() => {
@@ -186,7 +195,6 @@ export function ProductsManager({
 
 
   const handleEdit = (product: ProductRecord) => {
-    setShowEditor(true);
     setFormData({
       id: product.id,
       sku: product.sku,
@@ -203,6 +211,7 @@ export function ProductsManager({
       fieldMap[field.fieldId] = field.value;
     });
     setCustomValues(fieldMap);
+    setIsEditorOpen(true);
   };
 
   const handleDelete = async (productId: string) => {
@@ -218,7 +227,7 @@ export function ProductsManager({
       }
       await loadProducts();
       if (formData.id === productId) {
-        resetForm();
+        closeEditor();
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : t.deleteFailed);
@@ -263,7 +272,7 @@ export function ProductsManager({
       }
 
       await loadProducts();
-      resetForm();
+      closeEditor();
     } catch (err) {
       setError(err instanceof Error ? err.message : t.saveFailed);
     } finally {
@@ -280,191 +289,6 @@ export function ProductsManager({
       )}
 
       <div className="rounded-xl border border-zinc-200 bg-white p-6 shadow-sm">
-        <div className="mb-4 flex items-center justify-between">
-          <div>
-            <h2 className="text-lg font-semibold text-zinc-900">
-              {formData.id ? t.edit : t.create}
-            </h2>
-            <p className="text-sm text-zinc-500">
-              {t.formHelp}
-            </p>
-          </div>
-          <div className="flex items-center gap-2">
-            <ActionButton
-              type="button"
-              icon={showEditor ? "close" : "plus"}
-              size="sm"
-              onClick={() => setShowEditor((prev) => !prev)}
-              label={showEditor ? t.hideSection : t.showSection}
-            />
-            {formData.id && showEditor && (
-              <ActionButton
-                type="button"
-                icon="close"
-                size="sm"
-                onClick={resetForm}
-                label={t.cancelEdit}
-              />
-            )}
-          </div>
-        </div>
-
-        {showEditor ? (
-          <form onSubmit={handleSubmit} className="grid gap-4 md:grid-cols-2">
-          <div className="space-y-2">
-            <label className="text-sm font-medium text-zinc-700">{t.sku}</label>
-            <input
-              className="w-full rounded-md border border-zinc-300 px-3 py-2 text-sm"
-              value={formData.sku}
-              onChange={(event) => setFormData((prev) => ({ ...prev, sku: event.target.value }))}
-              required
-            />
-          </div>
-          <div className="space-y-2">
-            <label className="text-sm font-medium text-zinc-700">{t.name}</label>
-            <input
-              className="w-full rounded-md border border-zinc-300 px-3 py-2 text-sm"
-              value={formData.name}
-              onChange={(event) => setFormData((prev) => ({ ...prev, name: event.target.value }))}
-              required
-            />
-          </div>
-          <div className="space-y-2">
-            <label className="text-sm font-medium text-zinc-700">{t.unitPrice}</label>
-            <input
-              type="number"
-              step="0.01"
-              className="w-full rounded-md border border-zinc-300 px-3 py-2 text-sm"
-              value={formData.unitPrice}
-              onChange={(event) => setFormData((prev) => ({ ...prev, unitPrice: event.target.value }))}
-              required
-            />
-          </div>
-          <div className="space-y-2">
-            <label className="text-sm font-medium text-zinc-700">{t.uom}</label>
-            {companySettings.productUnitMode === "GLOBAL" ? (
-              <>
-                <input
-                  className="w-full rounded-md border border-zinc-300 bg-zinc-50 px-3 py-2 text-sm text-zinc-600"
-                  value={companySettings.defaultProductUnit}
-                  disabled
-                />
-                <p className="text-xs text-zinc-500">{t.unitModeGlobal}</p>
-              </>
-            ) : (
-              <select
-                className="w-full rounded-md border border-zinc-300 px-3 py-2 text-sm"
-                value={formData.unitOfMeasure}
-                onChange={(event) =>
-                  setFormData((prev) => ({ ...prev, unitOfMeasure: normalizeUnit(event.target.value) }))
-                }
-                required
-              >
-                <option value="EA">Units (EA)</option>
-                <option value="M">Meters (M)</option>
-                <option value="L">Liters (L)</option>
-                <option value="KG">Kilograms (KG)</option>
-              </select>
-            )}
-          </div>
-          <div className="space-y-2">
-            <label className="text-sm font-medium text-zinc-700">{t.category}</label>
-            <select
-              className="w-full rounded-md border border-zinc-300 px-3 py-2 text-sm"
-              value={formData.categoryId}
-              onChange={(event) => setFormData((prev) => ({ ...prev, categoryId: event.target.value }))}
-            >
-              <option value="">{t.uncategorized}</option>
-              {categories.map((category) => (
-                <option key={category.id} value={category.id}>
-                  {category.name}
-                </option>
-              ))}
-            </select>
-          </div>
-          <div className="space-y-2">
-            <label className="text-sm font-medium text-zinc-700">{t.lowStock}</label>
-            <label className="flex items-center gap-2 text-sm text-zinc-600">
-              <input
-                type="checkbox"
-                checked={formData.restockAlertEnabled}
-                onChange={(event) =>
-                  setFormData((prev) => ({
-                    ...prev,
-                    restockAlertEnabled: event.target.checked,
-                    lowStockThreshold:
-                      event.target.checked ? prev.lowStockThreshold || "" : "",
-                  }))
-                }
-              />
-              {t.restockEnabled}
-            </label>
-            <input
-              type="number"
-              step="0.01"
-              className="w-full rounded-md border border-zinc-300 px-3 py-2 text-sm"
-              value={formData.lowStockThreshold}
-              onChange={(event) =>
-                setFormData((prev) => ({ ...prev, lowStockThreshold: event.target.value }))
-              }
-              placeholder={t.lowStockPlaceholder}
-              disabled={!formData.restockAlertEnabled}
-            />
-          </div>
-          <div className="md:col-span-2 space-y-2">
-            <label className="text-sm font-medium text-zinc-700">{t.description}</label>
-            <textarea
-              className="w-full rounded-md border border-zinc-300 px-3 py-2 text-sm"
-              rows={3}
-              value={formData.description}
-              onChange={(event) => setFormData((prev) => ({ ...prev, description: event.target.value }))}
-            />
-          </div>
-
-          {customFieldDefinitions.length > 0 && (
-            <div className="md:col-span-2 space-y-4">
-              <p className="text-sm font-medium text-zinc-700">{t.customFields}</p>
-              <div className="grid gap-4 md:grid-cols-2">
-                {customFieldDefinitions.map((definition) => (
-                  <div key={definition.id} className="space-y-2">
-                    <label className="text-sm text-zinc-700">{definition.label}</label>
-                    <input
-                      className="w-full rounded-md border border-zinc-300 px-3 py-2 text-sm"
-                      value={customValues[definition.id] ?? ""}
-                      onChange={(event) =>
-                        setCustomValues((prev) => ({ ...prev, [definition.id]: event.target.value }))
-                      }
-                    />
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-
-            <div className="md:col-span-2 flex items-center gap-3">
-              <ActionButton
-                type="submit"
-                icon="save"
-                tone="primary"
-                disabled={isSubmitting}
-                className="disabled:opacity-70"
-              >
-                {isSubmitting ? t.saving : formData.id ? t.update : t.createBtn}
-              </ActionButton>
-              {formData.id && (
-                <ActionButton
-                  type="button"
-                  icon="close"
-                  onClick={resetForm}
-                  label={t.reset}
-                />
-              )}
-            </div>
-          </form>
-        ) : null}
-      </div>
-
-      <div className="rounded-xl border border-zinc-200 bg-white p-6 shadow-sm">
         <div className="mb-4">
           <AdminToolbar>
             <div>
@@ -474,12 +298,7 @@ export function ProductsManager({
               </p>
             </div>
             <AdminToolbarGroup align="end">
-              <ActionButton
-                type="button"
-                icon={showCatalog ? "close" : "plus"}
-                onClick={() => setShowCatalog((prev) => !prev)}
-                label={showCatalog ? t.hideSection : t.showSection}
-              />
+              <ActionButton type="button" icon="plus" tone="primary" onClick={openCreate} label={t.addProduct} />
               <AdminToolbarSelect
                 value={categoryFilter}
                 onChange={(event) => handleCategoryChange(event.target.value)}
@@ -501,7 +320,7 @@ export function ProductsManager({
           </AdminToolbar>
         </div>
 
-        {!showCatalog ? null : loading ? (
+        {loading ? (
           <p className="text-sm text-zinc-500">{t.loading}</p>
         ) : (
           <div className="space-y-3">
@@ -603,6 +422,158 @@ export function ProductsManager({
           </div>
         </div>
       </div>
+
+      <AdminModal
+        open={isEditorOpen}
+        onClose={closeEditor}
+        title={formData.id ? t.edit : t.create}
+        subtitle={t.formHelp}
+      >
+        <form onSubmit={handleSubmit} className="grid gap-4 md:grid-cols-2">
+          <div className="space-y-2">
+            <label className="text-sm font-medium text-zinc-700">{t.sku}</label>
+            <input
+              className="w-full rounded-md border border-zinc-300 px-3 py-2 text-sm"
+              value={formData.sku}
+              onChange={(event) => setFormData((prev) => ({ ...prev, sku: event.target.value }))}
+              required
+            />
+          </div>
+          <div className="space-y-2">
+            <label className="text-sm font-medium text-zinc-700">{t.name}</label>
+            <input
+              className="w-full rounded-md border border-zinc-300 px-3 py-2 text-sm"
+              value={formData.name}
+              onChange={(event) => setFormData((prev) => ({ ...prev, name: event.target.value }))}
+              required
+            />
+          </div>
+          <div className="space-y-2">
+            <label className="text-sm font-medium text-zinc-700">{t.unitPrice}</label>
+            <input
+              type="number"
+              step="0.01"
+              className="w-full rounded-md border border-zinc-300 px-3 py-2 text-sm"
+              value={formData.unitPrice}
+              onChange={(event) => setFormData((prev) => ({ ...prev, unitPrice: event.target.value }))}
+              required
+            />
+          </div>
+          <div className="space-y-2">
+            <label className="text-sm font-medium text-zinc-700">{t.uom}</label>
+            {companySettings.productUnitMode === "GLOBAL" ? (
+              <>
+                <input
+                  className="w-full rounded-md border border-zinc-300 bg-zinc-50 px-3 py-2 text-sm text-zinc-600"
+                  value={companySettings.defaultProductUnit}
+                  disabled
+                />
+                <p className="text-xs text-zinc-500">{t.unitModeGlobal}</p>
+              </>
+            ) : (
+              <select
+                className="w-full rounded-md border border-zinc-300 px-3 py-2 text-sm"
+                value={formData.unitOfMeasure}
+                onChange={(event) =>
+                  setFormData((prev) => ({ ...prev, unitOfMeasure: normalizeUnit(event.target.value) }))
+                }
+                required
+              >
+                <option value="EA">Units (EA)</option>
+                <option value="M">Meters (M)</option>
+                <option value="L">Liters (L)</option>
+                <option value="KG">Kilograms (KG)</option>
+              </select>
+            )}
+          </div>
+          <div className="space-y-2">
+            <label className="text-sm font-medium text-zinc-700">{t.category}</label>
+            <select
+              className="w-full rounded-md border border-zinc-300 px-3 py-2 text-sm"
+              value={formData.categoryId}
+              onChange={(event) => setFormData((prev) => ({ ...prev, categoryId: event.target.value }))}
+            >
+              <option value="">{t.uncategorized}</option>
+              {categories.map((category) => (
+                <option key={category.id} value={category.id}>
+                  {category.name}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div className="space-y-2">
+            <label className="text-sm font-medium text-zinc-700">{t.lowStock}</label>
+            <label className="flex items-center gap-2 text-sm text-zinc-600">
+              <input
+                type="checkbox"
+                checked={formData.restockAlertEnabled}
+                onChange={(event) =>
+                  setFormData((prev) => ({
+                    ...prev,
+                    restockAlertEnabled: event.target.checked,
+                    lowStockThreshold:
+                      event.target.checked ? prev.lowStockThreshold || "" : "",
+                  }))
+                }
+              />
+              {t.restockEnabled}
+            </label>
+            <input
+              type="number"
+              step="0.01"
+              className="w-full rounded-md border border-zinc-300 px-3 py-2 text-sm"
+              value={formData.lowStockThreshold}
+              onChange={(event) =>
+                setFormData((prev) => ({ ...prev, lowStockThreshold: event.target.value }))
+              }
+              placeholder={t.lowStockPlaceholder}
+              disabled={!formData.restockAlertEnabled}
+            />
+          </div>
+          <div className="space-y-2 md:col-span-2">
+            <label className="text-sm font-medium text-zinc-700">{t.description}</label>
+            <textarea
+              className="w-full rounded-md border border-zinc-300 px-3 py-2 text-sm"
+              rows={3}
+              value={formData.description}
+              onChange={(event) => setFormData((prev) => ({ ...prev, description: event.target.value }))}
+            />
+          </div>
+
+          {customFieldDefinitions.length > 0 && (
+            <div className="space-y-4 md:col-span-2">
+              <p className="text-sm font-medium text-zinc-700">{t.customFields}</p>
+              <div className="grid gap-4 md:grid-cols-2">
+                {customFieldDefinitions.map((definition) => (
+                  <div key={definition.id} className="space-y-2">
+                    <label className="text-sm text-zinc-700">{definition.label}</label>
+                    <input
+                      className="w-full rounded-md border border-zinc-300 px-3 py-2 text-sm"
+                      value={customValues[definition.id] ?? ""}
+                      onChange={(event) =>
+                        setCustomValues((prev) => ({ ...prev, [definition.id]: event.target.value }))
+                      }
+                    />
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          <div className="flex items-center gap-3 md:col-span-2">
+            <ActionButton
+              type="submit"
+              icon="save"
+              tone="primary"
+              disabled={isSubmitting}
+              className="disabled:opacity-70"
+            >
+              {isSubmitting ? t.saving : formData.id ? t.update : t.createBtn}
+            </ActionButton>
+            <ActionButton type="button" icon="close" onClick={closeEditor} label={formData.id ? t.cancelEdit : t.reset} />
+          </div>
+        </form>
+      </AdminModal>
     </div>
   );
 }

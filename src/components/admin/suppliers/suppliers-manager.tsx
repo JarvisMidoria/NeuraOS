@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { ActionButton } from "../action-button";
 import { AdminToolbar, AdminToolbarGroup } from "../admin-toolbar";
+import { AdminModal } from "../admin-modal";
 
 type Supplier = {
   id: string;
@@ -17,8 +18,7 @@ export function SuppliersManager({ lang = "en" }: { lang?: "en" | "fr" }) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [status, setStatus] = useState<string | null>(null);
-  const [showForm, setShowForm] = useState(false);
-  const [showList, setShowList] = useState(true);
+  const [isEditorOpen, setIsEditorOpen] = useState(false);
   const [form, setForm] = useState({ id: "", name: "", email: "", phone: "", address: "" });
   const t = {
     loadFailed: lang === "fr" ? "Impossible de charger les fournisseurs" : "Failed to load suppliers",
@@ -42,8 +42,7 @@ export function SuppliersManager({ lang = "en" }: { lang?: "en" | "fr" }) {
     email: lang === "fr" ? "Email" : "Email",
     phone: lang === "fr" ? "Telephone" : "Phone",
     address: lang === "fr" ? "Adresse" : "Address",
-    showSection: lang === "fr" ? "Afficher" : "Show",
-    hideSection: lang === "fr" ? "Masquer" : "Hide",
+    addSupplier: lang === "fr" ? "Ajouter fournisseur" : "Add supplier",
   };
 
   const load = useCallback(async () => {
@@ -67,6 +66,16 @@ export function SuppliersManager({ lang = "en" }: { lang?: "en" | "fr" }) {
 
   const reset = () => setForm({ id: "", name: "", email: "", phone: "", address: "" });
 
+  const openCreate = () => {
+    reset();
+    setIsEditorOpen(true);
+  };
+
+  const closeEditor = () => {
+    reset();
+    setIsEditorOpen(false);
+  };
+
   const submit = async (event: React.FormEvent) => {
     event.preventDefault();
     setError(null);
@@ -87,7 +96,7 @@ export function SuppliersManager({ lang = "en" }: { lang?: "en" | "fr" }) {
       const body = await res.json();
       if (!res.ok) throw new Error(body.error ?? t.saveFailed);
       setStatus(form.id ? t.supplierUpdated : t.supplierCreated);
-      reset();
+      closeEditor();
       await load();
     } catch (err) {
       setError(err instanceof Error ? err.message : t.saveFailed);
@@ -110,7 +119,6 @@ export function SuppliersManager({ lang = "en" }: { lang?: "en" | "fr" }) {
   };
 
   const startEdit = (supplier: Supplier) => {
-    setShowForm(true);
     setForm({
       id: supplier.id,
       name: supplier.name,
@@ -118,6 +126,7 @@ export function SuppliersManager({ lang = "en" }: { lang?: "en" | "fr" }) {
       phone: supplier.phone ?? "",
       address: supplier.address ?? "",
     });
+    setIsEditorOpen(true);
   };
 
   return (
@@ -126,46 +135,16 @@ export function SuppliersManager({ lang = "en" }: { lang?: "en" | "fr" }) {
       {error ? <div className="rounded-md bg-red-50 px-4 py-2 text-sm text-red-700">{error}</div> : null}
 
       <div className="rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm">
-        <div className="flex items-center justify-between gap-3">
-          <h2 className="text-lg font-semibold text-zinc-900">{form.id ? t.editSupplier : t.createSupplier}</h2>
-          <ActionButton
-            type="button"
-            size="sm"
-            icon={showForm ? "close" : "plus"}
-            onClick={() => setShowForm((prev) => !prev)}
-            label={showForm ? t.hideSection : t.showSection}
-          />
-        </div>
-        {showForm ? (
-          <form onSubmit={submit} className="mt-4 grid gap-3 md:grid-cols-2">
-            <input className="rounded-md border border-zinc-300 px-3 py-2 text-sm" value={form.name} onChange={(e) => setForm((p) => ({ ...p, name: e.target.value }))} placeholder={t.name} required />
-            <input className="rounded-md border border-zinc-300 px-3 py-2 text-sm" value={form.email} onChange={(e) => setForm((p) => ({ ...p, email: e.target.value }))} placeholder={t.email} />
-            <input className="rounded-md border border-zinc-300 px-3 py-2 text-sm" value={form.phone} onChange={(e) => setForm((p) => ({ ...p, phone: e.target.value }))} placeholder={t.phone} />
-            <input className="rounded-md border border-zinc-300 px-3 py-2 text-sm" value={form.address} onChange={(e) => setForm((p) => ({ ...p, address: e.target.value }))} placeholder={t.address} />
-            <div className="md:col-span-2 flex items-center gap-3">
-              <ActionButton tone="primary" icon="save" type="submit" label={form.id ? t.saveChanges : t.create} />
-              {form.id ? <ActionButton icon="close" size="sm" type="button" label={t.cancel} onClick={reset} /> : null}
-            </div>
-          </form>
-        ) : null}
-      </div>
-
-      <div className="rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm">
         <div className="mb-4">
           <AdminToolbar>
             <h2 className="text-lg font-semibold text-zinc-900">{t.suppliers}</h2>
             <AdminToolbarGroup align="end">
-              <ActionButton
-                type="button"
-                icon={showList ? "close" : "plus"}
-                onClick={() => setShowList((prev) => !prev)}
-                label={showList ? t.hideSection : t.showSection}
-              />
+              <ActionButton type="button" icon="plus" tone="primary" onClick={openCreate} label={t.addSupplier} />
               <ActionButton type="button" icon="refresh" onClick={load} label={t.refresh} />
             </AdminToolbarGroup>
           </AdminToolbar>
         </div>
-        {!showList ? null : loading ? (
+        {loading ? (
           <p className="text-sm text-zinc-500">{t.loading}</p>
         ) : (
           <div className="space-y-3">
@@ -220,6 +199,45 @@ export function SuppliersManager({ lang = "en" }: { lang?: "en" | "fr" }) {
           </div>
         )}
       </div>
+
+      <AdminModal
+        open={isEditorOpen}
+        onClose={closeEditor}
+        title={form.id ? t.editSupplier : t.createSupplier}
+        maxWidthClassName="max-w-2xl"
+      >
+        <form onSubmit={submit} className="grid gap-3 md:grid-cols-2">
+          <input
+            className="rounded-md border border-zinc-300 px-3 py-2 text-sm"
+            value={form.name}
+            onChange={(e) => setForm((p) => ({ ...p, name: e.target.value }))}
+            placeholder={t.name}
+            required
+          />
+          <input
+            className="rounded-md border border-zinc-300 px-3 py-2 text-sm"
+            value={form.email}
+            onChange={(e) => setForm((p) => ({ ...p, email: e.target.value }))}
+            placeholder={t.email}
+          />
+          <input
+            className="rounded-md border border-zinc-300 px-3 py-2 text-sm"
+            value={form.phone}
+            onChange={(e) => setForm((p) => ({ ...p, phone: e.target.value }))}
+            placeholder={t.phone}
+          />
+          <input
+            className="rounded-md border border-zinc-300 px-3 py-2 text-sm"
+            value={form.address}
+            onChange={(e) => setForm((p) => ({ ...p, address: e.target.value }))}
+            placeholder={t.address}
+          />
+          <div className="flex items-center gap-3 md:col-span-2">
+            <ActionButton tone="primary" icon="save" type="submit" label={form.id ? t.saveChanges : t.create} />
+            <ActionButton icon="close" size="sm" type="button" label={t.cancel} onClick={closeEditor} />
+          </div>
+        </form>
+      </AdminModal>
     </div>
   );
 }

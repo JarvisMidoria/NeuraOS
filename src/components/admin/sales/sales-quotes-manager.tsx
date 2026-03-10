@@ -5,6 +5,7 @@ import { formatCurrency } from "@/lib/currency";
 import { ActionButton, ActionLinkButton } from "../action-button";
 import { useSearchParams } from "next/navigation";
 import { AdminToolbar, AdminToolbarGroup, AdminToolbarSelect } from "../admin-toolbar";
+import { AdminModal } from "../admin-modal";
 
 type ClientOption = {
   id: string;
@@ -114,9 +115,8 @@ export function SalesQuotesManager({
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
-  const [showComposer, setShowComposer] = useState(false);
+  const [isComposerOpen, setIsComposerOpen] = useState(false);
   const [showLines, setShowLines] = useState(true);
-  const [showQuotesList, setShowQuotesList] = useState(true);
 
   const [form, setForm] = useState({
     clientId: clients[0]?.id ?? "",
@@ -178,8 +178,7 @@ export function SalesQuotesManager({
       openDeliveryNote: lang === "fr" ? "Bon livraison" : "Delivery note",
       allClients: lang === "fr" ? "Tous les clients" : "All clients",
       allStatuses: lang === "fr" ? "Tous les statuts" : "All statuses",
-      showSection: lang === "fr" ? "Afficher" : "Show",
-      hideSection: lang === "fr" ? "Masquer" : "Hide",
+      addQuote: lang === "fr" ? "Ajouter devis" : "Add quote",
       showLines: lang === "fr" ? "Afficher lignes" : "Show lines",
       hideLines: lang === "fr" ? "Masquer lignes" : "Hide lines",
     }),
@@ -253,6 +252,17 @@ export function SalesQuotesManager({
       notes: "",
     });
     setLines([defaultLine(products, warehouses)]);
+    setShowLines(true);
+  };
+
+  const openComposer = () => {
+    resetForm();
+    setIsComposerOpen(true);
+  };
+
+  const closeComposer = () => {
+    resetForm();
+    setIsComposerOpen(false);
   };
 
   const handleCreate = async (event: React.FormEvent<HTMLFormElement>) => {
@@ -290,6 +300,7 @@ export function SalesQuotesManager({
       }
 
       resetForm();
+      setIsComposerOpen(false);
       await loadQuotes();
     } catch (err) {
       setError(err instanceof Error ? err.message : t.createFailed);
@@ -337,177 +348,6 @@ export function SalesQuotesManager({
       {error && <div className="rounded-md bg-red-50 px-4 py-2 text-sm text-red-700">{error}</div>}
 
       <div className="rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm">
-        <div className="mb-4 flex items-center justify-between gap-3">
-          <div>
-            <h2 className="text-lg font-semibold text-zinc-900">{t.createQuote}</h2>
-            <p className="text-sm text-zinc-500">{t.createHelp}</p>
-          </div>
-          <ActionButton
-            type="button"
-            icon={showComposer ? "close" : "plus"}
-            size="sm"
-            onClick={() => setShowComposer((prev) => !prev)}
-            label={showComposer ? t.hideSection : t.showSection}
-          />
-        </div>
-        {showComposer ? (
-          <form onSubmit={handleCreate} className="space-y-4">
-          <div className="grid gap-4 md:grid-cols-3">
-            <div className="space-y-2">
-              <label className="text-sm font-medium text-zinc-700">{t.client}</label>
-              <select
-                className="w-full rounded-md border border-zinc-300 px-3 py-2 text-sm"
-                value={form.clientId}
-                onChange={(event) => setForm((prev) => ({ ...prev, clientId: event.target.value }))}
-              >
-                {clients.map((client) => (
-                  <option key={client.id} value={client.id}>
-                    {client.name}
-                  </option>
-                ))}
-              </select>
-            </div>
-            <div className="space-y-2">
-              <label className="text-sm font-medium text-zinc-700">{t.validUntil}</label>
-              <input
-                type="date"
-                className="w-full rounded-md border border-zinc-300 px-3 py-2 text-sm"
-                value={form.validUntil}
-                onChange={(event) => setForm((prev) => ({ ...prev, validUntil: event.target.value }))}
-              />
-            </div>
-            <div className="space-y-2">
-              <label className="text-sm font-medium text-zinc-700">{t.notes}</label>
-              <input
-                className="w-full rounded-md border border-zinc-300 px-3 py-2 text-sm"
-                value={form.notes}
-                onChange={(event) => setForm((prev) => ({ ...prev, notes: event.target.value }))}
-                placeholder={t.optional}
-              />
-            </div>
-          </div>
-
-          <div className="space-y-3">
-            <div className="flex items-center justify-between">
-              <p className="text-sm font-medium text-zinc-700">{t.lines}</p>
-              <div className="flex items-center gap-2">
-                <ActionButton
-                  type="button"
-                  size="sm"
-                  icon={showLines ? "close" : "plus"}
-                  onClick={() => setShowLines((prev) => !prev)}
-                  label={showLines ? t.hideLines : t.showLines}
-                />
-                {showLines ? (
-                  <ActionButton type="button" size="sm" icon="plus" onClick={addLine} label={t.addLine} />
-                ) : null}
-              </div>
-            </div>
-
-            {showLines
-              ? lines.map((line, index) => (
-                  <div key={index} className="grid gap-3 rounded-xl border border-zinc-200 p-4 md:grid-cols-6">
-                <div className="space-y-1 md:col-span-2">
-                  <label className="text-xs uppercase tracking-wide text-zinc-500">{t.product}</label>
-                  <select
-                    className="w-full rounded-md border border-zinc-300 px-3 py-2 text-sm"
-                    value={line.productId}
-                    onChange={(event) => updateLine(index, "productId", event.target.value)}
-                  >
-                    {products.map((product) => (
-                      <option key={product.id} value={product.id}>
-                        {product.sku} — {product.name}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-                <div className="space-y-1">
-                  <label className="text-xs uppercase tracking-wide text-zinc-500">{t.warehouse}</label>
-                  <select
-                    className="w-full rounded-md border border-zinc-300 px-3 py-2 text-sm"
-                    value={line.warehouseId}
-                    onChange={(event) => updateLine(index, "warehouseId", event.target.value)}
-                  >
-                    <option value="">{t.notAssigned}</option>
-                    {warehouses.map((warehouse) => (
-                      <option key={warehouse.id} value={warehouse.id}>
-                        {warehouse.name}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-                <div className="space-y-1">
-                  <label className="text-xs uppercase tracking-wide text-zinc-500">{t.qty}</label>
-                  <input
-                    type="number"
-                    min="0"
-                    step="0.01"
-                    className="w-full rounded-md border border-zinc-300 px-3 py-2 text-sm"
-                    value={line.quantity}
-                    onChange={(event) => updateLine(index, "quantity", event.target.value)}
-                  />
-                </div>
-                <div className="space-y-1">
-                  <label className="text-xs uppercase tracking-wide text-zinc-500">{t.unitPrice}</label>
-                  <input
-                    type="number"
-                    min="0"
-                    step="0.01"
-                    className="w-full rounded-md border border-zinc-300 px-3 py-2 text-sm"
-                    value={line.unitPrice}
-                    onChange={(event) => updateLine(index, "unitPrice", event.target.value)}
-                  />
-                </div>
-                <div className="space-y-1">
-                  <label className="text-xs uppercase tracking-wide text-zinc-500">{t.taxes}</label>
-                  <input
-                    className="w-full rounded-md border border-zinc-300 px-3 py-2 text-sm"
-                    value={line.taxes}
-                    onChange={(event) => updateLine(index, "taxes", event.target.value)}
-                    placeholder={t.taxPlaceholder}
-                  />
-                </div>
-                <div className="space-y-1">
-                  <label className="text-xs uppercase tracking-wide text-zinc-500">{t.description}</label>
-                  <div className="flex items-center gap-2">
-                    <input
-                      className="w-full rounded-md border border-zinc-300 px-3 py-2 text-sm"
-                      value={line.description}
-                      onChange={(event) => updateLine(index, "description", event.target.value)}
-                      placeholder={t.optional}
-                    />
-                    {lines.length > 1 && (
-                      <ActionButton
-                        type="button"
-                        size="sm"
-                        tone="danger"
-                        icon="delete"
-                        onClick={() => removeLine(index)}
-                        label={t.remove}
-                      />
-                    )}
-                  </div>
-                </div>
-                  </div>
-                ))
-              : null}
-          </div>
-
-          <div className="flex items-center gap-3">
-            <ActionButton
-              type="submit"
-              tone="primary"
-              icon="save"
-              disabled={submitting}
-              label={submitting ? t.saving : t.createQuote}
-            />
-            <ActionButton type="button" icon="close" onClick={resetForm} label={t.reset} />
-          </div>
-          </form>
-        ) : null}
-      </div>
-
-      <div className="rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm">
         <div className="mb-4">
           <AdminToolbar>
             <div>
@@ -517,12 +357,7 @@ export function SalesQuotesManager({
               </p>
             </div>
             <AdminToolbarGroup align="end">
-              <ActionButton
-                type="button"
-                icon={showQuotesList ? "close" : "plus"}
-                onClick={() => setShowQuotesList((prev) => !prev)}
-                label={showQuotesList ? t.hideSection : t.showSection}
-              />
+              <ActionButton type="button" icon="plus" tone="primary" onClick={openComposer} label={t.addQuote} />
               <AdminToolbarSelect
                 value={clientFilter}
                 onChange={(event) => {
@@ -555,7 +390,7 @@ export function SalesQuotesManager({
             </AdminToolbarGroup>
           </AdminToolbar>
         </div>
-        {!showQuotesList ? null : loading ? (
+        {loading ? (
           <p className="text-sm text-zinc-500">{t.loading}</p>
         ) : (
           <div className="space-y-3">
@@ -669,6 +504,165 @@ export function SalesQuotesManager({
           </div>
         </div>
       </div>
+
+      <AdminModal
+        open={isComposerOpen}
+        onClose={closeComposer}
+        title={t.createQuote}
+        subtitle={t.createHelp}
+      >
+        <form onSubmit={handleCreate} className="space-y-4">
+          <div className="grid gap-4 md:grid-cols-3">
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-zinc-700">{t.client}</label>
+              <select
+                className="w-full rounded-md border border-zinc-300 px-3 py-2 text-sm"
+                value={form.clientId}
+                onChange={(event) => setForm((prev) => ({ ...prev, clientId: event.target.value }))}
+              >
+                {clients.map((client) => (
+                  <option key={client.id} value={client.id}>
+                    {client.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-zinc-700">{t.validUntil}</label>
+              <input
+                type="date"
+                className="w-full rounded-md border border-zinc-300 px-3 py-2 text-sm"
+                value={form.validUntil}
+                onChange={(event) => setForm((prev) => ({ ...prev, validUntil: event.target.value }))}
+              />
+            </div>
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-zinc-700">{t.notes}</label>
+              <input
+                className="w-full rounded-md border border-zinc-300 px-3 py-2 text-sm"
+                value={form.notes}
+                onChange={(event) => setForm((prev) => ({ ...prev, notes: event.target.value }))}
+                placeholder={t.optional}
+              />
+            </div>
+          </div>
+
+          <div className="space-y-3">
+            <div className="flex items-center justify-between">
+              <p className="text-sm font-medium text-zinc-700">{t.lines}</p>
+              <div className="flex items-center gap-2">
+                <ActionButton
+                  type="button"
+                  size="sm"
+                  icon={showLines ? "close" : "plus"}
+                  onClick={() => setShowLines((prev) => !prev)}
+                  label={showLines ? t.hideLines : t.showLines}
+                />
+                {showLines ? <ActionButton type="button" size="sm" icon="plus" onClick={addLine} label={t.addLine} /> : null}
+              </div>
+            </div>
+
+            {showLines
+              ? lines.map((line, index) => (
+                  <div key={index} className="grid gap-3 rounded-xl border border-zinc-200 p-4 md:grid-cols-6">
+                    <div className="space-y-1 md:col-span-2">
+                      <label className="text-xs uppercase tracking-wide text-zinc-500">{t.product}</label>
+                      <select
+                        className="w-full rounded-md border border-zinc-300 px-3 py-2 text-sm"
+                        value={line.productId}
+                        onChange={(event) => updateLine(index, "productId", event.target.value)}
+                      >
+                        {products.map((product) => (
+                          <option key={product.id} value={product.id}>
+                            {product.sku} — {product.name}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                    <div className="space-y-1">
+                      <label className="text-xs uppercase tracking-wide text-zinc-500">{t.warehouse}</label>
+                      <select
+                        className="w-full rounded-md border border-zinc-300 px-3 py-2 text-sm"
+                        value={line.warehouseId}
+                        onChange={(event) => updateLine(index, "warehouseId", event.target.value)}
+                      >
+                        <option value="">{t.notAssigned}</option>
+                        {warehouses.map((warehouse) => (
+                          <option key={warehouse.id} value={warehouse.id}>
+                            {warehouse.name}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                    <div className="space-y-1">
+                      <label className="text-xs uppercase tracking-wide text-zinc-500">{t.qty}</label>
+                      <input
+                        type="number"
+                        min="0"
+                        step="0.01"
+                        className="w-full rounded-md border border-zinc-300 px-3 py-2 text-sm"
+                        value={line.quantity}
+                        onChange={(event) => updateLine(index, "quantity", event.target.value)}
+                      />
+                    </div>
+                    <div className="space-y-1">
+                      <label className="text-xs uppercase tracking-wide text-zinc-500">{t.unitPrice}</label>
+                      <input
+                        type="number"
+                        min="0"
+                        step="0.01"
+                        className="w-full rounded-md border border-zinc-300 px-3 py-2 text-sm"
+                        value={line.unitPrice}
+                        onChange={(event) => updateLine(index, "unitPrice", event.target.value)}
+                      />
+                    </div>
+                    <div className="space-y-1">
+                      <label className="text-xs uppercase tracking-wide text-zinc-500">{t.taxes}</label>
+                      <input
+                        className="w-full rounded-md border border-zinc-300 px-3 py-2 text-sm"
+                        value={line.taxes}
+                        onChange={(event) => updateLine(index, "taxes", event.target.value)}
+                        placeholder={t.taxPlaceholder}
+                      />
+                    </div>
+                    <div className="space-y-1">
+                      <label className="text-xs uppercase tracking-wide text-zinc-500">{t.description}</label>
+                      <div className="flex items-center gap-2">
+                        <input
+                          className="w-full rounded-md border border-zinc-300 px-3 py-2 text-sm"
+                          value={line.description}
+                          onChange={(event) => updateLine(index, "description", event.target.value)}
+                          placeholder={t.optional}
+                        />
+                        {lines.length > 1 && (
+                          <ActionButton
+                            type="button"
+                            size="sm"
+                            tone="danger"
+                            icon="delete"
+                            onClick={() => removeLine(index)}
+                            label={t.remove}
+                          />
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                ))
+              : null}
+          </div>
+
+          <div className="flex items-center gap-3">
+            <ActionButton
+              type="submit"
+              tone="primary"
+              icon="save"
+              disabled={submitting}
+              label={submitting ? t.saving : t.createQuote}
+            />
+            <ActionButton type="button" icon="close" onClick={closeComposer} label={t.reset} />
+          </div>
+        </form>
+      </AdminModal>
     </div>
   );
 }

@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { ActionButton } from "../action-button";
 import { AdminToolbar, AdminToolbarGroup } from "../admin-toolbar";
+import { AdminModal } from "../admin-modal";
 
 type Warehouse = {
   id: string;
@@ -16,8 +17,7 @@ export function WarehousesManager({ lang }: { lang: "en" | "fr" }) {
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [loading, setLoading] = useState(true);
-  const [showForm, setShowForm] = useState(false);
-  const [showList, setShowList] = useState(true);
+  const [isEditorOpen, setIsEditorOpen] = useState(false);
 
   const t = {
     loadFailed: lang === "fr" ? "Impossible de charger les entrepots" : "Failed to load warehouses",
@@ -43,8 +43,7 @@ export function WarehousesManager({ lang }: { lang: "en" | "fr" }) {
     noLocation: lang === "fr" ? "Sans emplacement" : "No location",
     edit: lang === "fr" ? "Modifier" : "Edit",
     delete: lang === "fr" ? "Supprimer" : "Delete",
-    showSection: lang === "fr" ? "Afficher" : "Show",
-    hideSection: lang === "fr" ? "Masquer" : "Hide",
+    addWarehouse: lang === "fr" ? "Ajouter entrepot" : "Add warehouse",
   };
 
   const loadWarehouses = useCallback(async () => {
@@ -70,6 +69,16 @@ export function WarehousesManager({ lang }: { lang: "en" | "fr" }) {
 
   const resetForm = () => setFormData({ id: "", name: "", location: "" });
 
+  const openCreate = () => {
+    resetForm();
+    setIsEditorOpen(true);
+  };
+
+  const closeEditor = () => {
+    resetForm();
+    setIsEditorOpen(false);
+  };
+
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setError(null);
@@ -94,7 +103,7 @@ export function WarehousesManager({ lang }: { lang: "en" | "fr" }) {
       }
 
       await loadWarehouses();
-      resetForm();
+      closeEditor();
     } catch (err) {
       setError(err instanceof Error ? err.message : t.saveFailed);
     } finally {
@@ -103,8 +112,8 @@ export function WarehousesManager({ lang }: { lang: "en" | "fr" }) {
   };
 
   const handleEdit = (warehouse: Warehouse) => {
-    setShowForm(true);
     setFormData({ id: warehouse.id, name: warehouse.name, location: warehouse.location ?? "" });
+    setIsEditorOpen(true);
   };
 
   const handleDelete = async (warehouse: Warehouse) => {
@@ -121,7 +130,7 @@ export function WarehousesManager({ lang }: { lang: "en" | "fr" }) {
       }
       await loadWarehouses();
       if (formData.id === warehouse.id) {
-        resetForm();
+        closeEditor();
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : t.deleteFailed);
@@ -133,70 +142,6 @@ export function WarehousesManager({ lang }: { lang: "en" | "fr" }) {
       {error && <div className="rounded-md bg-red-50 px-4 py-2 text-sm text-red-700">{error}</div>}
 
       <div className="rounded-xl border border-zinc-200 bg-white p-6 shadow-sm">
-        <div className="mb-4 flex items-center justify-between">
-          <div>
-            <h2 className="text-lg font-semibold text-zinc-900">{formData.id ? t.editWarehouse : t.createWarehouse}</h2>
-            <p className="text-sm text-zinc-500">{t.formHelp}</p>
-          </div>
-          <div className="flex items-center gap-2">
-            <ActionButton
-              type="button"
-              icon={showForm ? "close" : "plus"}
-              size="sm"
-              onClick={() => setShowForm((prev) => !prev)}
-              label={showForm ? t.hideSection : t.showSection}
-            />
-            {formData.id ? (
-              <ActionButton
-                type="button"
-                icon="close"
-                size="sm"
-                onClick={resetForm}
-                label={t.cancelEdit}
-              />
-            ) : null}
-          </div>
-        </div>
-
-        {showForm ? (
-          <form onSubmit={handleSubmit} className="grid gap-4 md:grid-cols-2">
-            <div className="space-y-2">
-              <label className="text-sm font-medium text-zinc-700">{t.name}</label>
-              <input
-                className="w-full rounded-md border border-zinc-300 px-3 py-2 text-sm"
-                value={formData.name}
-                onChange={(event) => setFormData((prev) => ({ ...prev, name: event.target.value }))}
-                required
-              />
-            </div>
-            <div className="space-y-2">
-              <label className="text-sm font-medium text-zinc-700">{t.location}</label>
-              <input
-                className="w-full rounded-md border border-zinc-300 px-3 py-2 text-sm"
-                value={formData.location}
-                onChange={(event) => setFormData((prev) => ({ ...prev, location: event.target.value }))}
-                placeholder={t.optional}
-              />
-            </div>
-            <div className="md:col-span-2 flex items-center gap-3">
-              <ActionButton
-                type="submit"
-                icon="save"
-                tone="primary"
-                disabled={isSubmitting}
-                className="disabled:opacity-70"
-              >
-                {isSubmitting ? t.saving : formData.id ? t.update : t.create}
-              </ActionButton>
-              {formData.id ? (
-                <ActionButton type="button" icon="close" onClick={resetForm} label={t.reset} />
-              ) : null}
-            </div>
-          </form>
-        ) : null}
-      </div>
-
-      <div className="rounded-xl border border-zinc-200 bg-white p-6 shadow-sm">
         <div className="mb-4">
           <AdminToolbar>
             <div>
@@ -206,18 +151,18 @@ export function WarehousesManager({ lang }: { lang: "en" | "fr" }) {
               </p>
             </div>
             <AdminToolbarGroup align="end">
+              <ActionButton type="button" icon="plus" tone="primary" onClick={openCreate} label={t.addWarehouse} />
               <ActionButton
                 type="button"
-                icon={showList ? "close" : "plus"}
-                onClick={() => setShowList((prev) => !prev)}
-                label={showList ? t.hideSection : t.showSection}
+                icon="refresh"
+                onClick={loadWarehouses}
+                label={t.refresh}
               />
-              <ActionButton type="button" icon="refresh" onClick={loadWarehouses} label={t.refresh} />
             </AdminToolbarGroup>
           </AdminToolbar>
         </div>
 
-        {!showList ? null : loading ? (
+        {loading ? (
           <p className="text-sm text-zinc-500">{t.loading}</p>
         ) : (
           <div className="space-y-3">
@@ -269,6 +214,51 @@ export function WarehousesManager({ lang }: { lang: "en" | "fr" }) {
           </div>
         )}
       </div>
+
+      <AdminModal
+        open={isEditorOpen}
+        onClose={closeEditor}
+        title={formData.id ? t.editWarehouse : t.createWarehouse}
+        subtitle={t.formHelp}
+        maxWidthClassName="max-w-2xl"
+      >
+        <form onSubmit={handleSubmit} className="grid gap-4 md:grid-cols-2">
+          <div className="space-y-2">
+            <label className="text-sm font-medium text-zinc-700">{t.name}</label>
+            <input
+              className="w-full rounded-md border border-zinc-300 px-3 py-2 text-sm"
+              value={formData.name}
+              onChange={(event) => setFormData((prev) => ({ ...prev, name: event.target.value }))}
+              required
+            />
+          </div>
+          <div className="space-y-2">
+            <label className="text-sm font-medium text-zinc-700">{t.location}</label>
+            <input
+              className="w-full rounded-md border border-zinc-300 px-3 py-2 text-sm"
+              value={formData.location}
+              onChange={(event) => setFormData((prev) => ({ ...prev, location: event.target.value }))}
+              placeholder={t.optional}
+            />
+          </div>
+          <div className="flex items-center gap-3 md:col-span-2">
+            <ActionButton
+              type="submit"
+              icon="save"
+              tone="primary"
+              disabled={isSubmitting}
+              className="disabled:opacity-70"
+            >
+              {isSubmitting ? t.saving : formData.id ? t.update : t.create}
+            </ActionButton>
+            {formData.id ? (
+              <ActionButton type="button" icon="close" onClick={closeEditor} label={t.cancelEdit} />
+            ) : (
+              <ActionButton type="button" icon="close" onClick={closeEditor} label={t.reset} />
+            )}
+          </div>
+        </form>
+      </AdminModal>
     </div>
   );
 }

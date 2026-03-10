@@ -4,6 +4,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { formatCurrency } from "@/lib/currency";
 import { ActionButton, ActionLinkButton } from "../action-button";
 import { AdminToolbar, AdminToolbarGroup } from "../admin-toolbar";
+import { AdminModal } from "../admin-modal";
 
 type SupplierOption = { id: string; name: string };
 type ProductOption = { id: string; sku: string; name: string; unitPrice: string };
@@ -59,9 +60,8 @@ export function PurchasesOrdersManager({
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [status, setStatus] = useState<string | null>(null);
-  const [showComposer, setShowComposer] = useState(false);
+  const [isComposerOpen, setIsComposerOpen] = useState(false);
   const [showLines, setShowLines] = useState(true);
-  const [showOrdersList, setShowOrdersList] = useState(true);
 
   const [form, setForm] = useState({
     supplierId: suppliers[0]?.id ?? "",
@@ -109,6 +109,22 @@ export function PurchasesOrdersManager({
     setLines((prev) => prev.filter((_, i) => i !== index));
   };
 
+  const resetComposer = () => {
+    setForm({ supplierId: suppliers[0]?.id ?? "", expectedDate: "", notes: "" });
+    setLines([{ productId: products[0]?.id ?? "", quantity: "1", unitPrice: products[0]?.unitPrice ?? "0", taxes: "20" }]);
+    setShowLines(true);
+  };
+
+  const openComposer = () => {
+    resetComposer();
+    setIsComposerOpen(true);
+  };
+
+  const closeComposer = () => {
+    resetComposer();
+    setIsComposerOpen(false);
+  };
+
   const createOrder = async (event: React.FormEvent) => {
     event.preventDefault();
     setError(null);
@@ -140,8 +156,8 @@ export function PurchasesOrdersManager({
       if (!res.ok) throw new Error(body.error ?? "Failed to create purchase order");
 
       setStatus("Purchase order created");
-      setForm({ supplierId: suppliers[0]?.id ?? "", expectedDate: "", notes: "" });
-      setLines([{ productId: products[0]?.id ?? "", quantity: "1", unitPrice: products[0]?.unitPrice ?? "0", taxes: "20" }]);
+      resetComposer();
+      setIsComposerOpen(false);
       await loadOrders();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to create purchase order");
@@ -174,93 +190,17 @@ export function PurchasesOrdersManager({
       {error ? <div className="rounded-md bg-red-50 px-4 py-2 text-sm text-red-700">{error}</div> : null}
 
       <div className="rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm">
-        <div className="mb-4 flex items-center justify-between gap-3">
-          <h2 className="text-lg font-semibold text-zinc-900">Create Purchase Order</h2>
-          <ActionButton
-            type="button"
-            icon={showComposer ? "close" : "plus"}
-            size="sm"
-            onClick={() => setShowComposer((prev) => !prev)}
-            label={showComposer ? "Hide" : "Show"}
-          />
-        </div>
-        {showComposer ? (
-          <form onSubmit={createOrder} className="space-y-4">
-          <div className="grid gap-3 md:grid-cols-3">
-            <select className="rounded-md border border-zinc-300 px-3 py-2 text-sm" value={form.supplierId} onChange={(e) => setForm((p) => ({ ...p, supplierId: e.target.value }))}>
-              {suppliers.map((supplier) => (
-                <option key={supplier.id} value={supplier.id}>{supplier.name}</option>
-              ))}
-            </select>
-            <input type="date" className="rounded-md border border-zinc-300 px-3 py-2 text-sm" value={form.expectedDate} onChange={(e) => setForm((p) => ({ ...p, expectedDate: e.target.value }))} />
-            <input className="rounded-md border border-zinc-300 px-3 py-2 text-sm" placeholder="Notes" value={form.notes} onChange={(e) => setForm((p) => ({ ...p, notes: e.target.value }))} />
-          </div>
-
-          <div className="space-y-3">
-            <div className="flex items-center justify-between">
-              <p className="text-sm font-medium text-zinc-700">Lines</p>
-              <div className="flex items-center gap-2">
-                <ActionButton
-                  type="button"
-                  size="sm"
-                  icon={showLines ? "close" : "plus"}
-                  onClick={() => setShowLines((prev) => !prev)}
-                  label={showLines ? "Hide lines" : "Show lines"}
-                />
-                {showLines ? (
-                  <ActionButton type="button" size="sm" icon="plus" onClick={addLine} label="+ Add line" />
-                ) : null}
-              </div>
-            </div>
-            {showLines
-              ? lines.map((line, index) => (
-                  <div key={index} className="grid gap-3 rounded-xl border border-zinc-200 p-4 md:grid-cols-4">
-                <select className="rounded-md border border-zinc-300 px-3 py-2 text-sm" value={line.productId} onChange={(e) => updateLine(index, "productId", e.target.value)}>
-                  {products.map((product) => (
-                    <option key={product.id} value={product.id}>{product.sku} — {product.name}</option>
-                  ))}
-                </select>
-                <input type="number" step="0.01" className="rounded-md border border-zinc-300 px-3 py-2 text-sm" placeholder="Qty" value={line.quantity} onChange={(e) => updateLine(index, "quantity", e.target.value)} />
-                <input type="number" step="0.01" className="rounded-md border border-zinc-300 px-3 py-2 text-sm" placeholder="Unit price" value={line.unitPrice} onChange={(e) => updateLine(index, "unitPrice", e.target.value)} />
-                <div className="flex items-center gap-2">
-                  <input className="w-full rounded-md border border-zinc-300 px-3 py-2 text-sm" placeholder="Taxes % (e.g. 20)" value={line.taxes} onChange={(e) => updateLine(index, "taxes", e.target.value)} />
-                  {lines.length > 1 ? (
-                    <ActionButton type="button" size="sm" tone="danger" icon="delete" onClick={() => removeLine(index)} label="Remove" />
-                  ) : null}
-                </div>
-                  </div>
-                ))
-              : null}
-          </div>
-
-          <ActionButton
-            type="submit"
-            tone="primary"
-            icon="save"
-            disabled={!canManagePurchasing || submitting}
-            label={submitting ? "Creating..." : "Create PO"}
-          />
-          </form>
-        ) : null}
-      </div>
-
-      <div className="rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm">
         <div className="mb-4">
           <AdminToolbar>
             <h2 className="text-lg font-semibold text-zinc-900">Purchase Orders</h2>
             <AdminToolbarGroup align="end">
-              <ActionButton
-                type="button"
-                icon={showOrdersList ? "close" : "plus"}
-                onClick={() => setShowOrdersList((prev) => !prev)}
-                label={showOrdersList ? "Hide" : "Show"}
-              />
+              <ActionButton type="button" icon="plus" tone="primary" onClick={openComposer} label="Add PO" />
               <ActionButton type="button" icon="refresh" onClick={loadOrders} label="Refresh" />
             </AdminToolbarGroup>
           </AdminToolbar>
         </div>
 
-        {!showOrdersList ? null : loading ? (
+        {loading ? (
           <p className="text-sm text-zinc-500">Loading purchase orders...</p>
         ) : (
           <div className="space-y-3">
@@ -311,6 +251,107 @@ export function PurchasesOrdersManager({
           </div>
         </div>
       </div>
+
+      <AdminModal open={isComposerOpen} onClose={closeComposer} title="Create Purchase Order">
+        <form onSubmit={createOrder} className="space-y-4">
+          <div className="grid gap-3 md:grid-cols-3">
+            <select
+              className="rounded-md border border-zinc-300 px-3 py-2 text-sm"
+              value={form.supplierId}
+              onChange={(e) => setForm((p) => ({ ...p, supplierId: e.target.value }))}
+            >
+              {suppliers.map((supplier) => (
+                <option key={supplier.id} value={supplier.id}>
+                  {supplier.name}
+                </option>
+              ))}
+            </select>
+            <input
+              type="date"
+              className="rounded-md border border-zinc-300 px-3 py-2 text-sm"
+              value={form.expectedDate}
+              onChange={(e) => setForm((p) => ({ ...p, expectedDate: e.target.value }))}
+            />
+            <input
+              className="rounded-md border border-zinc-300 px-3 py-2 text-sm"
+              placeholder="Notes"
+              value={form.notes}
+              onChange={(e) => setForm((p) => ({ ...p, notes: e.target.value }))}
+            />
+          </div>
+
+          <div className="space-y-3">
+            <div className="flex items-center justify-between">
+              <p className="text-sm font-medium text-zinc-700">Lines</p>
+              <div className="flex items-center gap-2">
+                <ActionButton
+                  type="button"
+                  size="sm"
+                  icon={showLines ? "close" : "plus"}
+                  onClick={() => setShowLines((prev) => !prev)}
+                  label={showLines ? "Hide lines" : "Show lines"}
+                />
+                {showLines ? <ActionButton type="button" size="sm" icon="plus" onClick={addLine} label="+ Add line" /> : null}
+              </div>
+            </div>
+            {showLines
+              ? lines.map((line, index) => (
+                  <div key={index} className="grid gap-3 rounded-xl border border-zinc-200 p-4 md:grid-cols-4">
+                    <select
+                      className="rounded-md border border-zinc-300 px-3 py-2 text-sm"
+                      value={line.productId}
+                      onChange={(e) => updateLine(index, "productId", e.target.value)}
+                    >
+                      {products.map((product) => (
+                        <option key={product.id} value={product.id}>
+                          {product.sku} — {product.name}
+                        </option>
+                      ))}
+                    </select>
+                    <input
+                      type="number"
+                      step="0.01"
+                      className="rounded-md border border-zinc-300 px-3 py-2 text-sm"
+                      placeholder="Qty"
+                      value={line.quantity}
+                      onChange={(e) => updateLine(index, "quantity", e.target.value)}
+                    />
+                    <input
+                      type="number"
+                      step="0.01"
+                      className="rounded-md border border-zinc-300 px-3 py-2 text-sm"
+                      placeholder="Unit price"
+                      value={line.unitPrice}
+                      onChange={(e) => updateLine(index, "unitPrice", e.target.value)}
+                    />
+                    <div className="flex items-center gap-2">
+                      <input
+                        className="w-full rounded-md border border-zinc-300 px-3 py-2 text-sm"
+                        placeholder="Taxes % (e.g. 20)"
+                        value={line.taxes}
+                        onChange={(e) => updateLine(index, "taxes", e.target.value)}
+                      />
+                      {lines.length > 1 ? (
+                        <ActionButton type="button" size="sm" tone="danger" icon="delete" onClick={() => removeLine(index)} label="Remove" />
+                      ) : null}
+                    </div>
+                  </div>
+                ))
+              : null}
+          </div>
+
+          <div className="flex items-center gap-2">
+            <ActionButton
+              type="submit"
+              tone="primary"
+              icon="save"
+              disabled={!canManagePurchasing || submitting}
+              label={submitting ? "Creating..." : "Create PO"}
+            />
+            <ActionButton type="button" icon="close" onClick={closeComposer} label="Cancel" />
+          </div>
+        </form>
+      </AdminModal>
     </div>
   );
 }
