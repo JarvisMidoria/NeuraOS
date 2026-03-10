@@ -25,6 +25,7 @@ export function NotificationsConsole({ lang }: { lang: "en" | "fr" }) {
   const [items, setItems] = useState<NotificationItem[]>([]);
   const [unread, setUnread] = useState(0);
   const [loading, setLoading] = useState(true);
+  const [filter, setFilter] = useState<"all" | "unread">("all");
 
   const text = useMemo(
     () => ({
@@ -40,10 +41,13 @@ export function NotificationsConsole({ lang }: { lang: "en" | "fr" }) {
       markRead: lang === "fr" ? "Marquer lu" : "Mark read",
       loading: lang === "fr" ? "Chargement..." : "Loading...",
       empty: lang === "fr" ? "Aucune notification" : "No notifications",
+      emptyUnread: lang === "fr" ? "Aucune notification non lue" : "No unread notifications",
       open: lang === "fr" ? "Ouvrir" : "Open",
       low: lang === "fr" ? "Faible" : "Low",
       medium: lang === "fr" ? "Moyen" : "Medium",
       high: lang === "fr" ? "Eleve" : "High",
+      all: lang === "fr" ? "Toutes" : "All",
+      unreadOnly: lang === "fr" ? "Non lues" : "Unread only",
     }),
     [lang],
   );
@@ -84,6 +88,13 @@ export function NotificationsConsole({ lang }: { lang: "en" | "fr" }) {
     setUnread(0);
   };
 
+  const filteredItems = useMemo(() => {
+    if (filter === "unread") {
+      return items.filter((item) => !item.readAt);
+    }
+    return items;
+  }, [filter, items]);
+
   return (
     <div className="space-y-6">
       <section className="rounded-2xl border border-zinc-200 bg-white p-5 shadow-sm">
@@ -104,6 +115,18 @@ export function NotificationsConsole({ lang }: { lang: "en" | "fr" }) {
             <ActionButton onClick={() => load(false)} icon="refresh" label={text.refresh} />
             <ActionButton onClick={() => load(true)} icon="refresh" label={text.sync} />
             <ActionButton onClick={markAllRead} icon="apply" label={text.markAll} />
+            <ActionButton
+              onClick={() => setFilter("all")}
+              icon={filter === "all" ? "apply" : "plus"}
+              label={text.all}
+              className={filter === "all" ? "liquid-selected" : undefined}
+            />
+            <ActionButton
+              onClick={() => setFilter("unread")}
+              icon={filter === "unread" ? "apply" : "plus"}
+              label={text.unreadOnly}
+              className={filter === "unread" ? "liquid-selected" : undefined}
+            />
           </AdminToolbarGroup>
         </div>
       </section>
@@ -111,8 +134,10 @@ export function NotificationsConsole({ lang }: { lang: "en" | "fr" }) {
       <section className="rounded-2xl border border-zinc-200 bg-white p-5 shadow-sm">
         <div className="space-y-3">
           {loading && <p className="text-sm text-zinc-500">{text.loading}</p>}
-          {!loading && items.length === 0 && <p className="text-sm text-zinc-500">{text.empty}</p>}
-          {items.map((item) => (
+          {!loading && filteredItems.length === 0 && (
+            <p className="text-sm text-zinc-500">{filter === "unread" ? text.emptyUnread : text.empty}</p>
+          )}
+          {filteredItems.map((item) => (
             <article
               key={item.id}
               className={`rounded-xl border p-4 ${item.readAt ? "border-zinc-100" : "border-zinc-200 bg-zinc-50"}`}
