@@ -101,6 +101,9 @@ export function SalesOrdersManager({
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
+  const [showDraft, setShowDraft] = useState(false);
+  const [showLines, setShowLines] = useState(true);
+  const [showOrdersList, setShowOrdersList] = useState(true);
 
   const [form, setForm] = useState({
     clientId: clients[0]?.id ?? "",
@@ -155,6 +158,10 @@ export function SalesOrdersManager({
       openDeliveryNote: lang === "fr" ? "Bon livraison" : "Delivery note",
       allClients: lang === "fr" ? "Tous les clients" : "All clients",
       allStatuses: lang === "fr" ? "Tous les statuts" : "All statuses",
+      showSection: lang === "fr" ? "Afficher" : "Show",
+      hideSection: lang === "fr" ? "Masquer" : "Hide",
+      showLines: lang === "fr" ? "Afficher lignes" : "Show lines",
+      hideLines: lang === "fr" ? "Masquer lignes" : "Hide lines",
     }),
     [lang],
   );
@@ -286,11 +293,21 @@ export function SalesOrdersManager({
       {error && <div className="rounded-md bg-red-50 px-4 py-2 text-sm text-red-700">{error}</div>}
 
       <div className="rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm">
-        <div className="mb-4">
-          <h2 className="text-lg font-semibold text-zinc-900">{t.draftOrder}</h2>
-          <p className="text-sm text-zinc-500">{t.draftHelp}</p>
+        <div className="mb-4 flex items-center justify-between gap-3">
+          <div>
+            <h2 className="text-lg font-semibold text-zinc-900">{t.draftOrder}</h2>
+            <p className="text-sm text-zinc-500">{t.draftHelp}</p>
+          </div>
+          <ActionButton
+            type="button"
+            icon={showDraft ? "close" : "plus"}
+            size="sm"
+            onClick={() => setShowDraft((prev) => !prev)}
+            label={showDraft ? t.hideSection : t.showSection}
+          />
         </div>
-        <form onSubmit={handleCreate} className="space-y-4">
+        {showDraft ? (
+          <form onSubmit={handleCreate} className="space-y-4">
           <div className="grid gap-4 md:grid-cols-3">
             <div className="space-y-2">
               <label className="text-sm font-medium text-zinc-700">{t.client}</label>
@@ -320,11 +337,23 @@ export function SalesOrdersManager({
           <div className="space-y-3">
             <div className="flex items-center justify-between">
               <p className="text-sm font-medium text-zinc-700">{t.lines}</p>
-              <ActionButton type="button" size="sm" icon="plus" onClick={addLine} label={t.addLine} />
+              <div className="flex items-center gap-2">
+                <ActionButton
+                  type="button"
+                  size="sm"
+                  icon={showLines ? "close" : "plus"}
+                  onClick={() => setShowLines((prev) => !prev)}
+                  label={showLines ? t.hideLines : t.showLines}
+                />
+                {showLines ? (
+                  <ActionButton type="button" size="sm" icon="plus" onClick={addLine} label={t.addLine} />
+                ) : null}
+              </div>
             </div>
 
-            {lines.map((line, index) => (
-              <div key={index} className="grid gap-3 rounded-xl border border-zinc-200 p-4 md:grid-cols-6">
+            {showLines
+              ? lines.map((line, index) => (
+                  <div key={index} className="grid gap-3 rounded-xl border border-zinc-200 p-4 md:grid-cols-6">
                 <div className="space-y-1 md:col-span-2">
                   <label className="text-xs uppercase tracking-wide text-zinc-500">{t.product}</label>
                   <select
@@ -405,8 +434,9 @@ export function SalesOrdersManager({
                     )}
                   </div>
                 </div>
-              </div>
-            ))}
+                  </div>
+                ))
+              : null}
           </div>
 
           <div className="flex items-center gap-3">
@@ -419,7 +449,8 @@ export function SalesOrdersManager({
             />
             <ActionButton type="button" icon="close" onClick={resetForm} label={t.reset} />
           </div>
-        </form>
+          </form>
+        ) : null}
       </div>
 
       <div className="rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm">
@@ -432,6 +463,12 @@ export function SalesOrdersManager({
               </p>
             </div>
             <AdminToolbarGroup align="end">
+              <ActionButton
+                type="button"
+                icon={showOrdersList ? "close" : "plus"}
+                onClick={() => setShowOrdersList((prev) => !prev)}
+                label={showOrdersList ? t.hideSection : t.showSection}
+              />
               <AdminToolbarSelect
                 value={clientFilter}
                 onChange={(event) => {
@@ -464,7 +501,7 @@ export function SalesOrdersManager({
             </AdminToolbarGroup>
           </AdminToolbar>
         </div>
-        {loading ? (
+        {!showOrdersList ? null : loading ? (
           <p className="text-sm text-zinc-500">{t.loading}</p>
         ) : (
           <div className="space-y-3">

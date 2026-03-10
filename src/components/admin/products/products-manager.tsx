@@ -63,6 +63,8 @@ export function ProductsManager({
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showEditor, setShowEditor] = useState(false);
+  const [showCatalog, setShowCatalog] = useState(true);
 
   const [formData, setFormData] = useState({
     id: "",
@@ -122,6 +124,8 @@ export function ProductsManager({
       page: lang === "fr" ? "Page" : "Page",
       previous: lang === "fr" ? "Precedent" : "Previous",
       next: lang === "fr" ? "Suivant" : "Next",
+      showSection: lang === "fr" ? "Afficher" : "Show",
+      hideSection: lang === "fr" ? "Masquer" : "Hide",
     }),
     [lang],
   );
@@ -182,6 +186,7 @@ export function ProductsManager({
 
 
   const handleEdit = (product: ProductRecord) => {
+    setShowEditor(true);
     setFormData({
       id: product.id,
       sku: product.sku,
@@ -284,18 +289,28 @@ export function ProductsManager({
               {t.formHelp}
             </p>
           </div>
-          {formData.id && (
+          <div className="flex items-center gap-2">
             <ActionButton
               type="button"
-              icon="close"
+              icon={showEditor ? "close" : "plus"}
               size="sm"
-              onClick={resetForm}
-              label={t.cancelEdit}
+              onClick={() => setShowEditor((prev) => !prev)}
+              label={showEditor ? t.hideSection : t.showSection}
             />
-          )}
+            {formData.id && showEditor && (
+              <ActionButton
+                type="button"
+                icon="close"
+                size="sm"
+                onClick={resetForm}
+                label={t.cancelEdit}
+              />
+            )}
+          </div>
         </div>
 
-        <form onSubmit={handleSubmit} className="grid gap-4 md:grid-cols-2">
+        {showEditor ? (
+          <form onSubmit={handleSubmit} className="grid gap-4 md:grid-cols-2">
           <div className="space-y-2">
             <label className="text-sm font-medium text-zinc-700">{t.sku}</label>
             <input
@@ -426,26 +441,27 @@ export function ProductsManager({
             </div>
           )}
 
-          <div className="md:col-span-2 flex items-center gap-3">
-            <ActionButton
-              type="submit"
-              icon="save"
-              tone="primary"
-              disabled={isSubmitting}
-              className="disabled:opacity-70"
-            >
-              {isSubmitting ? t.saving : formData.id ? t.update : t.createBtn}
-            </ActionButton>
-            {formData.id && (
+            <div className="md:col-span-2 flex items-center gap-3">
               <ActionButton
-                type="button"
-                icon="close"
-                onClick={resetForm}
-                label={t.reset}
-              />
-            )}
-          </div>
-        </form>
+                type="submit"
+                icon="save"
+                tone="primary"
+                disabled={isSubmitting}
+                className="disabled:opacity-70"
+              >
+                {isSubmitting ? t.saving : formData.id ? t.update : t.createBtn}
+              </ActionButton>
+              {formData.id && (
+                <ActionButton
+                  type="button"
+                  icon="close"
+                  onClick={resetForm}
+                  label={t.reset}
+                />
+              )}
+            </div>
+          </form>
+        ) : null}
       </div>
 
       <div className="rounded-xl border border-zinc-200 bg-white p-6 shadow-sm">
@@ -458,6 +474,12 @@ export function ProductsManager({
               </p>
             </div>
             <AdminToolbarGroup align="end">
+              <ActionButton
+                type="button"
+                icon={showCatalog ? "close" : "plus"}
+                onClick={() => setShowCatalog((prev) => !prev)}
+                label={showCatalog ? t.hideSection : t.showSection}
+              />
               <AdminToolbarSelect
                 value={categoryFilter}
                 onChange={(event) => handleCategoryChange(event.target.value)}
@@ -479,7 +501,7 @@ export function ProductsManager({
           </AdminToolbar>
         </div>
 
-        {loading ? (
+        {!showCatalog ? null : loading ? (
           <p className="text-sm text-zinc-500">{t.loading}</p>
         ) : (
           <div className="space-y-3">
