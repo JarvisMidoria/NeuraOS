@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { type ReactNode, useCallback, useEffect, useMemo, useState } from "react";
 import { ALLOWED_CURRENCY_CODES } from "@/lib/currency";
 import { ActionButton } from "../action-button";
 
@@ -101,6 +101,55 @@ async function jsonOrThrow<T>(res: Response): Promise<T> {
   return body as T;
 }
 
+type SettingsSectionKey =
+  | "company"
+  | "ai"
+  | "messaging"
+  | "stock"
+  | "tax"
+  | "roles"
+  | "users"
+  | "customFields";
+
+type SettingsSectionProps = {
+  title: string;
+  subtitle?: string;
+  isOpen: boolean;
+  onToggle: () => void;
+  toggleOpenLabel: string;
+  toggleCloseLabel: string;
+  children: ReactNode;
+};
+
+function SettingsSection({
+  title,
+  subtitle,
+  isOpen,
+  onToggle,
+  toggleOpenLabel,
+  toggleCloseLabel,
+  children,
+}: SettingsSectionProps) {
+  return (
+    <section className="rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm">
+      <div className="flex items-start justify-between gap-3">
+        <div>
+          <h2 className="text-lg font-semibold text-zinc-900">{title}</h2>
+          {subtitle ? <p className="mt-1 text-xs text-zinc-500">{subtitle}</p> : null}
+        </div>
+        <ActionButton
+          type="button"
+          size="sm"
+          icon={isOpen ? "close" : "plus"}
+          onClick={onToggle}
+          label={isOpen ? toggleCloseLabel : toggleOpenLabel}
+        />
+      </div>
+      {isOpen ? <div className="mt-4">{children}</div> : null}
+    </section>
+  );
+}
+
 export function SettingsConsole({ lang = "en" }: { lang?: "en" | "fr" }) {
   const [company, setCompany] = useState<CompanySettings | null>(null);
   const [llmSettings, setLlmSettings] = useState<LlmSettings | null>(null);
@@ -160,6 +209,16 @@ export function SettingsConsole({ lang = "en" }: { lang?: "en" | "fr" }) {
     label: "",
     fieldType: "text",
     isRequired: false,
+  });
+  const [openSections, setOpenSections] = useState<Record<SettingsSectionKey, boolean>>({
+    company: true,
+    ai: true,
+    messaging: false,
+    stock: false,
+    tax: false,
+    roles: false,
+    users: false,
+    customFields: false,
   });
 
   const fetchAll = useCallback(async () => {
@@ -251,6 +310,13 @@ export function SettingsConsole({ lang = "en" }: { lang?: "en" | "fr" }) {
         name: role.name,
       })),
     [roles],
+  );
+  const sectionLabels = useMemo(
+    () => ({
+      show: lang === "fr" ? "Afficher" : "Show",
+      hide: lang === "fr" ? "Masquer" : "Hide",
+    }),
+    [lang],
   );
   const sharedUnavailable = Boolean(llmSettings && !llmSettings.sharedAvailable);
   const tCompany = useMemo(
@@ -575,6 +641,10 @@ export function SettingsConsole({ lang = "en" }: { lang?: "en" | "fr" }) {
     }
   };
 
+  const toggleSection = (section: SettingsSectionKey) => {
+    setOpenSections((prev) => ({ ...prev, [section]: !prev[section] }));
+  };
+
   if (loading) {
     return <p className="text-sm text-zinc-500">{tCompany.loading}</p>;
   }
@@ -584,9 +654,14 @@ export function SettingsConsole({ lang = "en" }: { lang?: "en" | "fr" }) {
       {status ? <div className="rounded-md bg-emerald-50 px-4 py-2 text-sm text-emerald-700">{status}</div> : null}
       {error ? <div className="rounded-md bg-red-50 px-4 py-2 text-sm text-red-700">{error}</div> : null}
 
-      <section className="rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm">
-        <h2 className="text-lg font-semibold text-zinc-900">{tCompany.title}</h2>
-        <form onSubmit={updateCompany} className="mt-4 grid gap-3 md:grid-cols-2">
+      <SettingsSection
+        title={tCompany.title}
+        isOpen={openSections.company}
+        onToggle={() => toggleSection("company")}
+        toggleOpenLabel={sectionLabels.show}
+        toggleCloseLabel={sectionLabels.hide}
+      >
+        <form onSubmit={updateCompany} className="grid gap-3 md:grid-cols-2">
           <input className="rounded-md border border-zinc-300 px-3 py-2 text-sm" value={companyForm.name} onChange={(e) => setCompanyForm((p) => ({ ...p, name: e.target.value }))} placeholder={tCompany.name} />
           <input className="rounded-md border border-zinc-300 px-3 py-2 text-sm" value={companyForm.domain} onChange={(e) => setCompanyForm((p) => ({ ...p, domain: e.target.value }))} placeholder={tCompany.domain} />
           <select
@@ -643,13 +718,18 @@ export function SettingsConsole({ lang = "en" }: { lang?: "en" | "fr" }) {
           </p>
           <ActionButton type="submit" tone="primary" icon="save" className="w-fit" label={tCompany.save} />
         </form>
-      </section>
+      </SettingsSection>
 
-      <section className="rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm">
-        <h2 className="text-lg font-semibold text-zinc-900">AI Assistant</h2>
-        <p className="mt-1 text-xs text-zinc-500">Choose a simple mode: shared AI by NeuraOS, or your own provider key.</p>
+      <SettingsSection
+        title="AI Assistant"
+        subtitle="Choose a simple mode: shared AI by NeuraOS, or your own provider key."
+        isOpen={openSections.ai}
+        onToggle={() => toggleSection("ai")}
+        toggleOpenLabel={sectionLabels.show}
+        toggleCloseLabel={sectionLabels.hide}
+      >
         {llmSettings ? (
-          <div className="mt-3 space-y-3">
+          <div className="space-y-3">
             {llmSettings.usage.monthlyLimitTokens !== null ? (
               (() => {
                 const limit = llmSettings.usage.monthlyLimitTokens;
@@ -704,7 +784,7 @@ export function SettingsConsole({ lang = "en" }: { lang?: "en" | "fr" }) {
             Shared AI is not available yet on the platform. You can still use BYOK mode.
           </div>
         ) : null}
-        <form onSubmit={updateLlm} className="mt-4 grid gap-3 md:grid-cols-2">
+        <form onSubmit={updateLlm} className="grid gap-3 md:grid-cols-2">
           <div className="md:col-span-2 grid gap-2 sm:grid-cols-2">
             <label className="flex items-start gap-2 rounded-md border border-zinc-300 px-3 py-2 text-sm">
               <input
@@ -792,12 +872,17 @@ export function SettingsConsole({ lang = "en" }: { lang?: "en" | "fr" }) {
             <ActionButton type="button" tone="danger" icon="delete" onClick={deleteLlm} label="Remove config" />
           </div>
         </form>
-      </section>
+      </SettingsSection>
 
-      <section className="rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm">
-        <h2 className="text-lg font-semibold text-zinc-900">WhatsApp & Telegram</h2>
-        <p className="mt-1 text-xs text-zinc-500">Configure tenant channels for copilot messaging integrations.</p>
-        <form onSubmit={updateMessaging} className="mt-4 grid gap-3 md:grid-cols-2">
+      <SettingsSection
+        title="WhatsApp & Telegram"
+        subtitle="Configure tenant channels for copilot messaging integrations."
+        isOpen={openSections.messaging}
+        onToggle={() => toggleSection("messaging")}
+        toggleOpenLabel={sectionLabels.show}
+        toggleCloseLabel={sectionLabels.hide}
+      >
+        <form onSubmit={updateMessaging} className="grid gap-3 md:grid-cols-2">
           <label className="inline-flex items-center gap-2 text-sm text-zinc-700">
             <input
               type="checkbox"
@@ -870,12 +955,17 @@ export function SettingsConsole({ lang = "en" }: { lang?: "en" | "fr" }) {
           />
           <ActionButton type="submit" tone="primary" icon="save" className="w-fit" label="Save messaging settings" />
         </form>
-      </section>
+      </SettingsSection>
 
-      <section className="rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm">
-        <h2 className="text-lg font-semibold text-zinc-900">Stock Rules</h2>
+      <SettingsSection
+        title="Stock Rules"
+        isOpen={openSections.stock}
+        onToggle={() => toggleSection("stock")}
+        toggleOpenLabel={sectionLabels.show}
+        toggleCloseLabel={sectionLabels.hide}
+      >
         {stockRule ? (
-          <form onSubmit={updateStockRule} className="mt-4 flex flex-col gap-3">
+          <form onSubmit={updateStockRule} className="flex flex-col gap-3">
             <label className="inline-flex items-center gap-2 text-sm text-zinc-700">
               <input type="checkbox" checked={stockRule.allowNegativeStock} onChange={(e) => setStockRule((p) => (p ? { ...p, allowNegativeStock: e.target.checked } : p))} />
               Allow negative stock
@@ -884,11 +974,16 @@ export function SettingsConsole({ lang = "en" }: { lang?: "en" | "fr" }) {
             <ActionButton type="submit" tone="primary" icon="save" className="w-fit" label="Save stock rules" />
           </form>
         ) : null}
-      </section>
+      </SettingsSection>
 
-      <section className="rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm">
-        <h2 className="text-lg font-semibold text-zinc-900">Tax Rules</h2>
-        <form onSubmit={createTax} className="mt-4 grid gap-3 md:grid-cols-5">
+      <SettingsSection
+        title="Tax Rules"
+        isOpen={openSections.tax}
+        onToggle={() => toggleSection("tax")}
+        toggleOpenLabel={sectionLabels.show}
+        toggleCloseLabel={sectionLabels.hide}
+      >
+        <form onSubmit={createTax} className="grid gap-3 md:grid-cols-5">
           <input className="rounded-md border border-zinc-300 px-3 py-2 text-sm" value={taxForm.code} onChange={(e) => setTaxForm((p) => ({ ...p, code: e.target.value }))} placeholder="Code" />
           <input className="rounded-md border border-zinc-300 px-3 py-2 text-sm" value={taxForm.label} onChange={(e) => setTaxForm((p) => ({ ...p, label: e.target.value }))} placeholder="Label" />
           <input type="number" step="0.001" className="rounded-md border border-zinc-300 px-3 py-2 text-sm" value={taxForm.rate} onChange={(e) => setTaxForm((p) => ({ ...p, rate: e.target.value }))} placeholder="Rate" />
@@ -919,11 +1014,16 @@ export function SettingsConsole({ lang = "en" }: { lang?: "en" | "fr" }) {
             </div>
           ))}
         </div>
-      </section>
+      </SettingsSection>
 
-      <section className="rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm">
-        <h2 className="text-lg font-semibold text-zinc-900">Roles & Permissions</h2>
-        <form onSubmit={createRole} className="mt-4 grid gap-3">
+      <SettingsSection
+        title="Roles & Permissions"
+        isOpen={openSections.roles}
+        onToggle={() => toggleSection("roles")}
+        toggleOpenLabel={sectionLabels.show}
+        toggleCloseLabel={sectionLabels.hide}
+      >
+        <form onSubmit={createRole} className="grid gap-3">
           <div className="grid gap-3 md:grid-cols-2">
             <input className="rounded-md border border-zinc-300 px-3 py-2 text-sm" value={roleForm.name} onChange={(e) => setRoleForm((p) => ({ ...p, name: e.target.value }))} placeholder="Role name" />
             <input className="rounded-md border border-zinc-300 px-3 py-2 text-sm" value={roleForm.description} onChange={(e) => setRoleForm((p) => ({ ...p, description: e.target.value }))} placeholder="Description" />
@@ -964,11 +1064,16 @@ export function SettingsConsole({ lang = "en" }: { lang?: "en" | "fr" }) {
             </div>
           ))}
         </div>
-      </section>
+      </SettingsSection>
 
-      <section className="rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm">
-        <h2 className="text-lg font-semibold text-zinc-900">Users</h2>
-        <form onSubmit={createUser} className="mt-4 grid gap-3 md:grid-cols-2">
+      <SettingsSection
+        title="Users"
+        isOpen={openSections.users}
+        onToggle={() => toggleSection("users")}
+        toggleOpenLabel={sectionLabels.show}
+        toggleCloseLabel={sectionLabels.hide}
+      >
+        <form onSubmit={createUser} className="grid gap-3 md:grid-cols-2">
           <input className="rounded-md border border-zinc-300 px-3 py-2 text-sm" value={userForm.email} onChange={(e) => setUserForm((p) => ({ ...p, email: e.target.value }))} placeholder="Email" />
           <input className="rounded-md border border-zinc-300 px-3 py-2 text-sm" value={userForm.name} onChange={(e) => setUserForm((p) => ({ ...p, name: e.target.value }))} placeholder="Name" />
           <input className="rounded-md border border-zinc-300 px-3 py-2 text-sm" value={userForm.password} onChange={(e) => setUserForm((p) => ({ ...p, password: e.target.value }))} placeholder="Password (min 8)" />
@@ -1019,11 +1124,16 @@ export function SettingsConsole({ lang = "en" }: { lang?: "en" | "fr" }) {
             </div>
           ))}
         </div>
-      </section>
+      </SettingsSection>
 
-      <section className="rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm">
-        <h2 className="text-lg font-semibold text-zinc-900">Custom Fields</h2>
-        <form onSubmit={createCustomField} className="mt-4 grid gap-3 md:grid-cols-2">
+      <SettingsSection
+        title="Custom Fields"
+        isOpen={openSections.customFields}
+        onToggle={() => toggleSection("customFields")}
+        toggleOpenLabel={sectionLabels.show}
+        toggleCloseLabel={sectionLabels.hide}
+      >
+        <form onSubmit={createCustomField} className="grid gap-3 md:grid-cols-2">
           <select className="rounded-md border border-zinc-300 px-3 py-2 text-sm" value={fieldForm.entityType} onChange={(e) => setFieldForm((p) => ({ ...p, entityType: e.target.value }))}>
             <option value="product">product</option>
             <option value="client">client</option>
@@ -1048,7 +1158,7 @@ export function SettingsConsole({ lang = "en" }: { lang?: "en" | "fr" }) {
             </div>
           ))}
         </div>
-      </section>
+      </SettingsSection>
 
       <div className="text-xs text-zinc-500">Company ID: {company?.id}</div>
     </div>
