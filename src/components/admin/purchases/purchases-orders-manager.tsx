@@ -59,6 +59,9 @@ export function PurchasesOrdersManager({
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [status, setStatus] = useState<string | null>(null);
+  const [showComposer, setShowComposer] = useState(false);
+  const [showLines, setShowLines] = useState(true);
+  const [showOrdersList, setShowOrdersList] = useState(true);
 
   const [form, setForm] = useState({
     supplierId: suppliers[0]?.id ?? "",
@@ -171,8 +174,18 @@ export function PurchasesOrdersManager({
       {error ? <div className="rounded-md bg-red-50 px-4 py-2 text-sm text-red-700">{error}</div> : null}
 
       <div className="rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm">
-        <h2 className="text-lg font-semibold text-zinc-900">Create Purchase Order</h2>
-        <form onSubmit={createOrder} className="mt-4 space-y-4">
+        <div className="mb-4 flex items-center justify-between gap-3">
+          <h2 className="text-lg font-semibold text-zinc-900">Create Purchase Order</h2>
+          <ActionButton
+            type="button"
+            icon={showComposer ? "close" : "plus"}
+            size="sm"
+            onClick={() => setShowComposer((prev) => !prev)}
+            label={showComposer ? "Hide" : "Show"}
+          />
+        </div>
+        {showComposer ? (
+          <form onSubmit={createOrder} className="space-y-4">
           <div className="grid gap-3 md:grid-cols-3">
             <select className="rounded-md border border-zinc-300 px-3 py-2 text-sm" value={form.supplierId} onChange={(e) => setForm((p) => ({ ...p, supplierId: e.target.value }))}>
               {suppliers.map((supplier) => (
@@ -186,10 +199,22 @@ export function PurchasesOrdersManager({
           <div className="space-y-3">
             <div className="flex items-center justify-between">
               <p className="text-sm font-medium text-zinc-700">Lines</p>
-              <ActionButton type="button" size="sm" icon="plus" onClick={addLine} label="+ Add line" />
+              <div className="flex items-center gap-2">
+                <ActionButton
+                  type="button"
+                  size="sm"
+                  icon={showLines ? "close" : "plus"}
+                  onClick={() => setShowLines((prev) => !prev)}
+                  label={showLines ? "Hide lines" : "Show lines"}
+                />
+                {showLines ? (
+                  <ActionButton type="button" size="sm" icon="plus" onClick={addLine} label="+ Add line" />
+                ) : null}
+              </div>
             </div>
-            {lines.map((line, index) => (
-              <div key={index} className="grid gap-3 rounded-xl border border-zinc-200 p-4 md:grid-cols-4">
+            {showLines
+              ? lines.map((line, index) => (
+                  <div key={index} className="grid gap-3 rounded-xl border border-zinc-200 p-4 md:grid-cols-4">
                 <select className="rounded-md border border-zinc-300 px-3 py-2 text-sm" value={line.productId} onChange={(e) => updateLine(index, "productId", e.target.value)}>
                   {products.map((product) => (
                     <option key={product.id} value={product.id}>{product.sku} — {product.name}</option>
@@ -203,8 +228,9 @@ export function PurchasesOrdersManager({
                     <ActionButton type="button" size="sm" tone="danger" icon="delete" onClick={() => removeLine(index)} label="Remove" />
                   ) : null}
                 </div>
-              </div>
-            ))}
+                  </div>
+                ))
+              : null}
           </div>
 
           <ActionButton
@@ -214,7 +240,8 @@ export function PurchasesOrdersManager({
             disabled={!canManagePurchasing || submitting}
             label={submitting ? "Creating..." : "Create PO"}
           />
-        </form>
+          </form>
+        ) : null}
       </div>
 
       <div className="rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm">
@@ -222,12 +249,18 @@ export function PurchasesOrdersManager({
           <AdminToolbar>
             <h2 className="text-lg font-semibold text-zinc-900">Purchase Orders</h2>
             <AdminToolbarGroup align="end">
+              <ActionButton
+                type="button"
+                icon={showOrdersList ? "close" : "plus"}
+                onClick={() => setShowOrdersList((prev) => !prev)}
+                label={showOrdersList ? "Hide" : "Show"}
+              />
               <ActionButton type="button" icon="refresh" onClick={loadOrders} label="Refresh" />
             </AdminToolbarGroup>
           </AdminToolbar>
         </div>
 
-        {loading ? (
+        {!showOrdersList ? null : loading ? (
           <p className="text-sm text-zinc-500">Loading purchase orders...</p>
         ) : (
           <div className="space-y-3">

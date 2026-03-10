@@ -16,6 +16,8 @@ export function WarehousesManager({ lang }: { lang: "en" | "fr" }) {
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [showForm, setShowForm] = useState(false);
+  const [showList, setShowList] = useState(true);
 
   const t = {
     loadFailed: lang === "fr" ? "Impossible de charger les entrepots" : "Failed to load warehouses",
@@ -41,6 +43,8 @@ export function WarehousesManager({ lang }: { lang: "en" | "fr" }) {
     noLocation: lang === "fr" ? "Sans emplacement" : "No location",
     edit: lang === "fr" ? "Modifier" : "Edit",
     delete: lang === "fr" ? "Supprimer" : "Delete",
+    showSection: lang === "fr" ? "Afficher" : "Show",
+    hideSection: lang === "fr" ? "Masquer" : "Hide",
   };
 
   const loadWarehouses = useCallback(async () => {
@@ -99,6 +103,7 @@ export function WarehousesManager({ lang }: { lang: "en" | "fr" }) {
   };
 
   const handleEdit = (warehouse: Warehouse) => {
+    setShowForm(true);
     setFormData({ id: warehouse.id, name: warehouse.name, location: warehouse.location ?? "" });
   };
 
@@ -133,51 +138,62 @@ export function WarehousesManager({ lang }: { lang: "en" | "fr" }) {
             <h2 className="text-lg font-semibold text-zinc-900">{formData.id ? t.editWarehouse : t.createWarehouse}</h2>
             <p className="text-sm text-zinc-500">{t.formHelp}</p>
           </div>
-          {formData.id && (
+          <div className="flex items-center gap-2">
             <ActionButton
               type="button"
-              icon="close"
+              icon={showForm ? "close" : "plus"}
               size="sm"
-              onClick={resetForm}
-              label={t.cancelEdit}
+              onClick={() => setShowForm((prev) => !prev)}
+              label={showForm ? t.hideSection : t.showSection}
             />
-          )}
+            {formData.id ? (
+              <ActionButton
+                type="button"
+                icon="close"
+                size="sm"
+                onClick={resetForm}
+                label={t.cancelEdit}
+              />
+            ) : null}
+          </div>
         </div>
 
-        <form onSubmit={handleSubmit} className="grid gap-4 md:grid-cols-2">
-          <div className="space-y-2">
-            <label className="text-sm font-medium text-zinc-700">{t.name}</label>
-            <input
-              className="w-full rounded-md border border-zinc-300 px-3 py-2 text-sm"
-              value={formData.name}
-              onChange={(event) => setFormData((prev) => ({ ...prev, name: event.target.value }))}
-              required
-            />
-          </div>
-          <div className="space-y-2">
-            <label className="text-sm font-medium text-zinc-700">{t.location}</label>
-            <input
-              className="w-full rounded-md border border-zinc-300 px-3 py-2 text-sm"
-              value={formData.location}
-              onChange={(event) => setFormData((prev) => ({ ...prev, location: event.target.value }))}
-              placeholder={t.optional}
-            />
-          </div>
-          <div className="md:col-span-2 flex items-center gap-3">
-            <ActionButton
-              type="submit"
-              icon="save"
-              tone="primary"
-              disabled={isSubmitting}
-              className="disabled:opacity-70"
-            >
-              {isSubmitting ? t.saving : formData.id ? t.update : t.create}
-            </ActionButton>
-            {formData.id && (
-              <ActionButton type="button" icon="close" onClick={resetForm} label={t.reset} />
-            )}
-          </div>
-        </form>
+        {showForm ? (
+          <form onSubmit={handleSubmit} className="grid gap-4 md:grid-cols-2">
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-zinc-700">{t.name}</label>
+              <input
+                className="w-full rounded-md border border-zinc-300 px-3 py-2 text-sm"
+                value={formData.name}
+                onChange={(event) => setFormData((prev) => ({ ...prev, name: event.target.value }))}
+                required
+              />
+            </div>
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-zinc-700">{t.location}</label>
+              <input
+                className="w-full rounded-md border border-zinc-300 px-3 py-2 text-sm"
+                value={formData.location}
+                onChange={(event) => setFormData((prev) => ({ ...prev, location: event.target.value }))}
+                placeholder={t.optional}
+              />
+            </div>
+            <div className="md:col-span-2 flex items-center gap-3">
+              <ActionButton
+                type="submit"
+                icon="save"
+                tone="primary"
+                disabled={isSubmitting}
+                className="disabled:opacity-70"
+              >
+                {isSubmitting ? t.saving : formData.id ? t.update : t.create}
+              </ActionButton>
+              {formData.id ? (
+                <ActionButton type="button" icon="close" onClick={resetForm} label={t.reset} />
+              ) : null}
+            </div>
+          </form>
+        ) : null}
       </div>
 
       <div className="rounded-xl border border-zinc-200 bg-white p-6 shadow-sm">
@@ -190,12 +206,18 @@ export function WarehousesManager({ lang }: { lang: "en" | "fr" }) {
               </p>
             </div>
             <AdminToolbarGroup align="end">
+              <ActionButton
+                type="button"
+                icon={showList ? "close" : "plus"}
+                onClick={() => setShowList((prev) => !prev)}
+                label={showList ? t.hideSection : t.showSection}
+              />
               <ActionButton type="button" icon="refresh" onClick={loadWarehouses} label={t.refresh} />
             </AdminToolbarGroup>
           </AdminToolbar>
         </div>
 
-        {loading ? (
+        {!showList ? null : loading ? (
           <p className="text-sm text-zinc-500">{t.loading}</p>
         ) : (
           <div className="space-y-3">

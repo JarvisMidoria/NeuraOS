@@ -16,6 +16,7 @@ export function PurchasesReplenishment() {
   const [items, setItems] = useState<Suggestion[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [showSuggestions, setShowSuggestions] = useState(true);
 
   const load = async () => {
     setLoading(true);
@@ -42,6 +43,13 @@ export function PurchasesReplenishment() {
         <AdminToolbar>
           <h2 className="text-lg font-semibold text-zinc-900">Low Stock Suggestions</h2>
           <AdminToolbarGroup align="end">
+            <ActionButton
+              type="button"
+              size="sm"
+              icon={showSuggestions ? "close" : "plus"}
+              onClick={() => setShowSuggestions((prev) => !prev)}
+              label={showSuggestions ? "Hide" : "Show"}
+            />
             <ActionButton type="button" icon="refresh" onClick={load} label="Refresh" />
           </AdminToolbarGroup>
         </AdminToolbar>
@@ -49,7 +57,7 @@ export function PurchasesReplenishment() {
 
       {error ? <div className="rounded-md bg-red-50 px-4 py-2 text-sm text-red-700">{error}</div> : null}
 
-      {loading ? (
+      {!showSuggestions ? null : loading ? (
         <p className="text-sm text-zinc-500">Loading suggestions...</p>
       ) : items.length === 0 ? (
         <p className="text-sm text-zinc-500">No replenishment action required.</p>
