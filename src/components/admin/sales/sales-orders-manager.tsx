@@ -77,10 +77,10 @@ const STATUS_LABELS: Record<string, { en: string; fr: string }> = {
 };
 
 const STATUS_BADGE_CLASSES: Record<string, string> = {
-  DRAFT: "bg-slate-100 text-slate-700",
-  APPROVED: "bg-emerald-100 text-emerald-700",
-  CONFIRMED: "bg-blue-100 text-blue-700",
-  REJECTED: "bg-rose-100 text-rose-700",
+  DRAFT: "border border-[var(--admin-border)] bg-[var(--admin-soft-bg)] text-[var(--admin-text)]",
+  APPROVED: "border border-emerald-400/45 bg-emerald-500/15 text-[var(--admin-text)]",
+  CONFIRMED: "border border-blue-400/45 bg-blue-500/15 text-[var(--admin-text)]",
+  REJECTED: "border border-rose-400/45 bg-rose-500/15 text-[var(--admin-text)]",
 };
 
 const ORDER_FILTER_STATUSES = ["DRAFT", "APPROVED", "CONFIRMED", "REJECTED"] as const;
@@ -144,6 +144,7 @@ export function SalesOrdersManager({
       of: lang === "fr" ? "sur" : "of",
       refresh: lang === "fr" ? "Actualiser" : "Refresh",
       loading: lang === "fr" ? "Chargement des commandes..." : "Loading orders...",
+      noData: lang === "fr" ? "Aucune commande pour ces filtres." : "No orders for current filters.",
       orderNumber: lang === "fr" ? "Commande #" : "Order #",
       status: lang === "fr" ? "Statut" : "Status",
       total: lang === "fr" ? "Total" : "Total",
@@ -301,14 +302,18 @@ export function SalesOrdersManager({
 
   return (
     <div className="space-y-6">
-      {error && <div className="rounded-md bg-red-50 px-4 py-2 text-sm text-red-700">{error}</div>}
+      {error ? (
+        <div className="liquid-surface rounded-xl border border-rose-400/45 bg-rose-500/10 px-4 py-2 text-sm text-[var(--admin-text)]">
+          {error}
+        </div>
+      ) : null}
 
-      <div className="rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm">
+      <div className="liquid-surface rounded-2xl p-6">
         <div className="mb-4">
           <AdminToolbar>
             <div>
-              <h2 className="text-lg font-semibold text-zinc-900">{t.orders}</h2>
-              <p className="text-sm text-zinc-500">
+              <h2 className="text-lg font-semibold text-[var(--admin-text)]">{t.orders}</h2>
+              <p className="text-sm text-[var(--admin-muted)]">
                 {t.showing} {Math.min(orders.length, PAGE_SIZE)} {t.of} {total} {lang === "fr" ? "commandes" : "orders"}
               </p>
             </div>
@@ -347,31 +352,34 @@ export function SalesOrdersManager({
           </AdminToolbar>
         </div>
         {loading ? (
-          <p className="text-sm text-zinc-500">{t.loading}</p>
+          <p className="text-sm text-[var(--admin-muted)]">{t.loading}</p>
         ) : (
           <div className="space-y-3">
-            {orders.map((order) => (
-              <div key={order.id} className="rounded-2xl border border-zinc-100 p-4">
-                <div className="grid gap-3">
+            {orders.length === 0 ? (
+              <p className="text-sm text-[var(--admin-muted)]">{t.noData}</p>
+            ) : (
+              orders.map((order) => (
+                <div key={order.id} className="liquid-surface rounded-2xl p-4">
+                  <div className="grid gap-3">
                   <div className="flex flex-wrap items-center justify-between gap-2">
-                    <p className="font-mono text-xs text-zinc-500">SO-{order.orderNumber}</p>
+                    <p className="font-mono text-xs text-[var(--admin-muted)]">SO-{order.orderNumber}</p>
                     <span
-                      className={`rounded-full px-2 py-1 text-xs font-medium ${STATUS_BADGE_CLASSES[order.status] ?? "bg-zinc-100 text-zinc-700"}`}
+                      className={`rounded-full px-2 py-1 text-xs font-medium ${STATUS_BADGE_CLASSES[order.status] ?? "border border-[var(--admin-border)] bg-[var(--admin-soft-bg)] text-[var(--admin-text)]"}`}
                     >
                       {(STATUS_LABELS[order.status]?.[lang] ?? order.status) as string}
                     </span>
                   </div>
                   <div className="grid gap-2 sm:grid-cols-2">
-                    <p className="text-sm text-zinc-700">
-                      <span className="text-zinc-500">{t.client}: </span>
+                    <p className="text-sm text-[var(--admin-text)]">
+                      <span className="text-[var(--admin-muted)]">{t.client}: </span>
                       {order.client?.name ?? "—"}
                     </p>
-                    <p className="text-sm text-zinc-700 sm:text-right">
-                      <span className="text-zinc-500">{t.total}: </span>
+                    <p className="text-sm text-[var(--admin-text)] sm:text-right">
+                      <span className="text-[var(--admin-muted)]">{t.total}: </span>
                       {formatCurrency(Number(order.totalAmount ?? 0), locale, currencyCode)}
                     </p>
                   </div>
-                  <div className="space-y-1 text-xs text-zinc-600">
+                  <div className="space-y-1 text-xs text-[var(--admin-muted)]">
                     {order.lines.map((line) => (
                       <div key={line.id}>
                         {line.product?.name ?? line.productId} · {line.warehouse?.name ?? "—"} · {t.qty} {line.quantity}
@@ -414,12 +422,13 @@ export function SalesOrdersManager({
                       />
                     )}
                   </div>
+                  </div>
                 </div>
-              </div>
-            ))}
+              ))
+            )}
           </div>
         )}
-        <div className="mt-4 flex items-center justify-between text-sm text-zinc-600">
+        <div className="mt-4 flex items-center justify-between text-sm text-[var(--admin-muted)]">
           <span>
             {t.page} {page} {t.of} {totalPages}
           </span>
@@ -453,9 +462,9 @@ export function SalesOrdersManager({
         <form onSubmit={handleCreate} className="space-y-4">
           <div className="grid gap-4 md:grid-cols-3">
             <div className="space-y-2">
-              <label className="text-sm font-medium text-zinc-700">{t.client}</label>
+              <label className="text-sm font-medium text-[var(--admin-muted)]">{t.client}</label>
               <select
-                className="w-full rounded-md border border-zinc-300 px-3 py-2 text-sm"
+                className="admin-toolbar-control w-full"
                 value={form.clientId}
                 onChange={(event) => setForm((prev) => ({ ...prev, clientId: event.target.value }))}
               >
@@ -467,9 +476,9 @@ export function SalesOrdersManager({
               </select>
             </div>
             <div className="space-y-2 md:col-span-2">
-              <label className="text-sm font-medium text-zinc-700">{t.notes}</label>
+              <label className="text-sm font-medium text-[var(--admin-muted)]">{t.notes}</label>
               <input
-                className="w-full rounded-md border border-zinc-300 px-3 py-2 text-sm"
+                className="admin-toolbar-control w-full"
                 value={form.notes}
                 onChange={(event) => setForm((prev) => ({ ...prev, notes: event.target.value }))}
                 placeholder={t.optional}
@@ -479,7 +488,7 @@ export function SalesOrdersManager({
 
           <div className="space-y-3">
             <div className="flex items-center justify-between">
-              <p className="text-sm font-medium text-zinc-700">{t.lines}</p>
+              <p className="text-sm font-medium text-[var(--admin-muted)]">{t.lines}</p>
               <div className="flex items-center gap-2">
                 <ActionButton
                   type="button"
@@ -494,11 +503,11 @@ export function SalesOrdersManager({
 
             {showLines
               ? lines.map((line, index) => (
-                  <div key={index} className="grid gap-3 rounded-xl border border-zinc-200 p-4 md:grid-cols-6">
+                  <div key={index} className="liquid-surface grid gap-3 rounded-xl p-4 md:grid-cols-6">
                     <div className="space-y-1 md:col-span-2">
-                      <label className="text-xs uppercase tracking-wide text-zinc-500">{t.product}</label>
+                      <label className="text-xs uppercase tracking-wide text-[var(--admin-muted)]">{t.product}</label>
                       <select
-                        className="w-full rounded-md border border-zinc-300 px-3 py-2 text-sm"
+                        className="admin-toolbar-control w-full"
                         value={line.productId}
                         onChange={(event) => updateLine(index, "productId", event.target.value)}
                       >
@@ -510,9 +519,9 @@ export function SalesOrdersManager({
                       </select>
                     </div>
                     <div className="space-y-1">
-                      <label className="text-xs uppercase tracking-wide text-zinc-500">{t.warehouse}</label>
+                      <label className="text-xs uppercase tracking-wide text-[var(--admin-muted)]">{t.warehouse}</label>
                       <select
-                        className="w-full rounded-md border border-zinc-300 px-3 py-2 text-sm"
+                        className="admin-toolbar-control w-full"
                         value={line.warehouseId}
                         onChange={(event) => updateLine(index, "warehouseId", event.target.value)}
                       >
@@ -524,41 +533,41 @@ export function SalesOrdersManager({
                       </select>
                     </div>
                     <div className="space-y-1">
-                      <label className="text-xs uppercase tracking-wide text-zinc-500">{t.qty}</label>
+                      <label className="text-xs uppercase tracking-wide text-[var(--admin-muted)]">{t.qty}</label>
                       <input
                         type="number"
                         min="0"
                         step="0.01"
-                        className="w-full rounded-md border border-zinc-300 px-3 py-2 text-sm"
+                        className="admin-toolbar-control w-full"
                         value={line.quantity}
                         onChange={(event) => updateLine(index, "quantity", event.target.value)}
                       />
                     </div>
                     <div className="space-y-1">
-                      <label className="text-xs uppercase tracking-wide text-zinc-500">{t.unitPrice}</label>
+                      <label className="text-xs uppercase tracking-wide text-[var(--admin-muted)]">{t.unitPrice}</label>
                       <input
                         type="number"
                         min="0"
                         step="0.01"
-                        className="w-full rounded-md border border-zinc-300 px-3 py-2 text-sm"
+                        className="admin-toolbar-control w-full"
                         value={line.unitPrice}
                         onChange={(event) => updateLine(index, "unitPrice", event.target.value)}
                       />
                     </div>
                     <div className="space-y-1">
-                      <label className="text-xs uppercase tracking-wide text-zinc-500">{t.taxes}</label>
+                      <label className="text-xs uppercase tracking-wide text-[var(--admin-muted)]">{t.taxes}</label>
                       <input
-                        className="w-full rounded-md border border-zinc-300 px-3 py-2 text-sm"
+                        className="admin-toolbar-control w-full"
                         value={line.taxes}
                         onChange={(event) => updateLine(index, "taxes", event.target.value)}
                         placeholder="20,5"
                       />
                     </div>
                     <div className="space-y-1">
-                      <label className="text-xs uppercase tracking-wide text-zinc-500">{t.description}</label>
+                      <label className="text-xs uppercase tracking-wide text-[var(--admin-muted)]">{t.description}</label>
                       <div className="flex items-center gap-2">
                         <input
-                          className="w-full rounded-md border border-zinc-300 px-3 py-2 text-sm"
+                          className="admin-toolbar-control w-full"
                           value={line.description}
                           onChange={(event) => updateLine(index, "description", event.target.value)}
                           placeholder={t.optional}

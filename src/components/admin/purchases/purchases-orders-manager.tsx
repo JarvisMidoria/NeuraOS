@@ -34,12 +34,12 @@ type FormLine = {
 const PAGE_SIZE = 10;
 
 const STATUS_BADGES: Record<string, string> = {
-  DRAFT: "bg-slate-100 text-slate-700",
-  SENT: "bg-sky-100 text-sky-700",
-  CONFIRMED: "bg-blue-100 text-blue-700",
-  PARTIALLY_RECEIVED: "bg-amber-100 text-amber-700",
-  RECEIVED: "bg-emerald-100 text-emerald-700",
-  CANCELLED: "bg-rose-100 text-rose-700",
+  DRAFT: "border border-[var(--admin-border)] bg-[var(--admin-soft-bg)] text-[var(--admin-text)]",
+  SENT: "border border-sky-400/45 bg-sky-500/15 text-[var(--admin-text)]",
+  CONFIRMED: "border border-blue-400/45 bg-blue-500/15 text-[var(--admin-text)]",
+  PARTIALLY_RECEIVED: "border border-amber-400/45 bg-amber-500/15 text-[var(--admin-text)]",
+  RECEIVED: "border border-emerald-400/45 bg-emerald-500/15 text-[var(--admin-text)]",
+  CANCELLED: "border border-rose-400/45 bg-rose-500/15 text-[var(--admin-text)]",
 };
 
 export function PurchasesOrdersManager({
@@ -186,13 +186,21 @@ export function PurchasesOrdersManager({
 
   return (
     <div className="space-y-6">
-      {status ? <div className="rounded-md bg-emerald-50 px-4 py-2 text-sm text-emerald-700">{status}</div> : null}
-      {error ? <div className="rounded-md bg-red-50 px-4 py-2 text-sm text-red-700">{error}</div> : null}
+      {status ? (
+        <div className="liquid-surface rounded-xl border border-emerald-400/45 bg-emerald-500/10 px-4 py-2 text-sm text-[var(--admin-text)]">
+          {status}
+        </div>
+      ) : null}
+      {error ? (
+        <div className="liquid-surface rounded-xl border border-rose-400/45 bg-rose-500/10 px-4 py-2 text-sm text-[var(--admin-text)]">
+          {error}
+        </div>
+      ) : null}
 
-      <div className="rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm">
+      <div className="liquid-surface rounded-2xl p-6">
         <div className="mb-4">
           <AdminToolbar>
-            <h2 className="text-lg font-semibold text-zinc-900">Purchase Orders</h2>
+            <h2 className="text-lg font-semibold text-[var(--admin-text)]">Purchase Orders</h2>
             <AdminToolbarGroup align="end">
               <ActionButton type="button" icon="plus" tone="primary" onClick={openComposer} label="Add PO" />
               <ActionButton type="button" icon="refresh" onClick={loadOrders} label="Refresh" />
@@ -201,49 +209,66 @@ export function PurchasesOrdersManager({
         </div>
 
         {loading ? (
-          <p className="text-sm text-zinc-500">Loading purchase orders...</p>
+          <p className="text-sm text-[var(--admin-muted)]">Loading purchase orders...</p>
         ) : (
           <div className="space-y-3">
-            {orders.map((order) => (
-              <div key={order.id} className="rounded-2xl border border-zinc-100 p-4">
-                <div className="flex flex-wrap items-center justify-between gap-2">
-                  <p className="font-mono text-xs text-zinc-500">PO-{order.poNumber}</p>
-                  <span className={`rounded-full px-2 py-1 text-xs font-medium ${STATUS_BADGES[order.status] ?? "bg-zinc-100 text-zinc-700"}`}>{order.status}</span>
+            {orders.length === 0 ? (
+              <p className="text-sm text-[var(--admin-muted)]">No purchase orders yet.</p>
+            ) : (
+              orders.map((order) => (
+                <div key={order.id} className="liquid-surface rounded-2xl p-4">
+                  <div className="flex flex-wrap items-center justify-between gap-2">
+                    <p className="font-mono text-xs text-[var(--admin-muted)]">PO-{order.poNumber}</p>
+                    <span
+                      className={`rounded-full px-2 py-1 text-xs font-medium ${STATUS_BADGES[order.status] ?? "border border-[var(--admin-border)] bg-[var(--admin-soft-bg)] text-[var(--admin-text)]"}`}
+                    >
+                      {order.status}
+                    </span>
+                  </div>
+                  <div className="mt-2 grid gap-2 sm:grid-cols-2">
+                    <p className="text-sm text-[var(--admin-text)]">
+                      <span className="text-[var(--admin-muted)]">Supplier: </span>
+                      {order.supplier?.name ?? "—"}
+                    </p>
+                    <p className="text-sm text-[var(--admin-text)] sm:text-right">
+                      <span className="text-[var(--admin-muted)]">Total: </span>
+                      {formatCurrency(Number(order.totalAmount), locale, currencyCode)}
+                    </p>
+                  </div>
+                  <div className="mt-2 space-y-1 text-xs text-[var(--admin-muted)]">
+                    {order.lines.map((line) => (
+                      <div key={line.id}>
+                        {line.product?.name ?? "Product"} · Qty {line.quantity} @{" "}
+                        {formatCurrency(Number(line.unitPrice), locale, currencyCode)}
+                      </div>
+                    ))}
+                  </div>
+                  <div className="mt-3 flex flex-wrap gap-2 text-xs">
+                    <ActionLinkButton
+                      icon="download"
+                      href={`/api/documents/purchase-orders/${order.id}/pdf`}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="px-2 py-1 text-xs"
+                      label="PO PDF"
+                    />
+                    {order.status === "DRAFT" ? (
+                      <ActionButton size="sm" icon="apply" onClick={() => setOrderStatus(order.id, "SENT")} label="Mark sent" />
+                    ) : null}
+                    {order.status === "SENT" ? (
+                      <ActionButton size="sm" icon="right" onClick={() => setOrderStatus(order.id, "CONFIRMED")} label="Confirm" />
+                    ) : null}
+                    {order.status === "DRAFT" || order.status === "SENT" ? (
+                      <ActionButton size="sm" tone="danger" icon="close" onClick={() => setOrderStatus(order.id, "CANCELLED")} label="Cancel" />
+                    ) : null}
+                  </div>
                 </div>
-                <div className="mt-2 grid gap-2 sm:grid-cols-2">
-                  <p className="text-sm text-zinc-700"><span className="text-zinc-500">Supplier: </span>{order.supplier?.name ?? "—"}</p>
-                  <p className="text-sm text-zinc-700 sm:text-right"><span className="text-zinc-500">Total: </span>{formatCurrency(Number(order.totalAmount), locale, currencyCode)}</p>
-                </div>
-                <div className="mt-2 space-y-1 text-xs text-zinc-600">
-                  {order.lines.map((line) => (
-                    <div key={line.id}>{line.product?.name ?? "Product"} · Qty {line.quantity} @ {formatCurrency(Number(line.unitPrice), locale, currencyCode)}</div>
-                  ))}
-                </div>
-                <div className="mt-3 flex flex-wrap gap-2 text-xs">
-                  <ActionLinkButton
-                    icon="download"
-                    href={`/api/documents/purchase-orders/${order.id}/pdf`}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="px-2 py-1 text-xs"
-                    label="PO PDF"
-                  />
-                  {order.status === "DRAFT" ? (
-                    <ActionButton size="sm" icon="apply" onClick={() => setOrderStatus(order.id, "SENT")} label="Mark sent" />
-                  ) : null}
-                  {order.status === "SENT" ? (
-                    <ActionButton size="sm" icon="right" onClick={() => setOrderStatus(order.id, "CONFIRMED")} label="Confirm" />
-                  ) : null}
-                  {(order.status === "DRAFT" || order.status === "SENT") ? (
-                    <ActionButton size="sm" tone="danger" icon="close" onClick={() => setOrderStatus(order.id, "CANCELLED")} label="Cancel" />
-                  ) : null}
-                </div>
-              </div>
-            ))}
+              ))
+            )}
           </div>
         )}
 
-        <div className="mt-4 flex items-center justify-between text-sm text-zinc-600">
+        <div className="mt-4 flex items-center justify-between text-sm text-[var(--admin-muted)]">
           <span>Page {page} of {totalPages}</span>
           <div className="flex gap-2">
             <ActionButton size="sm" icon="left" disabled={page <= 1} onClick={() => setPage((p) => Math.max(1, p - 1))} label="Previous" />
@@ -256,7 +281,7 @@ export function PurchasesOrdersManager({
         <form onSubmit={createOrder} className="space-y-4">
           <div className="grid gap-3 md:grid-cols-3">
             <select
-              className="rounded-md border border-zinc-300 px-3 py-2 text-sm"
+              className="admin-toolbar-control"
               value={form.supplierId}
               onChange={(e) => setForm((p) => ({ ...p, supplierId: e.target.value }))}
             >
@@ -268,12 +293,12 @@ export function PurchasesOrdersManager({
             </select>
             <input
               type="date"
-              className="rounded-md border border-zinc-300 px-3 py-2 text-sm"
+              className="admin-toolbar-control"
               value={form.expectedDate}
               onChange={(e) => setForm((p) => ({ ...p, expectedDate: e.target.value }))}
             />
             <input
-              className="rounded-md border border-zinc-300 px-3 py-2 text-sm"
+              className="admin-toolbar-control"
               placeholder="Notes"
               value={form.notes}
               onChange={(e) => setForm((p) => ({ ...p, notes: e.target.value }))}
@@ -282,7 +307,7 @@ export function PurchasesOrdersManager({
 
           <div className="space-y-3">
             <div className="flex items-center justify-between">
-              <p className="text-sm font-medium text-zinc-700">Lines</p>
+              <p className="text-sm font-medium text-[var(--admin-muted)]">Lines</p>
               <div className="flex items-center gap-2">
                 <ActionButton
                   type="button"
@@ -296,9 +321,9 @@ export function PurchasesOrdersManager({
             </div>
             {showLines
               ? lines.map((line, index) => (
-                  <div key={index} className="grid gap-3 rounded-xl border border-zinc-200 p-4 md:grid-cols-4">
+                  <div key={index} className="liquid-surface grid gap-3 rounded-xl p-4 md:grid-cols-4">
                     <select
-                      className="rounded-md border border-zinc-300 px-3 py-2 text-sm"
+                      className="admin-toolbar-control"
                       value={line.productId}
                       onChange={(e) => updateLine(index, "productId", e.target.value)}
                     >
@@ -311,7 +336,7 @@ export function PurchasesOrdersManager({
                     <input
                       type="number"
                       step="0.01"
-                      className="rounded-md border border-zinc-300 px-3 py-2 text-sm"
+                      className="admin-toolbar-control"
                       placeholder="Qty"
                       value={line.quantity}
                       onChange={(e) => updateLine(index, "quantity", e.target.value)}
@@ -319,14 +344,14 @@ export function PurchasesOrdersManager({
                     <input
                       type="number"
                       step="0.01"
-                      className="rounded-md border border-zinc-300 px-3 py-2 text-sm"
+                      className="admin-toolbar-control"
                       placeholder="Unit price"
                       value={line.unitPrice}
                       onChange={(e) => updateLine(index, "unitPrice", e.target.value)}
                     />
                     <div className="flex items-center gap-2">
                       <input
-                        className="w-full rounded-md border border-zinc-300 px-3 py-2 text-sm"
+                        className="admin-toolbar-control w-full"
                         placeholder="Taxes % (e.g. 20)"
                         value={line.taxes}
                         onChange={(e) => updateLine(index, "taxes", e.target.value)}

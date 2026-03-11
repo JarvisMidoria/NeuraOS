@@ -88,12 +88,12 @@ const STATUS_LABELS: Record<string, { en: string; fr: string }> = {
 };
 
 const STATUS_BADGE_CLASSES: Record<string, string> = {
-  DRAFT: "bg-slate-100 text-slate-700",
-  SENT: "bg-sky-100 text-sky-700",
-  APPROVED: "bg-emerald-100 text-emerald-700",
-  REJECTED: "bg-rose-100 text-rose-700",
-  CONVERTED: "bg-violet-100 text-violet-700",
-  CONFIRMED: "bg-blue-100 text-blue-700",
+  DRAFT: "border border-[var(--admin-border)] bg-[var(--admin-soft-bg)] text-[var(--admin-text)]",
+  SENT: "border border-sky-400/45 bg-sky-500/15 text-[var(--admin-text)]",
+  APPROVED: "border border-emerald-400/45 bg-emerald-500/15 text-[var(--admin-text)]",
+  REJECTED: "border border-rose-400/45 bg-rose-500/15 text-[var(--admin-text)]",
+  CONVERTED: "border border-violet-400/45 bg-violet-500/15 text-[var(--admin-text)]",
+  CONFIRMED: "border border-blue-400/45 bg-blue-500/15 text-[var(--admin-text)]",
 };
 
 const QUOTE_FILTER_STATUSES = ["DRAFT", "SENT", "APPROVED", "REJECTED", "CONVERTED", "CONFIRMED"] as const;
@@ -161,6 +161,7 @@ export function SalesQuotesManager({
       of: lang === "fr" ? "sur" : "of",
       refresh: lang === "fr" ? "Actualiser" : "Refresh",
       loading: lang === "fr" ? "Chargement des devis..." : "Loading quotes...",
+      noData: lang === "fr" ? "Aucun devis pour ces filtres." : "No quotes for current filters.",
       quoteNumber: lang === "fr" ? "Devis #" : "Quote #",
       status: lang === "fr" ? "Statut" : "Status",
       total: lang === "fr" ? "Total" : "Total",
@@ -345,14 +346,18 @@ export function SalesQuotesManager({
 
   return (
     <div className="space-y-6">
-      {error && <div className="rounded-md bg-red-50 px-4 py-2 text-sm text-red-700">{error}</div>}
+      {error ? (
+        <div className="liquid-surface rounded-xl border border-rose-400/45 bg-rose-500/10 px-4 py-2 text-sm text-[var(--admin-text)]">
+          {error}
+        </div>
+      ) : null}
 
-      <div className="rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm">
+      <div className="liquid-surface rounded-2xl p-6">
         <div className="mb-4">
           <AdminToolbar>
             <div>
-              <h2 className="text-lg font-semibold text-zinc-900">{t.quotes}</h2>
-              <p className="text-sm text-zinc-500">
+              <h2 className="text-lg font-semibold text-[var(--admin-text)]">{t.quotes}</h2>
+              <p className="text-sm text-[var(--admin-muted)]">
                 {t.showing} {Math.min(quotes.length, PAGE_SIZE)} {t.of} {total} {lang === "fr" ? "devis" : "quotes"}
               </p>
             </div>
@@ -391,34 +396,37 @@ export function SalesQuotesManager({
           </AdminToolbar>
         </div>
         {loading ? (
-          <p className="text-sm text-zinc-500">{t.loading}</p>
+          <p className="text-sm text-[var(--admin-muted)]">{t.loading}</p>
         ) : (
           <div className="space-y-3">
-            {quotes.map((quote) => (
-              <div key={quote.id} className="rounded-2xl border border-zinc-100 p-4">
-                <div className="grid gap-3">
+            {quotes.length === 0 ? (
+              <p className="text-sm text-[var(--admin-muted)]">{t.noData}</p>
+            ) : (
+              quotes.map((quote) => (
+                <div key={quote.id} className="liquid-surface rounded-2xl p-4">
+                  <div className="grid gap-3">
                   <div className="flex flex-wrap items-center justify-between gap-2">
-                    <p className="font-mono text-xs text-zinc-500">Q-{quote.quoteNumber}</p>
+                    <p className="font-mono text-xs text-[var(--admin-muted)]">Q-{quote.quoteNumber}</p>
                     <span
-                      className={`rounded-full px-2 py-1 text-xs font-medium ${STATUS_BADGE_CLASSES[quote.status] ?? "bg-zinc-100 text-zinc-700"}`}
+                      className={`rounded-full px-2 py-1 text-xs font-medium ${STATUS_BADGE_CLASSES[quote.status] ?? "border border-[var(--admin-border)] bg-[var(--admin-soft-bg)] text-[var(--admin-text)]"}`}
                     >
                       {(STATUS_LABELS[quote.status]?.[lang] ?? quote.status) as string}
                     </span>
                   </div>
                   <div className="grid gap-2 sm:grid-cols-2">
-                    <p className="text-sm text-zinc-700">
-                      <span className="text-zinc-500">{t.client}: </span>
+                    <p className="text-sm text-[var(--admin-text)]">
+                      <span className="text-[var(--admin-muted)]">{t.client}: </span>
                       {quote.client?.name ?? "—"}
                     </p>
-                    <p className="text-sm text-zinc-700 sm:text-right">
-                      <span className="text-zinc-500">{t.total}: </span>
+                    <p className="text-sm text-[var(--admin-text)] sm:text-right">
+                      <span className="text-[var(--admin-muted)]">{t.total}: </span>
                       {formatCurrency(Number(quote.totalAmount), locale, currencyCode)}
                     </p>
-                    <p className="text-sm text-zinc-500">
+                    <p className="text-sm text-[var(--admin-muted)]">
                       {t.validUntil}: {quote.validUntil ? new Date(quote.validUntil).toLocaleDateString(locale) : "—"}
                     </p>
                   </div>
-                  <div className="space-y-1 text-xs text-zinc-600">
+                  <div className="space-y-1 text-xs text-[var(--admin-muted)]">
                     {quote.lines.map((line) => (
                       <div key={line.id}>
                         {line.product?.name ?? line.productId} — {t.qtyLong} {line.quantity} @{" "}
@@ -461,7 +469,7 @@ export function SalesQuotesManager({
                     )}
                     {quote.convertedOrder && (
                       <>
-                        <span className="text-xs text-zinc-500">
+                        <span className="text-xs text-[var(--admin-muted)]">
                           SO-{quote.convertedOrder.orderNumber} ({(STATUS_LABELS[quote.convertedOrder.status]?.[lang] ?? quote.convertedOrder.status) as string})
                         </span>
                         <ActionLinkButton
@@ -475,12 +483,13 @@ export function SalesQuotesManager({
                       </>
                     )}
                   </div>
+                  </div>
                 </div>
-              </div>
-            ))}
+              ))
+            )}
           </div>
         )}
-        <div className="mt-4 flex items-center justify-between text-sm text-zinc-600">
+        <div className="mt-4 flex items-center justify-between text-sm text-[var(--admin-muted)]">
           <span>
             {t.page} {page} {t.of} {totalPages}
           </span>
@@ -514,9 +523,9 @@ export function SalesQuotesManager({
         <form onSubmit={handleCreate} className="space-y-4">
           <div className="grid gap-4 md:grid-cols-3">
             <div className="space-y-2">
-              <label className="text-sm font-medium text-zinc-700">{t.client}</label>
+              <label className="text-sm font-medium text-[var(--admin-muted)]">{t.client}</label>
               <select
-                className="w-full rounded-md border border-zinc-300 px-3 py-2 text-sm"
+                className="admin-toolbar-control w-full"
                 value={form.clientId}
                 onChange={(event) => setForm((prev) => ({ ...prev, clientId: event.target.value }))}
               >
@@ -528,18 +537,18 @@ export function SalesQuotesManager({
               </select>
             </div>
             <div className="space-y-2">
-              <label className="text-sm font-medium text-zinc-700">{t.validUntil}</label>
+              <label className="text-sm font-medium text-[var(--admin-muted)]">{t.validUntil}</label>
               <input
                 type="date"
-                className="w-full rounded-md border border-zinc-300 px-3 py-2 text-sm"
+                className="admin-toolbar-control w-full"
                 value={form.validUntil}
                 onChange={(event) => setForm((prev) => ({ ...prev, validUntil: event.target.value }))}
               />
             </div>
             <div className="space-y-2">
-              <label className="text-sm font-medium text-zinc-700">{t.notes}</label>
+              <label className="text-sm font-medium text-[var(--admin-muted)]">{t.notes}</label>
               <input
-                className="w-full rounded-md border border-zinc-300 px-3 py-2 text-sm"
+                className="admin-toolbar-control w-full"
                 value={form.notes}
                 onChange={(event) => setForm((prev) => ({ ...prev, notes: event.target.value }))}
                 placeholder={t.optional}
@@ -549,7 +558,7 @@ export function SalesQuotesManager({
 
           <div className="space-y-3">
             <div className="flex items-center justify-between">
-              <p className="text-sm font-medium text-zinc-700">{t.lines}</p>
+              <p className="text-sm font-medium text-[var(--admin-muted)]">{t.lines}</p>
               <div className="flex items-center gap-2">
                 <ActionButton
                   type="button"
@@ -564,11 +573,11 @@ export function SalesQuotesManager({
 
             {showLines
               ? lines.map((line, index) => (
-                  <div key={index} className="grid gap-3 rounded-xl border border-zinc-200 p-4 md:grid-cols-6">
+                  <div key={index} className="liquid-surface grid gap-3 rounded-xl p-4 md:grid-cols-6">
                     <div className="space-y-1 md:col-span-2">
-                      <label className="text-xs uppercase tracking-wide text-zinc-500">{t.product}</label>
+                      <label className="text-xs uppercase tracking-wide text-[var(--admin-muted)]">{t.product}</label>
                       <select
-                        className="w-full rounded-md border border-zinc-300 px-3 py-2 text-sm"
+                        className="admin-toolbar-control w-full"
                         value={line.productId}
                         onChange={(event) => updateLine(index, "productId", event.target.value)}
                       >
@@ -580,9 +589,9 @@ export function SalesQuotesManager({
                       </select>
                     </div>
                     <div className="space-y-1">
-                      <label className="text-xs uppercase tracking-wide text-zinc-500">{t.warehouse}</label>
+                      <label className="text-xs uppercase tracking-wide text-[var(--admin-muted)]">{t.warehouse}</label>
                       <select
-                        className="w-full rounded-md border border-zinc-300 px-3 py-2 text-sm"
+                        className="admin-toolbar-control w-full"
                         value={line.warehouseId}
                         onChange={(event) => updateLine(index, "warehouseId", event.target.value)}
                       >
@@ -595,41 +604,41 @@ export function SalesQuotesManager({
                       </select>
                     </div>
                     <div className="space-y-1">
-                      <label className="text-xs uppercase tracking-wide text-zinc-500">{t.qty}</label>
+                      <label className="text-xs uppercase tracking-wide text-[var(--admin-muted)]">{t.qty}</label>
                       <input
                         type="number"
                         min="0"
                         step="0.01"
-                        className="w-full rounded-md border border-zinc-300 px-3 py-2 text-sm"
+                        className="admin-toolbar-control w-full"
                         value={line.quantity}
                         onChange={(event) => updateLine(index, "quantity", event.target.value)}
                       />
                     </div>
                     <div className="space-y-1">
-                      <label className="text-xs uppercase tracking-wide text-zinc-500">{t.unitPrice}</label>
+                      <label className="text-xs uppercase tracking-wide text-[var(--admin-muted)]">{t.unitPrice}</label>
                       <input
                         type="number"
                         min="0"
                         step="0.01"
-                        className="w-full rounded-md border border-zinc-300 px-3 py-2 text-sm"
+                        className="admin-toolbar-control w-full"
                         value={line.unitPrice}
                         onChange={(event) => updateLine(index, "unitPrice", event.target.value)}
                       />
                     </div>
                     <div className="space-y-1">
-                      <label className="text-xs uppercase tracking-wide text-zinc-500">{t.taxes}</label>
+                      <label className="text-xs uppercase tracking-wide text-[var(--admin-muted)]">{t.taxes}</label>
                       <input
-                        className="w-full rounded-md border border-zinc-300 px-3 py-2 text-sm"
+                        className="admin-toolbar-control w-full"
                         value={line.taxes}
                         onChange={(event) => updateLine(index, "taxes", event.target.value)}
                         placeholder={t.taxPlaceholder}
                       />
                     </div>
                     <div className="space-y-1">
-                      <label className="text-xs uppercase tracking-wide text-zinc-500">{t.description}</label>
+                      <label className="text-xs uppercase tracking-wide text-[var(--admin-muted)]">{t.description}</label>
                       <div className="flex items-center gap-2">
                         <input
-                          className="w-full rounded-md border border-zinc-300 px-3 py-2 text-sm"
+                          className="admin-toolbar-control w-full"
                           value={line.description}
                           onChange={(event) => updateLine(index, "description", event.target.value)}
                           placeholder={t.optional}
