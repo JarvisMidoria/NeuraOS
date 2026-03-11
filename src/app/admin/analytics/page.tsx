@@ -92,11 +92,11 @@ export default async function AdminAnalyticsPage({ searchParams }: AnalyticsPage
 
   return (
     <div className="space-y-6">
-      <section className="rounded-2xl border border-zinc-200 bg-white p-5 shadow-sm">
+      <section className="liquid-surface rounded-2xl p-5">
         <div className="flex flex-wrap items-center justify-between gap-4">
           <div>
-            <h1 className="text-2xl font-semibold text-zinc-900">{text.title}</h1>
-            <p className="text-sm text-zinc-500">{text.subtitle}</p>
+            <h1 className="text-2xl font-semibold text-[var(--admin-text)]">{text.title}</h1>
+            <p className="text-sm text-[var(--admin-muted)]">{text.subtitle}</p>
           </div>
           <div className="flex flex-wrap items-center gap-2">
             {[3, 6, 12].map((value) => (
@@ -106,7 +106,7 @@ export default async function AdminAnalyticsPage({ searchParams }: AnalyticsPage
                 className={`rounded-full border px-3 py-1 text-sm ${
                   months === value
                     ? "border-zinc-900 bg-zinc-900 text-white"
-                    : "border-zinc-200 text-zinc-600 hover:bg-zinc-100"
+                    : "border-zinc-200 text-[var(--admin-muted)] hover:bg-zinc-100"
                 }`}
               >
                 {value}m
@@ -114,43 +114,43 @@ export default async function AdminAnalyticsPage({ searchParams }: AnalyticsPage
             ))}
           </div>
         </div>
-        <p className="mt-3 text-xs text-zinc-500">
+        <p className="mt-3 text-xs text-[var(--admin-muted)]">
           {text.period}: {months}m · {text.refreshed} {new Date(snapshot.timestamp).toLocaleString(locale)}
         </p>
       </section>
 
       <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        <Link href={ANALYTICS_METRIC_LINKS.sales} className="group rounded-2xl border border-zinc-200 bg-white p-5 shadow-sm transition hover:border-indigo-200 hover:bg-zinc-50">
-          <p className="text-sm text-zinc-500">{text.sales}</p>
-          <p className="mt-2 text-3xl font-semibold text-zinc-900">{formatCurrency(snapshot.metrics.salesTotal, locale, currencyCode, 0)}</p>
+        <Link href={ANALYTICS_METRIC_LINKS.sales} className="group liquid-surface rounded-2xl p-5 transition hover:border-indigo-200 hover:bg-zinc-50">
+          <p className="text-sm text-[var(--admin-muted)]">{text.sales}</p>
+          <p className="mt-2 text-3xl font-semibold text-[var(--admin-text)]">{formatCurrency(snapshot.metrics.salesTotal, locale, currencyCode, 0)}</p>
           <p className="mt-2 text-xs font-medium text-indigo-600 transition group-hover:translate-x-0.5">↗</p>
         </Link>
-        <Link href={ANALYTICS_METRIC_LINKS.purchases} className="group rounded-2xl border border-zinc-200 bg-white p-5 shadow-sm transition hover:border-indigo-200 hover:bg-zinc-50">
-          <p className="text-sm text-zinc-500">{text.purchases}</p>
-          <p className="mt-2 text-3xl font-semibold text-zinc-900">{formatCurrency(snapshot.metrics.purchaseTotal, locale, currencyCode, 0)}</p>
+        <Link href={ANALYTICS_METRIC_LINKS.purchases} className="group liquid-surface rounded-2xl p-5 transition hover:border-indigo-200 hover:bg-zinc-50">
+          <p className="text-sm text-[var(--admin-muted)]">{text.purchases}</p>
+          <p className="mt-2 text-3xl font-semibold text-[var(--admin-text)]">{formatCurrency(snapshot.metrics.purchaseTotal, locale, currencyCode, 0)}</p>
           <p className="mt-2 text-xs font-medium text-indigo-600 transition group-hover:translate-x-0.5">↗</p>
         </Link>
-        <Link href={ANALYTICS_METRIC_LINKS.quoteConv} className="group rounded-2xl border border-zinc-200 bg-white p-5 shadow-sm transition hover:border-indigo-200 hover:bg-zinc-50">
-          <p className="text-sm text-zinc-500">{text.quoteConv}</p>
-          <p className="mt-2 text-3xl font-semibold text-zinc-900">{snapshot.metrics.conversionRate.toFixed(1)}%</p>
-          <p className="mt-1 text-xs text-zinc-500">
+        <Link href={ANALYTICS_METRIC_LINKS.quoteConv} className="group liquid-surface rounded-2xl p-5 transition hover:border-indigo-200 hover:bg-zinc-50">
+          <p className="text-sm text-[var(--admin-muted)]">{text.quoteConv}</p>
+          <p className="mt-2 text-3xl font-semibold text-[var(--admin-text)]">{snapshot.metrics.conversionRate.toFixed(1)}%</p>
+          <p className="mt-1 text-xs text-[var(--admin-muted)]">
             {snapshot.metrics.quoteConverted}/{snapshot.metrics.quoteSent}
           </p>
           <p className="mt-2 text-xs font-medium text-indigo-600 transition group-hover:translate-x-0.5">↗</p>
         </Link>
-        <Link href={ANALYTICS_METRIC_LINKS.openPo} className="group rounded-2xl border border-zinc-200 bg-white p-5 shadow-sm transition hover:border-indigo-200 hover:bg-zinc-50">
-          <p className="text-sm text-zinc-500">{text.openPo}</p>
-          <p className="mt-2 text-3xl font-semibold text-zinc-900">{formatNumber(snapshot.metrics.openPurchaseCount, locale)}</p>
+        <Link href={ANALYTICS_METRIC_LINKS.openPo} className="group liquid-surface rounded-2xl p-5 transition hover:border-indigo-200 hover:bg-zinc-50">
+          <p className="text-sm text-[var(--admin-muted)]">{text.openPo}</p>
+          <p className="mt-2 text-3xl font-semibold text-[var(--admin-text)]">{formatNumber(snapshot.metrics.openPurchaseCount, locale)}</p>
           <p className="mt-2 text-xs font-medium text-indigo-600 transition group-hover:translate-x-0.5">↗</p>
         </Link>
       </section>
 
       <section className="grid gap-6 xl:grid-cols-3">
-        <article className="rounded-2xl border border-zinc-200 bg-white p-5 shadow-sm xl:col-span-2">
-          <h2 className="text-lg font-semibold text-zinc-900">{text.monthlyTrend}</h2>
+        <article className="liquid-surface rounded-2xl p-5 xl:col-span-2">
+          <h2 className="text-lg font-semibold text-[var(--admin-text)]">{text.monthlyTrend}</h2>
           <div className="mt-4 grid gap-4 sm:grid-cols-2">
             <div>
-              <p className="mb-2 text-xs uppercase tracking-wide text-zinc-500">{text.sales}</p>
+              <p className="mb-2 text-xs uppercase tracking-wide text-[var(--admin-muted)]">{text.sales}</p>
               <div className="flex items-end gap-2">
                 {snapshot.monthly.map((entry) => (
                   <div key={`sales-${entry.iso}`} className="flex min-w-0 flex-1 flex-col items-center gap-2">
@@ -160,13 +160,13 @@ export default async function AdminAnalyticsPage({ searchParams }: AnalyticsPage
                         style={{ transformOrigin: "bottom", transform: `scaleY(${Math.max(entry.sales / maxSales, 0.03)})` }}
                       />
                     </div>
-                    <span className="text-xs text-zinc-500">{new Date(entry.iso).toLocaleString(locale, { month: "short" })}</span>
+                    <span className="text-xs text-[var(--admin-muted)]">{new Date(entry.iso).toLocaleString(locale, { month: "short" })}</span>
                   </div>
                 ))}
               </div>
             </div>
             <div>
-              <p className="mb-2 text-xs uppercase tracking-wide text-zinc-500">{text.purchases}</p>
+              <p className="mb-2 text-xs uppercase tracking-wide text-[var(--admin-muted)]">{text.purchases}</p>
               <div className="flex items-end gap-2">
                 {snapshot.monthly.map((entry) => (
                   <div key={`purchase-${entry.iso}`} className="flex min-w-0 flex-1 flex-col items-center gap-2">
@@ -176,7 +176,7 @@ export default async function AdminAnalyticsPage({ searchParams }: AnalyticsPage
                         style={{ transformOrigin: "bottom", transform: `scaleY(${Math.max(entry.purchases / maxPurchases, 0.03)})` }}
                       />
                     </div>
-                    <span className="text-xs text-zinc-500">{new Date(entry.iso).toLocaleString(locale, { month: "short" })}</span>
+                    <span className="text-xs text-[var(--admin-muted)]">{new Date(entry.iso).toLocaleString(locale, { month: "short" })}</span>
                   </div>
                 ))}
               </div>
@@ -184,20 +184,20 @@ export default async function AdminAnalyticsPage({ searchParams }: AnalyticsPage
           </div>
         </article>
 
-        <article className="rounded-2xl border border-zinc-200 bg-white p-5 shadow-sm">
-            <h2 className="text-lg font-semibold text-zinc-900">{text.quoteFunnel}</h2>
+        <article className="liquid-surface rounded-2xl p-5">
+            <h2 className="text-lg font-semibold text-[var(--admin-text)]">{text.quoteFunnel}</h2>
             <div className="mt-3 space-y-2">
-              {snapshot.quoteFunnel.length === 0 && <p className="text-sm text-zinc-500">{text.noData}</p>}
+              {snapshot.quoteFunnel.length === 0 && <p className="text-sm text-[var(--admin-muted)]">{text.noData}</p>}
               {snapshot.quoteFunnel.map((entry) => (
                 <Link
                   key={entry.status}
                   href={`/admin/sales/quotes?status=${encodeURIComponent(entry.status)}`}
-                  className="group flex items-center justify-between rounded-lg border border-zinc-100 px-3 py-2 transition hover:border-indigo-200 hover:bg-zinc-50"
+                  className="group liquid-surface flex items-center justify-between rounded-lg px-3 py-2 transition"
                   title={text.openQuotesFiltered}
                 >
-                  <span className="text-sm text-zinc-700">{STATUS_LABELS[entry.status]?.[lang] ?? entry.status}</span>
+                  <span className="text-sm text-[var(--admin-text)]">{STATUS_LABELS[entry.status]?.[lang] ?? entry.status}</span>
                   <div className="flex items-center gap-2">
-                    <span className="rounded-full bg-zinc-100 px-2 py-0.5 text-xs font-semibold text-zinc-700">{formatNumber(entry.count, locale)}</span>
+                    <span className="liquid-pill px-2 py-0.5 text-xs font-semibold text-[var(--admin-text)]">{formatNumber(entry.count, locale)}</span>
                     <span className="text-indigo-600 opacity-0 transition group-hover:opacity-100">↗</span>
                   </div>
                 </Link>
@@ -207,35 +207,35 @@ export default async function AdminAnalyticsPage({ searchParams }: AnalyticsPage
       </section>
 
       <section className="grid gap-6 xl:grid-cols-3">
-        <article className="rounded-2xl border border-zinc-200 bg-white p-5 shadow-sm xl:col-span-2">
+        <article className="liquid-surface rounded-2xl p-5 xl:col-span-2">
           <div className="grid gap-6 lg:grid-cols-2">
             <div>
-              <h2 className="text-lg font-semibold text-zinc-900">{text.topClients}</h2>
+              <h2 className="text-lg font-semibold text-[var(--admin-text)]">{text.topClients}</h2>
               <div className="mt-3 space-y-2">
-                {snapshot.topClients.length === 0 && <p className="text-sm text-zinc-500">{text.noData}</p>}
+                {snapshot.topClients.length === 0 && <p className="text-sm text-[var(--admin-muted)]">{text.noData}</p>}
                 {snapshot.topClients.map((client) => (
                   <Link
                     key={client.id}
                     href={`/admin/sales/orders?clientId=${encodeURIComponent(client.id)}`}
-                    className="group block rounded-lg border border-zinc-100 p-3 transition hover:border-indigo-200 hover:bg-zinc-50"
+                    className="group block liquid-surface rounded-lg p-3 transition"
                   >
-                    <p className="text-sm font-semibold text-zinc-900">{client.name}</p>
-                    <p className="text-xs text-zinc-500">{client.orders} {text.orders}</p>
-                    <p className="mt-1 text-sm text-zinc-800">{formatCurrency(client.total, locale, currencyCode)}</p>
+                    <p className="text-sm font-semibold text-[var(--admin-text)]">{client.name}</p>
+                    <p className="text-xs text-[var(--admin-muted)]">{client.orders} {text.orders}</p>
+                    <p className="mt-1 text-sm text-[var(--admin-text)]">{formatCurrency(client.total, locale, currencyCode)}</p>
                     <div className="mt-1 flex justify-end text-indigo-600 opacity-0 transition group-hover:opacity-100">↗</div>
                   </Link>
                 ))}
               </div>
             </div>
             <div>
-              <h2 className="text-lg font-semibold text-zinc-900">{text.topProducts}</h2>
+              <h2 className="text-lg font-semibold text-[var(--admin-text)]">{text.topProducts}</h2>
               <div className="mt-3 space-y-2">
-                {snapshot.topProducts.length === 0 && <p className="text-sm text-zinc-500">{text.noData}</p>}
+                {snapshot.topProducts.length === 0 && <p className="text-sm text-[var(--admin-muted)]">{text.noData}</p>}
                 {snapshot.topProducts.map((product) => (
-                  <Link key={product.id} href="/admin/stock" className="group block rounded-lg border border-zinc-100 p-3 transition hover:border-indigo-200 hover:bg-zinc-50">
-                    <p className="text-sm font-semibold text-zinc-900">{product.sku} · {product.name}</p>
-                    <p className="text-xs text-zinc-500">{formatNumber(product.quantity, locale)} {text.units}</p>
-                    <p className="mt-1 text-sm text-zinc-800">{formatCurrency(product.revenue, locale, currencyCode)}</p>
+                  <Link key={product.id} href="/admin/stock" className="group block liquid-surface rounded-lg p-3 transition">
+                    <p className="text-sm font-semibold text-[var(--admin-text)]">{product.sku} · {product.name}</p>
+                    <p className="text-xs text-[var(--admin-muted)]">{formatNumber(product.quantity, locale)} {text.units}</p>
+                    <p className="mt-1 text-sm text-[var(--admin-text)]">{formatCurrency(product.revenue, locale, currencyCode)}</p>
                     <div className="mt-1 flex justify-end text-indigo-600 opacity-0 transition group-hover:opacity-100">↗</div>
                   </Link>
                 ))}
@@ -245,11 +245,11 @@ export default async function AdminAnalyticsPage({ searchParams }: AnalyticsPage
         </article>
 
         <article className="space-y-4">
-          <div className="rounded-2xl border border-zinc-200 bg-white p-5 shadow-sm">
-            <h2 className="text-lg font-semibold text-zinc-900">{text.stockAlerts}</h2>
+          <div className="liquid-surface rounded-2xl p-5">
+            <h2 className="text-lg font-semibold text-[var(--admin-text)]">{text.stockAlerts}</h2>
             <div className="mt-3 space-y-2">
-              <Link href="/admin/stock" className="group flex items-center justify-between rounded-lg border border-zinc-100 px-3 py-2 transition hover:border-indigo-200 hover:bg-zinc-50">
-                <span className="text-sm text-zinc-700">{text.lowStock}</span>
+              <Link href="/admin/stock" className="group liquid-surface flex items-center justify-between rounded-lg px-3 py-2 transition">
+                <span className="text-sm text-[var(--admin-text)]">{text.lowStock}</span>
                 <div className="flex items-center gap-2">
                   <span className="rounded-full bg-amber-100 px-2 py-0.5 text-xs font-semibold text-amber-700">
                     {formatNumber(snapshot.stockAlerts.lowStockCount, locale)}
@@ -257,8 +257,8 @@ export default async function AdminAnalyticsPage({ searchParams }: AnalyticsPage
                   <span className="text-indigo-600 opacity-0 transition group-hover:opacity-100">↗</span>
                 </div>
               </Link>
-              <Link href="/admin/stock" className="group flex items-center justify-between rounded-lg border border-zinc-100 px-3 py-2 transition hover:border-indigo-200 hover:bg-zinc-50">
-                <span className="text-sm text-zinc-700">{text.outStock}</span>
+              <Link href="/admin/stock" className="group liquid-surface flex items-center justify-between rounded-lg px-3 py-2 transition">
+                <span className="text-sm text-[var(--admin-text)]">{text.outStock}</span>
                 <div className="flex items-center gap-2">
                   <span className="rounded-full bg-rose-100 px-2 py-0.5 text-xs font-semibold text-rose-700">
                     {formatNumber(snapshot.stockAlerts.outOfStockCount, locale)}
@@ -272,12 +272,12 @@ export default async function AdminAnalyticsPage({ searchParams }: AnalyticsPage
             </Link>
           </div>
 
-          <div className="rounded-2xl border border-zinc-200 bg-white p-5 shadow-sm">
-            <h2 className="text-lg font-semibold text-zinc-900">{text.logistics}</h2>
+          <div className="liquid-surface rounded-2xl p-5">
+            <h2 className="text-lg font-semibold text-[var(--admin-text)]">{text.logistics}</h2>
             <div className="mt-3 space-y-2">
               {snapshot.logisticsTasks.map((task) => (
-                <Link key={task.id} href={task.href} className="group flex items-center justify-between rounded-lg border border-zinc-100 px-3 py-2 transition hover:border-indigo-200 hover:bg-zinc-50">
-                  <span className="text-sm text-zinc-700">{task.label}</span>
+                <Link key={task.id} href={task.href} className="group liquid-surface flex items-center justify-between rounded-lg px-3 py-2 transition">
+                  <span className="text-sm text-[var(--admin-text)]">{task.label}</span>
                   <div className="flex items-center gap-2">
                     <span
                       className={`rounded-full px-2 py-0.5 text-xs font-semibold ${

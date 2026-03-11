@@ -38,7 +38,7 @@ const TREND_SYMBOL: Record<"up" | "down" | "flat", string> = {
 const TREND_COLOR: Record<"up" | "down" | "flat", string> = {
   up: "text-emerald-600",
   down: "text-rose-600",
-  flat: "text-zinc-500",
+  flat: "text-[var(--admin-muted)]",
 };
 
 const STATUS_LABELS: Record<string, { en: string; fr: string }> = {
@@ -68,7 +68,7 @@ const STATUS_BADGE_CLASSES: Record<string, string> = {
   CONVERTED: "bg-violet-100 text-violet-700",
   REJECTED: "bg-rose-100 text-rose-700",
   FULFILLED: "bg-teal-100 text-teal-700",
-  CLOSED: "bg-zinc-200 text-zinc-700",
+  CLOSED: "bg-zinc-200 text-[var(--admin-text)]",
   PARTIAL: "bg-amber-100 text-amber-700",
   PARTIALLY_RECEIVED: "bg-cyan-100 text-cyan-700",
 };
@@ -139,11 +139,11 @@ export default async function AdminDashboard({ searchParams }: AdminDashboardPro
   return (
     <div className="space-y-6">
       <div className="flex flex-col gap-2">
-        <p className="text-xs uppercase tracking-[0.2em] text-zinc-500">{text.dashboard}</p>
-        <h1 className="text-3xl font-semibold tracking-tight text-zinc-900">
+        <p className="text-xs uppercase tracking-[0.2em] text-[var(--admin-muted)]">{text.dashboard}</p>
+        <h1 className="text-3xl font-semibold tracking-tight text-[var(--admin-text)]">
           {text.welcome}, {displayName}
         </h1>
-        <p className="text-sm text-zinc-500">
+        <p className="text-sm text-[var(--admin-muted)]">
           {text.company}: {user.companyId}
         </p>
         <div className="mt-2 flex flex-wrap items-center gap-2">
@@ -154,7 +154,7 @@ export default async function AdminDashboard({ searchParams }: AdminDashboardPro
               className={`rounded-full border px-3 py-1 text-sm ${
                 months === value
                   ? "border-zinc-900 bg-zinc-900 text-white"
-                  : "border-zinc-200 text-zinc-600 hover:bg-zinc-100"
+                  : "border-zinc-200 text-[var(--admin-muted)] hover:bg-zinc-100"
               }`}
             >
               {value}m
@@ -168,15 +168,15 @@ export default async function AdminDashboard({ searchParams }: AdminDashboardPro
           <Link
             key={kpi.id}
             href={KPI_LINKS[kpi.id] ?? "/admin"}
-            className="group relative rounded-2xl border border-zinc-200 bg-white p-5 shadow-sm transition hover:border-indigo-200 hover:bg-zinc-50"
+            className="group relative liquid-surface rounded-2xl p-5 transition hover:border-indigo-200 hover:bg-zinc-50"
           >
-            <span className="absolute right-4 top-4 inline-flex h-7 w-7 items-center justify-center rounded-full border border-zinc-200 text-zinc-500 transition group-hover:border-indigo-200 group-hover:text-indigo-600">
+            <span className="absolute right-4 top-4 inline-flex h-7 w-7 items-center justify-center rounded-full border border-zinc-200 text-[var(--admin-muted)] transition group-hover:border-indigo-200 group-hover:text-indigo-600">
               <svg aria-hidden viewBox="0 0 24 24" className="h-3.5 w-3.5 fill-none stroke-current" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M9 5H19V15" />
                 <path d="M19 5L5 19" />
               </svg>
             </span>
-            <p className="text-sm text-zinc-500">
+            <p className="text-sm text-[var(--admin-muted)]">
               {lang === "fr"
                 ? kpi.label
                     .replace("Sales (period)", "Ventes (periode)")
@@ -185,7 +185,7 @@ export default async function AdminDashboard({ searchParams }: AdminDashboardPro
                     .replace("Open PO value", "Valeur commandes achat ouvertes")
                 : kpi.label}
             </p>
-            <p className="mt-3 text-3xl font-semibold tracking-tight text-zinc-900">
+            <p className="mt-3 text-3xl font-semibold tracking-tight text-[var(--admin-text)]">
               {formatMetric(kpi.value, kpi.formatter, locale, currencyCode)}
             </p>
             <div className="mt-4 flex items-center justify-between text-sm">
@@ -194,7 +194,7 @@ export default async function AdminDashboard({ searchParams }: AdminDashboardPro
                 {kpi.deltaPct.toFixed(1)}%
               </span>
               {kpi.helper && (
-                <span className="text-xs text-zinc-500">
+                <span className="text-xs text-[var(--admin-muted)]">
                   {lang === "fr"
                     ? kpi.helper
                         .replace("vs prev month", "vs periode precedente")
@@ -210,13 +210,13 @@ export default async function AdminDashboard({ searchParams }: AdminDashboardPro
       </section>
 
       <section className="perf-section grid gap-6 lg:grid-cols-3" aria-label={text.salesTrend}>
-        <div className="rounded-2xl border border-zinc-200 bg-white p-5 shadow-sm lg:col-span-2">
+        <div className="liquid-surface rounded-2xl p-5 lg:col-span-2">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm uppercase tracking-wide text-zinc-500">{text.revenue}</p>
-              <h2 className="text-xl font-semibold text-zinc-900">{text.trailing}</h2>
+              <p className="text-sm uppercase tracking-wide text-[var(--admin-muted)]">{text.revenue}</p>
+              <h2 className="text-xl font-semibold text-[var(--admin-text)]">{text.trailing}</h2>
             </div>
-            <span className="text-xs text-zinc-500">
+            <span className="text-xs text-[var(--admin-muted)]">
               {text.period}: {months}m · {text.refreshed} {new Date(snapshot.timestamp).toLocaleString(locale)}
             </span>
           </div>
@@ -232,8 +232,8 @@ export default async function AdminDashboard({ searchParams }: AdminDashboardPro
                       aria-label={`${entry.month} ${text.revenue} ${formatMetric(entry.total, "currency", locale, currencyCode)}`}
                     />
                   </div>
-                  <div className="text-center text-sm text-zinc-500">
-                    <p className="font-medium text-zinc-900">
+                  <div className="text-center text-sm text-[var(--admin-muted)]">
+                    <p className="font-medium text-[var(--admin-text)]">
                       {new Date(entry.iso).toLocaleString(locale, { month: "short" })}
                     </p>
                     <p>{formatMetric(entry.total, "currency", locale, currencyCode)}</p>
@@ -244,11 +244,11 @@ export default async function AdminDashboard({ searchParams }: AdminDashboardPro
           </div>
         </div>
 
-        <div className="rounded-2xl border border-zinc-200 bg-white p-5 shadow-sm">
+        <div className="liquid-surface rounded-2xl p-5">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm uppercase tracking-wide text-zinc-500">{text.inventory}</p>
-              <h2 className="text-xl font-semibold text-zinc-900">{text.lowStock}</h2>
+              <p className="text-sm uppercase tracking-wide text-[var(--admin-muted)]">{text.inventory}</p>
+              <h2 className="text-xl font-semibold text-[var(--admin-text)]">{text.lowStock}</h2>
             </div>
             <Link href="/admin/stock" className="text-sm font-medium text-emerald-600 hover:text-emerald-700">
               {text.viewStock}
@@ -256,7 +256,7 @@ export default async function AdminDashboard({ searchParams }: AdminDashboardPro
           </div>
           <div className="mt-4 space-y-4">
             {recentLowStock.length === 0 && (
-              <p className="text-sm text-zinc-500">{text.noLowStock}</p>
+              <p className="text-sm text-[var(--admin-muted)]">{text.noLowStock}</p>
             )}
             {recentLowStock.map((item) => {
               const current = Number(item.currentStock ?? 0);
@@ -266,19 +266,19 @@ export default async function AdminDashboard({ searchParams }: AdminDashboardPro
                 <Link
                   key={item.id}
                   href="/admin/stock"
-                  className="group block rounded-xl border border-zinc-100 p-4 transition hover:border-indigo-200 hover:bg-zinc-50"
+                  className="group block liquid-surface rounded-xl p-4 transition"
                 >
-                  <p className="text-sm font-semibold text-zinc-900">
+                  <p className="text-sm font-semibold text-[var(--admin-text)]">
                     {item.sku} · {item.name}
                   </p>
                   <div className="mt-2 flex items-center justify-between text-sm">
-                    <span className="text-zinc-500">
+                    <span className="text-[var(--admin-muted)]">
                       {text.onHand}{" "}
-                      <span className="font-semibold text-zinc-900">
+                      <span className="font-semibold text-[var(--admin-text)]">
                         {formatMetric(current, "number", locale, currencyCode)}
                       </span>
                     </span>
-                    <span className="text-zinc-500">
+                    <span className="text-[var(--admin-muted)]">
                       {text.threshold} {formatMetric(threshold, "number", locale, currencyCode)}
                     </span>
                   </div>
@@ -305,11 +305,11 @@ export default async function AdminDashboard({ searchParams }: AdminDashboardPro
       </section>
 
       <section className="perf-section grid gap-6 lg:grid-cols-3" aria-label={text.docsAndTasks}>
-        <div className="rounded-2xl border border-zinc-200 bg-white p-5 shadow-sm lg:col-span-2">
+        <div className="liquid-surface rounded-2xl p-5 lg:col-span-2">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm uppercase tracking-wide text-zinc-500">{text.latest}</p>
-              <h2 className="text-xl font-semibold text-zinc-900">{text.documents}</h2>
+              <p className="text-sm uppercase tracking-wide text-[var(--admin-muted)]">{text.latest}</p>
+              <h2 className="text-xl font-semibold text-[var(--admin-text)]">{text.documents}</h2>
             </div>
           </div>
           <div className="mt-4 space-y-4">
@@ -317,28 +317,28 @@ export default async function AdminDashboard({ searchParams }: AdminDashboardPro
               <Link
                 key={`${doc.type}-${doc.id}`}
                 href={doc.href}
-                className="group block rounded-2xl border border-zinc-100 p-4 transition hover:border-indigo-200 hover:bg-zinc-50"
+                className="group block liquid-surface rounded-2xl p-4 transition"
               >
                 <div className="grid gap-2 sm:grid-cols-[minmax(120px,1fr)_minmax(170px,1fr)_auto_120px_auto] sm:items-center sm:gap-4">
                   <div className="flex min-w-[7rem] flex-col">
-                    <span className="text-xs uppercase tracking-wide text-zinc-500">
+                    <span className="text-xs uppercase tracking-wide text-[var(--admin-muted)]">
                       {(TYPE_LABELS[doc.type]?.[lang] ?? doc.type) as string}
                     </span>
-                    <span className="font-semibold text-zinc-900">{doc.code}</span>
+                    <span className="font-semibold text-[var(--admin-text)]">{doc.code}</span>
                   </div>
                   <div className="flex-1">
-                    <p className="text-sm font-medium text-zinc-900">{doc.counterpart}</p>
-                    <p className="text-xs text-zinc-500">{new Date(doc.date).toLocaleDateString(locale)}</p>
+                    <p className="text-sm font-medium text-[var(--admin-text)]">{doc.counterpart}</p>
+                    <p className="text-xs text-[var(--admin-muted)]">{new Date(doc.date).toLocaleDateString(locale)}</p>
                   </div>
                   <span
-                    className={`w-fit rounded-full px-3 py-1 text-xs font-medium ${STATUS_BADGE_CLASSES[doc.status] ?? "bg-zinc-100 text-zinc-700"}`}
+                    className={`w-fit rounded-full px-3 py-1 text-xs font-medium ${STATUS_BADGE_CLASSES[doc.status] ?? "bg-zinc-100 text-[var(--admin-text)]"}`}
                   >
                     {(STATUS_LABELS[doc.status]?.[lang] ?? doc.status) as string}
                   </span>
-                  <p className="text-sm font-semibold text-zinc-900 sm:text-right">
+                  <p className="text-sm font-semibold text-[var(--admin-text)] sm:text-right">
                     {doc.total === null ? "—" : formatMetric(doc.total, "currency", locale, currencyCode)}
                   </p>
-                  <span className="inline-flex h-7 w-7 items-center justify-center rounded-full border border-zinc-200 text-zinc-500 transition group-hover:border-indigo-200 group-hover:text-indigo-600">
+                  <span className="inline-flex h-7 w-7 items-center justify-center rounded-full border border-zinc-200 text-[var(--admin-muted)] transition group-hover:border-indigo-200 group-hover:text-indigo-600">
                     <svg aria-hidden viewBox="0 0 24 24" className="h-3.5 w-3.5 fill-none stroke-current" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round">
                       <path d="M9 5H19V15" />
                       <path d="M19 5L5 19" />
@@ -348,23 +348,23 @@ export default async function AdminDashboard({ searchParams }: AdminDashboardPro
               </Link>
             ))}
             {snapshot.latestDocuments.length === 0 && (
-              <p className="py-4 text-sm text-zinc-500">{text.noTransactions}</p>
+              <p className="py-4 text-sm text-[var(--admin-muted)]">{text.noTransactions}</p>
             )}
           </div>
         </div>
 
-        <div className="rounded-2xl border border-zinc-200 bg-white p-5 shadow-sm">
+        <div className="liquid-surface rounded-2xl p-5">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm uppercase tracking-wide text-zinc-500">{text.operations}</p>
-              <h2 className="text-xl font-semibold text-zinc-900">{text.todo}</h2>
+              <p className="text-sm uppercase tracking-wide text-[var(--admin-muted)]">{text.operations}</p>
+              <h2 className="text-xl font-semibold text-[var(--admin-text)]">{text.todo}</h2>
             </div>
           </div>
           <div className="mt-4 space-y-4">
             {snapshot.operationalTodo.map((task) => (
-              <Link key={task.id} href={task.href} className="group block rounded-2xl border border-zinc-100 p-4 transition hover:border-indigo-200 hover:bg-zinc-50">
+              <Link key={task.id} href={task.href} className="group block liquid-surface rounded-2xl p-4 transition">
                 <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-                  <p className="font-semibold text-zinc-900">
+                  <p className="font-semibold text-[var(--admin-text)]">
                     {lang === "fr"
                       ? task.label
                           .replace("Quotes expiring in 7 days", "Devis expirant sous 7 jours")
@@ -384,7 +384,7 @@ export default async function AdminDashboard({ searchParams }: AdminDashboardPro
                     {formatMetric(task.count, "number", locale, currencyCode)}
                   </span>
                 </div>
-                <p className="mt-1 text-sm text-zinc-500">
+                <p className="mt-1 text-sm text-[var(--admin-muted)]">
                   {lang === "fr"
                     ? task.description
                         .replace("Send reminders or close out quotes before validity lapses.", "Relancer ou cloturer les devis avant expiration.")
