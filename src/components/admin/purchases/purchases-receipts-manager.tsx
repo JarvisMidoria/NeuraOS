@@ -44,7 +44,21 @@ const STATUS_BADGES: Record<string, string> = {
   CANCELLED: "border border-rose-400/45 bg-rose-500/15 text-[var(--admin-text)]",
 };
 
-export function PurchasesReceiptsManager({ warehouses, currencyCode }: { warehouses: Warehouse[]; currencyCode: string }) {
+const STATUS_LABELS: Record<string, { en: string; fr: string }> = {
+  DRAFT: { en: "Draft", fr: "Brouillon" },
+  CONFIRMED: { en: "Confirmed", fr: "Confirmee" },
+  CANCELLED: { en: "Cancelled", fr: "Annulee" },
+};
+
+export function PurchasesReceiptsManager({
+  warehouses,
+  currencyCode,
+  lang,
+}: {
+  warehouses: Warehouse[];
+  currencyCode: string;
+  lang: "en" | "fr";
+}) {
   const [orders, setOrders] = useState<PurchaseOrder[]>([]);
   const [receipts, setReceipts] = useState<Receipt[]>([]);
   const [loading, setLoading] = useState(true);
@@ -60,9 +74,47 @@ export function PurchasesReceiptsManager({ warehouses, currencyCode }: { warehou
   const [selectedWarehouseId, setSelectedWarehouseId] = useState(warehouses[0]?.id ?? "");
   const [notes, setNotes] = useState("");
   const [quantities, setQuantities] = useState<Record<string, string>>({});
-  const locale = "en-US";
+  const locale = lang === "fr" ? "fr-FR" : "en-US";
 
   const totalPages = useMemo(() => Math.max(1, Math.ceil(total / PAGE_SIZE)), [total]);
+  const t = useMemo(
+    () => ({
+      loadOrdersFailed:
+        lang === "fr" ? "Impossible de charger les commandes achat" : "Failed to load purchase orders",
+      loadReceiptsFailed: lang === "fr" ? "Impossible de charger les receptions" : "Failed to load receipts",
+      loadFailed: lang === "fr" ? "Impossible de charger les donnees" : "Failed to load data",
+      lineQtyError:
+        lang === "fr" ? "Au moins une ligne doit avoir une quantite > 0" : "At least one line quantity must be greater than zero",
+      createFailed: lang === "fr" ? "Impossible de creer la reception" : "Failed to create receipt",
+      created: lang === "fr" ? "Reception creee" : "Receipt created",
+      title: lang === "fr" ? "Receptions" : "Receipts",
+      addReceipt: lang === "fr" ? "Ajouter reception" : "Add receipt",
+      refresh: lang === "fr" ? "Actualiser" : "Refresh",
+      loading: lang === "fr" ? "Chargement des receptions..." : "Loading receipts...",
+      empty: lang === "fr" ? "Aucune reception." : "No receipts yet.",
+      po: lang === "fr" ? "BC" : "PO",
+      warehouse: lang === "fr" ? "Entrepot" : "Warehouse",
+      product: lang === "fr" ? "Produit" : "Product",
+      qty: lang === "fr" ? "Qte" : "Qty",
+      page: lang === "fr" ? "Page" : "Page",
+      of: lang === "fr" ? "sur" : "of",
+      previous: lang === "fr" ? "Precedent" : "Previous",
+      next: lang === "fr" ? "Suivant" : "Next",
+      createReceipt: lang === "fr" ? "Creer reception marchandise" : "Create Goods Receipt",
+      selectPo: lang === "fr" ? "Selectionner BC" : "Select PO",
+      notes: lang === "fr" ? "Notes" : "Notes",
+      lines: lang === "fr" ? "Lignes" : "Lines",
+      hideLines: lang === "fr" ? "Masquer lignes" : "Hide lines",
+      showLines: lang === "fr" ? "Afficher lignes" : "Show lines",
+      pickPo:
+        lang === "fr"
+          ? "Selectionnez une commande achat pour preparer la reception."
+          : "Pick a purchase order to receive lines.",
+      creating: lang === "fr" ? "Creation..." : "Creating...",
+      cancel: lang === "fr" ? "Annuler" : "Cancel",
+    }),
+    [lang],
+  );
 
   const loadData = useCallback(async () => {
     setLoading(true);
@@ -75,8 +127,8 @@ export function PurchasesReceiptsManager({ warehouses, currencyCode }: { warehou
       const ordersBody = await ordersRes.json();
       const receiptsBody = await receiptsRes.json();
 
-      if (!ordersRes.ok) throw new Error(ordersBody.error ?? "Failed to load purchase orders");
-      if (!receiptsRes.ok) throw new Error(receiptsBody.error ?? "Failed to load receipts");
+      if (!ordersRes.ok) throw new Error(ordersBody.error ?? t.loadOrdersFailed);
+      if (!receiptsRes.ok) throw new Error(receiptsBody.error ?? t.loadReceiptsFailed);
 
       const openOrders = (ordersBody.data ?? []).filter((order: PurchaseOrder) =>
         ["SENT", "CONFIRMED", "PARTIALLY_RECEIVED"].includes(order.status),
@@ -90,11 +142,11 @@ export function PurchasesReceiptsManager({ warehouses, currencyCode }: { warehou
         setSelectedOrderId(openOrders[0].id);
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to load data");
+      setError(err instanceof Error ? err.message : t.loadFailed);
     } finally {
       setLoading(false);
     }
-  }, [page, selectedOrderId]);
+  }, [page, selectedOrderId, t.loadFailed, t.loadOrdersFailed, t.loadReceiptsFailed]);
 
   useEffect(() => {
     loadData();
@@ -152,7 +204,7 @@ export function PurchasesReceiptsManager({ warehouses, currencyCode }: { warehou
       };
 
       if (!payload.lines.length) {
-        throw new Error("At least one line quantity must be greater than zero");
+        throw new Error(t.lineQtyError);
       }
 
       const res = await fetch("/api/purchases/receipts", {
@@ -161,14 +213,14 @@ export function PurchasesReceiptsManager({ warehouses, currencyCode }: { warehou
         body: JSON.stringify(payload),
       });
       const body = await res.json();
-      if (!res.ok) throw new Error(body.error ?? "Failed to create receipt");
+      if (!res.ok) throw new Error(body.error ?? t.createFailed);
 
-      setStatus("Receipt created");
+      setStatus(t.created);
       resetCreator();
       setIsCreatorOpen(false);
       await loadData();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to create receipt");
+      setError(err instanceof Error ? err.message : t.createFailed);
     } finally {
       setSubmitting(false);
     }
@@ -190,20 +242,20 @@ export function PurchasesReceiptsManager({ warehouses, currencyCode }: { warehou
       <div className="liquid-surface rounded-2xl p-6">
         <div className="mb-4">
           <AdminToolbar>
-            <h2 className="text-lg font-semibold text-[var(--admin-text)]">Receipts</h2>
+            <h2 className="text-lg font-semibold text-[var(--admin-text)]">{t.title}</h2>
             <AdminToolbarGroup align="end">
-              <ActionButton type="button" icon="plus" tone="primary" onClick={openCreator} label="Add receipt" />
-              <ActionButton type="button" icon="refresh" onClick={loadData} label="Refresh" />
+              <ActionButton type="button" icon="plus" tone="primary" onClick={openCreator} label={t.addReceipt} />
+              <ActionButton type="button" icon="refresh" onClick={loadData} label={t.refresh} />
             </AdminToolbarGroup>
           </AdminToolbar>
         </div>
 
         {loading ? (
-          <p className="text-sm text-[var(--admin-muted)]">Loading receipts...</p>
+          <p className="text-sm text-[var(--admin-muted)]">{t.loading}</p>
         ) : (
           <div className="space-y-3">
             {receipts.length === 0 ? (
-              <p className="text-sm text-[var(--admin-muted)]">No receipts yet.</p>
+              <p className="text-sm text-[var(--admin-muted)]">{t.empty}</p>
             ) : (
               receipts.map((receipt) => (
                 <div key={receipt.id} className="liquid-surface rounded-2xl p-4">
@@ -212,23 +264,23 @@ export function PurchasesReceiptsManager({ warehouses, currencyCode }: { warehou
                     <span
                       className={`rounded-full px-2 py-1 text-xs font-medium ${STATUS_BADGES[receipt.status] ?? "border border-[var(--admin-border)] bg-[var(--admin-soft-bg)] text-[var(--admin-text)]"}`}
                     >
-                      {receipt.status}
+                      {(STATUS_LABELS[receipt.status]?.[lang] ?? receipt.status) as string}
                     </span>
                   </div>
                   <div className="mt-2 grid gap-2 sm:grid-cols-2">
                     <p className="text-sm text-[var(--admin-text)]">
-                      <span className="text-[var(--admin-muted)]">PO: </span>
-                      {receipt.purchaseOrder ? `PO-${receipt.purchaseOrder.poNumber}` : "—"}
+                      <span className="text-[var(--admin-muted)]">{t.po}: </span>
+                      {receipt.purchaseOrder ? `PO-${receipt.purchaseOrder.poNumber}` : "-"}
                     </p>
                     <p className="text-sm text-[var(--admin-text)] sm:text-right">
-                      <span className="text-[var(--admin-muted)]">Warehouse: </span>
-                      {receipt.warehouse?.name ?? "—"}
+                      <span className="text-[var(--admin-muted)]">{t.warehouse}: </span>
+                      {receipt.warehouse?.name ?? "-"}
                     </p>
                   </div>
                   <div className="mt-2 space-y-1 text-xs text-[var(--admin-muted)]">
                     {receipt.lines.map((line) => (
                       <div key={line.id}>
-                        {line.product?.name ?? "Product"} · Qty {line.quantity} @{" "}
+                        {line.product?.name ?? t.product} · {t.qty} {line.quantity} @{" "}
                         {formatCurrency(Number(line.unitPrice), locale, currencyCode)}
                       </div>
                     ))}
@@ -240,15 +292,29 @@ export function PurchasesReceiptsManager({ warehouses, currencyCode }: { warehou
         )}
 
         <div className="mt-4 flex items-center justify-between text-sm text-[var(--admin-muted)]">
-          <span>Page {page} of {totalPages}</span>
+          <span>
+            {t.page} {page} {t.of} {totalPages}
+          </span>
           <div className="flex gap-2">
-            <ActionButton size="sm" icon="left" disabled={page <= 1} onClick={() => setPage((p) => Math.max(1, p - 1))} label="Previous" />
-            <ActionButton size="sm" icon="right" disabled={page >= totalPages} onClick={() => setPage((p) => Math.min(totalPages, p + 1))} label="Next" />
+            <ActionButton
+              size="sm"
+              icon="left"
+              disabled={page <= 1}
+              onClick={() => setPage((p) => Math.max(1, p - 1))}
+              label={t.previous}
+            />
+            <ActionButton
+              size="sm"
+              icon="right"
+              disabled={page >= totalPages}
+              onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+              label={t.next}
+            />
           </div>
         </div>
       </div>
 
-      <AdminModal open={isCreatorOpen} onClose={closeCreator} title="Create Goods Receipt">
+      <AdminModal open={isCreatorOpen} onClose={closeCreator} title={t.createReceipt}>
         <form onSubmit={createReceipt} className="mt-1 space-y-4">
           <div className="grid gap-3 md:grid-cols-3">
             <select
@@ -256,7 +322,7 @@ export function PurchasesReceiptsManager({ warehouses, currencyCode }: { warehou
               onChange={(e) => setSelectedOrderId(e.target.value)}
               className="admin-toolbar-control"
             >
-              <option value="">Select PO</option>
+              <option value="">{t.selectPo}</option>
               {orders.map((order) => (
                 <option key={order.id} value={order.id}>
                   PO-{order.poNumber} · {order.supplier?.name}
@@ -278,20 +344,20 @@ export function PurchasesReceiptsManager({ warehouses, currencyCode }: { warehou
               className="admin-toolbar-control"
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
-              placeholder="Notes"
+              placeholder={t.notes}
             />
           </div>
 
           {selectedOrder ? (
             <div className="space-y-2">
               <div className="flex items-center justify-between gap-2">
-                <p className="text-sm font-medium text-[var(--admin-muted)]">Lines</p>
+                <p className="text-sm font-medium text-[var(--admin-muted)]">{t.lines}</p>
                 <ActionButton
                   type="button"
                   size="sm"
                   icon={showLines ? "close" : "plus"}
                   onClick={() => setShowLines((prev) => !prev)}
-                  label={showLines ? "Hide lines" : "Show lines"}
+                  label={showLines ? t.hideLines : t.showLines}
                 />
               </div>
               {showLines
@@ -313,7 +379,7 @@ export function PurchasesReceiptsManager({ warehouses, currencyCode }: { warehou
                 : null}
             </div>
           ) : (
-            <p className="text-sm text-[var(--admin-muted)]">Pick a purchase order to receive lines.</p>
+            <p className="text-sm text-[var(--admin-muted)]">{t.pickPo}</p>
           )}
 
           <div className="flex items-center gap-2">
@@ -322,9 +388,9 @@ export function PurchasesReceiptsManager({ warehouses, currencyCode }: { warehou
               tone="primary"
               icon="save"
               disabled={!selectedOrder || submitting}
-              label={submitting ? "Creating..." : "Create receipt"}
+              label={submitting ? t.creating : t.createReceipt}
             />
-            <ActionButton type="button" icon="close" onClick={closeCreator} label="Cancel" />
+            <ActionButton type="button" icon="close" onClick={closeCreator} label={t.cancel} />
           </div>
         </form>
       </AdminModal>

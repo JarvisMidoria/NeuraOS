@@ -2,9 +2,11 @@ import { redirect } from "next/navigation";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { PurchasesOrdersManager } from "@/components/admin/purchases/purchases-orders-manager";
+import { getAdminLang } from "@/lib/admin-preferences";
 
 export default async function PurchasesOrdersPage() {
   const session = await auth();
+  const lang = await getAdminLang();
   if (!session?.user?.companyId) redirect("/login");
 
   const companyId = session.user.companyId;
@@ -19,15 +21,24 @@ export default async function PurchasesOrdersPage() {
   return (
     <div className="space-y-6">
       <div>
-        <p className="text-xs uppercase tracking-[0.2em] text-[var(--admin-muted)]">Purchases</p>
-        <h1 className="text-3xl font-semibold tracking-tight text-[var(--admin-text)]">Purchase Orders</h1>
-        <p className="text-sm text-[var(--admin-muted)]">Create, review and progress supplier orders.</p>
+        <p className="text-xs uppercase tracking-[0.2em] text-[var(--admin-muted)]">
+          {lang === "fr" ? "Achats" : "Purchases"}
+        </p>
+        <h1 className="text-3xl font-semibold tracking-tight text-[var(--admin-text)]">
+          {lang === "fr" ? "Commandes achat" : "Purchase Orders"}
+        </h1>
+        <p className="text-sm text-[var(--admin-muted)]">
+          {lang === "fr"
+            ? "Creez, validez et suivez les commandes fournisseurs."
+            : "Create, review and progress supplier orders."}
+        </p>
       </div>
       <PurchasesOrdersManager
         suppliers={suppliers}
         products={products.map((p) => ({ ...p, unitPrice: p.unitPrice.toString() }))}
         canManagePurchasing={canManagePurchasing}
         currencyCode={company?.currencyCode ?? "USD"}
+        lang={lang}
       />
     </div>
   );

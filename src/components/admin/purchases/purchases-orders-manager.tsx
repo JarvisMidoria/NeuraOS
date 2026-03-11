@@ -42,16 +42,27 @@ const STATUS_BADGES: Record<string, string> = {
   CANCELLED: "border border-rose-400/45 bg-rose-500/15 text-[var(--admin-text)]",
 };
 
+const STATUS_LABELS: Record<string, { en: string; fr: string }> = {
+  DRAFT: { en: "Draft", fr: "Brouillon" },
+  SENT: { en: "Sent", fr: "Envoyee" },
+  CONFIRMED: { en: "Confirmed", fr: "Confirmee" },
+  PARTIALLY_RECEIVED: { en: "Partially received", fr: "Partiellement recue" },
+  RECEIVED: { en: "Received", fr: "Recue" },
+  CANCELLED: { en: "Cancelled", fr: "Annulee" },
+};
+
 export function PurchasesOrdersManager({
   suppliers,
   products,
   canManagePurchasing,
   currencyCode,
+  lang,
 }: {
   suppliers: SupplierOption[];
   products: ProductOption[];
   canManagePurchasing: boolean;
   currencyCode: string;
+  lang: "en" | "fr";
 }) {
   const [orders, setOrders] = useState<PurchaseOrder[]>([]);
   const [page, setPage] = useState(1);
@@ -71,9 +82,50 @@ export function PurchasesOrdersManager({
   const [lines, setLines] = useState<FormLine[]>([
     { productId: products[0]?.id ?? "", quantity: "1", unitPrice: products[0]?.unitPrice ?? "0", taxes: "20" },
   ]);
-  const locale = "en-US";
+  const locale = lang === "fr" ? "fr-FR" : "en-US";
 
   const totalPages = useMemo(() => Math.max(1, Math.ceil(total / PAGE_SIZE)), [total]);
+  const t = useMemo(
+    () => ({
+      loadFailed:
+        lang === "fr" ? "Impossible de charger les commandes achat" : "Failed to load purchase orders",
+      createFailed: lang === "fr" ? "Impossible de creer la commande achat" : "Failed to create purchase order",
+      updateFailed:
+        lang === "fr" ? "Impossible de mettre a jour la commande achat" : "Failed to update purchase order",
+      created: lang === "fr" ? "Commande achat creee" : "Purchase order created",
+      updated: lang === "fr" ? "Commande achat mise a jour" : "Purchase order updated",
+      title: lang === "fr" ? "Commandes achat" : "Purchase Orders",
+      addPo: lang === "fr" ? "Ajouter BC" : "Add PO",
+      refresh: lang === "fr" ? "Actualiser" : "Refresh",
+      loading: lang === "fr" ? "Chargement des commandes achat..." : "Loading purchase orders...",
+      empty: lang === "fr" ? "Aucune commande achat." : "No purchase orders yet.",
+      supplier: lang === "fr" ? "Fournisseur" : "Supplier",
+      total: lang === "fr" ? "Total" : "Total",
+      product: lang === "fr" ? "Produit" : "Product",
+      qty: lang === "fr" ? "Qte" : "Qty",
+      poPdf: lang === "fr" ? "PDF BC" : "PO PDF",
+      markSent: lang === "fr" ? "Marquer envoye" : "Mark sent",
+      confirm: lang === "fr" ? "Confirmer" : "Confirm",
+      cancel: lang === "fr" ? "Annuler" : "Cancel",
+      page: lang === "fr" ? "Page" : "Page",
+      of: lang === "fr" ? "sur" : "of",
+      previous: lang === "fr" ? "Precedent" : "Previous",
+      next: lang === "fr" ? "Suivant" : "Next",
+      createPo: lang === "fr" ? "Creer commande achat" : "Create Purchase Order",
+      notes: lang === "fr" ? "Notes" : "Notes",
+      lines: lang === "fr" ? "Lignes" : "Lines",
+      hideLines: lang === "fr" ? "Masquer lignes" : "Hide lines",
+      showLines: lang === "fr" ? "Afficher lignes" : "Show lines",
+      addLine: lang === "fr" ? "+ Ajouter ligne" : "+ Add line",
+      qtyPlaceholder: lang === "fr" ? "Qte" : "Qty",
+      unitPricePlaceholder: lang === "fr" ? "Prix unitaire" : "Unit price",
+      taxesPlaceholder: lang === "fr" ? "Taxes % (ex: 20)" : "Taxes % (e.g. 20)",
+      remove: lang === "fr" ? "Retirer" : "Remove",
+      creating: lang === "fr" ? "Creation..." : "Creating...",
+      vatLabel: lang === "fr" ? "TVA" : "VAT",
+    }),
+    [lang],
+  );
 
   const loadOrders = useCallback(async () => {
     setLoading(true);
@@ -82,15 +134,15 @@ export function PurchasesOrdersManager({
       const params = new URLSearchParams({ page: String(page), pageSize: String(PAGE_SIZE) });
       const res = await fetch(`/api/purchases/orders?${params.toString()}`);
       const body = await res.json();
-      if (!res.ok) throw new Error(body.error ?? "Failed to load purchase orders");
+      if (!res.ok) throw new Error(body.error ?? t.loadFailed);
       setOrders(body.data ?? []);
       setTotal(body.total ?? 0);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to load purchase orders");
+      setError(err instanceof Error ? err.message : t.loadFailed);
     } finally {
       setLoading(false);
     }
-  }, [page]);
+  }, [page, t.loadFailed]);
 
   useEffect(() => {
     loadOrders();
@@ -143,7 +195,7 @@ export function PurchasesOrdersManager({
             .split(",")
             .map((entry) => entry.trim())
             .filter(Boolean)
-            .map((rate) => ({ rate, label: `${rate}% VAT` })),
+            .map((rate) => ({ rate, label: `${rate}% ${t.vatLabel}` })),
         })),
       };
 
@@ -153,14 +205,14 @@ export function PurchasesOrdersManager({
         body: JSON.stringify(payload),
       });
       const body = await res.json();
-      if (!res.ok) throw new Error(body.error ?? "Failed to create purchase order");
+      if (!res.ok) throw new Error(body.error ?? t.createFailed);
 
-      setStatus("Purchase order created");
+      setStatus(t.created);
       resetComposer();
       setIsComposerOpen(false);
       await loadOrders();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to create purchase order");
+      setError(err instanceof Error ? err.message : t.createFailed);
     } finally {
       setSubmitting(false);
     }
@@ -176,11 +228,11 @@ export function PurchasesOrdersManager({
         body: JSON.stringify({ status: nextStatus }),
       });
       const body = await res.json();
-      if (!res.ok) throw new Error(body.error ?? "Failed to update purchase order");
-      setStatus("Purchase order updated");
+      if (!res.ok) throw new Error(body.error ?? t.updateFailed);
+      setStatus(t.updated);
       await loadOrders();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to update purchase order");
+      setError(err instanceof Error ? err.message : t.updateFailed);
     }
   };
 
@@ -200,20 +252,20 @@ export function PurchasesOrdersManager({
       <div className="liquid-surface rounded-2xl p-6">
         <div className="mb-4">
           <AdminToolbar>
-            <h2 className="text-lg font-semibold text-[var(--admin-text)]">Purchase Orders</h2>
+            <h2 className="text-lg font-semibold text-[var(--admin-text)]">{t.title}</h2>
             <AdminToolbarGroup align="end">
-              <ActionButton type="button" icon="plus" tone="primary" onClick={openComposer} label="Add PO" />
-              <ActionButton type="button" icon="refresh" onClick={loadOrders} label="Refresh" />
+              <ActionButton type="button" icon="plus" tone="primary" onClick={openComposer} label={t.addPo} />
+              <ActionButton type="button" icon="refresh" onClick={loadOrders} label={t.refresh} />
             </AdminToolbarGroup>
           </AdminToolbar>
         </div>
 
         {loading ? (
-          <p className="text-sm text-[var(--admin-muted)]">Loading purchase orders...</p>
+          <p className="text-sm text-[var(--admin-muted)]">{t.loading}</p>
         ) : (
           <div className="space-y-3">
             {orders.length === 0 ? (
-              <p className="text-sm text-[var(--admin-muted)]">No purchase orders yet.</p>
+              <p className="text-sm text-[var(--admin-muted)]">{t.empty}</p>
             ) : (
               orders.map((order) => (
                 <div key={order.id} className="liquid-surface rounded-2xl p-4">
@@ -222,23 +274,23 @@ export function PurchasesOrdersManager({
                     <span
                       className={`rounded-full px-2 py-1 text-xs font-medium ${STATUS_BADGES[order.status] ?? "border border-[var(--admin-border)] bg-[var(--admin-soft-bg)] text-[var(--admin-text)]"}`}
                     >
-                      {order.status}
+                      {(STATUS_LABELS[order.status]?.[lang] ?? order.status) as string}
                     </span>
                   </div>
                   <div className="mt-2 grid gap-2 sm:grid-cols-2">
                     <p className="text-sm text-[var(--admin-text)]">
-                      <span className="text-[var(--admin-muted)]">Supplier: </span>
+                      <span className="text-[var(--admin-muted)]">{t.supplier}: </span>
                       {order.supplier?.name ?? "—"}
                     </p>
                     <p className="text-sm text-[var(--admin-text)] sm:text-right">
-                      <span className="text-[var(--admin-muted)]">Total: </span>
+                      <span className="text-[var(--admin-muted)]">{t.total}: </span>
                       {formatCurrency(Number(order.totalAmount), locale, currencyCode)}
                     </p>
                   </div>
                   <div className="mt-2 space-y-1 text-xs text-[var(--admin-muted)]">
                     {order.lines.map((line) => (
                       <div key={line.id}>
-                        {line.product?.name ?? "Product"} · Qty {line.quantity} @{" "}
+                        {line.product?.name ?? t.product} · {t.qty} {line.quantity} @{" "}
                         {formatCurrency(Number(line.unitPrice), locale, currencyCode)}
                       </div>
                     ))}
@@ -250,16 +302,16 @@ export function PurchasesOrdersManager({
                       target="_blank"
                       rel="noreferrer"
                       className="px-2 py-1 text-xs"
-                      label="PO PDF"
+                      label={t.poPdf}
                     />
                     {order.status === "DRAFT" ? (
-                      <ActionButton size="sm" icon="apply" onClick={() => setOrderStatus(order.id, "SENT")} label="Mark sent" />
+                      <ActionButton size="sm" icon="apply" onClick={() => setOrderStatus(order.id, "SENT")} label={t.markSent} />
                     ) : null}
                     {order.status === "SENT" ? (
-                      <ActionButton size="sm" icon="right" onClick={() => setOrderStatus(order.id, "CONFIRMED")} label="Confirm" />
+                      <ActionButton size="sm" icon="right" onClick={() => setOrderStatus(order.id, "CONFIRMED")} label={t.confirm} />
                     ) : null}
                     {order.status === "DRAFT" || order.status === "SENT" ? (
-                      <ActionButton size="sm" tone="danger" icon="close" onClick={() => setOrderStatus(order.id, "CANCELLED")} label="Cancel" />
+                      <ActionButton size="sm" tone="danger" icon="close" onClick={() => setOrderStatus(order.id, "CANCELLED")} label={t.cancel} />
                     ) : null}
                   </div>
                 </div>
@@ -269,15 +321,29 @@ export function PurchasesOrdersManager({
         )}
 
         <div className="mt-4 flex items-center justify-between text-sm text-[var(--admin-muted)]">
-          <span>Page {page} of {totalPages}</span>
+          <span>
+            {t.page} {page} {t.of} {totalPages}
+          </span>
           <div className="flex gap-2">
-            <ActionButton size="sm" icon="left" disabled={page <= 1} onClick={() => setPage((p) => Math.max(1, p - 1))} label="Previous" />
-            <ActionButton size="sm" icon="right" disabled={page >= totalPages} onClick={() => setPage((p) => Math.min(totalPages, p + 1))} label="Next" />
+            <ActionButton
+              size="sm"
+              icon="left"
+              disabled={page <= 1}
+              onClick={() => setPage((p) => Math.max(1, p - 1))}
+              label={t.previous}
+            />
+            <ActionButton
+              size="sm"
+              icon="right"
+              disabled={page >= totalPages}
+              onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+              label={t.next}
+            />
           </div>
         </div>
       </div>
 
-      <AdminModal open={isComposerOpen} onClose={closeComposer} title="Create Purchase Order">
+      <AdminModal open={isComposerOpen} onClose={closeComposer} title={t.createPo}>
         <form onSubmit={createOrder} className="space-y-4">
           <div className="grid gap-3 md:grid-cols-3">
             <select
@@ -299,7 +365,7 @@ export function PurchasesOrdersManager({
             />
             <input
               className="admin-toolbar-control"
-              placeholder="Notes"
+              placeholder={t.notes}
               value={form.notes}
               onChange={(e) => setForm((p) => ({ ...p, notes: e.target.value }))}
             />
@@ -307,16 +373,16 @@ export function PurchasesOrdersManager({
 
           <div className="space-y-3">
             <div className="flex items-center justify-between">
-              <p className="text-sm font-medium text-[var(--admin-muted)]">Lines</p>
+              <p className="text-sm font-medium text-[var(--admin-muted)]">{t.lines}</p>
               <div className="flex items-center gap-2">
                 <ActionButton
                   type="button"
                   size="sm"
                   icon={showLines ? "close" : "plus"}
                   onClick={() => setShowLines((prev) => !prev)}
-                  label={showLines ? "Hide lines" : "Show lines"}
+                  label={showLines ? t.hideLines : t.showLines}
                 />
-                {showLines ? <ActionButton type="button" size="sm" icon="plus" onClick={addLine} label="+ Add line" /> : null}
+                {showLines ? <ActionButton type="button" size="sm" icon="plus" onClick={addLine} label={t.addLine} /> : null}
               </div>
             </div>
             {showLines
@@ -337,7 +403,7 @@ export function PurchasesOrdersManager({
                       type="number"
                       step="0.01"
                       className="admin-toolbar-control"
-                      placeholder="Qty"
+                      placeholder={t.qtyPlaceholder}
                       value={line.quantity}
                       onChange={(e) => updateLine(index, "quantity", e.target.value)}
                     />
@@ -345,19 +411,19 @@ export function PurchasesOrdersManager({
                       type="number"
                       step="0.01"
                       className="admin-toolbar-control"
-                      placeholder="Unit price"
+                      placeholder={t.unitPricePlaceholder}
                       value={line.unitPrice}
                       onChange={(e) => updateLine(index, "unitPrice", e.target.value)}
                     />
                     <div className="flex items-center gap-2">
                       <input
                         className="admin-toolbar-control w-full"
-                        placeholder="Taxes % (e.g. 20)"
+                        placeholder={t.taxesPlaceholder}
                         value={line.taxes}
                         onChange={(e) => updateLine(index, "taxes", e.target.value)}
                       />
                       {lines.length > 1 ? (
-                        <ActionButton type="button" size="sm" tone="danger" icon="delete" onClick={() => removeLine(index)} label="Remove" />
+                        <ActionButton type="button" size="sm" tone="danger" icon="delete" onClick={() => removeLine(index)} label={t.remove} />
                       ) : null}
                     </div>
                   </div>
@@ -371,9 +437,9 @@ export function PurchasesOrdersManager({
               tone="primary"
               icon="save"
               disabled={!canManagePurchasing || submitting}
-              label={submitting ? "Creating..." : "Create PO"}
+              label={submitting ? t.creating : t.createPo}
             />
-            <ActionButton type="button" icon="close" onClick={closeComposer} label="Cancel" />
+            <ActionButton type="button" icon="close" onClick={closeComposer} label={t.cancel} />
           </div>
         </form>
       </AdminModal>

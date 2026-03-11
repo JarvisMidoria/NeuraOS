@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { ActionButton } from "../action-button";
 import { AdminToolbar, AdminToolbarGroup } from "../admin-toolbar";
 
@@ -12,37 +12,53 @@ type Suggestion = {
   lowStockThreshold: string;
 };
 
-export function PurchasesReplenishment() {
+export function PurchasesReplenishment({ lang }: { lang: "en" | "fr" }) {
   const [items, setItems] = useState<Suggestion[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const t = useMemo(
+    () => ({
+      loadFailed:
+        lang === "fr"
+          ? "Impossible de charger les suggestions de reapprovisionnement"
+          : "Failed to load replenishment suggestions",
+      title: lang === "fr" ? "Suggestions sous seuil" : "Low Stock Suggestions",
+      refresh: lang === "fr" ? "Actualiser" : "Refresh",
+      loading: lang === "fr" ? "Chargement des suggestions..." : "Loading suggestions...",
+      empty: lang === "fr" ? "Aucune action de reapprovisionnement requise." : "No replenishment action required.",
+      current: lang === "fr" ? "Stock actuel" : "Current",
+      threshold: lang === "fr" ? "Seuil" : "Threshold",
+      suggested: lang === "fr" ? "A acheter" : "Suggested buy",
+    }),
+    [lang],
+  );
 
-  const load = async () => {
+  const load = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
       const res = await fetch("/api/purchases/replenishment");
       const body = await res.json();
-      if (!res.ok) throw new Error(body.error ?? "Failed to load replenishment suggestions");
+      if (!res.ok) throw new Error(body.error ?? t.loadFailed);
       setItems(body.data ?? []);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to load replenishment suggestions");
+      setError(err instanceof Error ? err.message : t.loadFailed);
     } finally {
       setLoading(false);
     }
-  };
+  }, [t.loadFailed]);
 
   useEffect(() => {
-    load();
-  }, []);
+    void load();
+  }, [load]);
 
   return (
     <div className="liquid-surface rounded-2xl p-6">
       <div className="mb-4">
         <AdminToolbar>
-          <h2 className="text-lg font-semibold text-[var(--admin-text)]">Low Stock Suggestions</h2>
+          <h2 className="text-lg font-semibold text-[var(--admin-text)]">{t.title}</h2>
           <AdminToolbarGroup align="end">
-            <ActionButton type="button" icon="refresh" onClick={load} label="Refresh" />
+            <ActionButton type="button" icon="refresh" onClick={load} label={t.refresh} />
           </AdminToolbarGroup>
         </AdminToolbar>
       </div>
@@ -54,9 +70,9 @@ export function PurchasesReplenishment() {
       ) : null}
 
       {loading ? (
-        <p className="text-sm text-[var(--admin-muted)]">Loading suggestions...</p>
+        <p className="text-sm text-[var(--admin-muted)]">{t.loading}</p>
       ) : items.length === 0 ? (
-        <p className="text-sm text-[var(--admin-muted)]">No replenishment action required.</p>
+        <p className="text-sm text-[var(--admin-muted)]">{t.empty}</p>
       ) : (
         <div className="space-y-3">
           {items.map((item) => {
@@ -69,13 +85,13 @@ export function PurchasesReplenishment() {
                 <p className="mt-1 text-base font-semibold text-[var(--admin-text)]">{item.name}</p>
                 <div className="mt-2 flex flex-wrap gap-2 text-xs">
                   <span className="rounded-full border border-[var(--admin-border)] bg-[var(--admin-soft-bg)] px-2 py-1 text-[var(--admin-text)]">
-                    Current: {item.currentStock}
+                    {t.current}: {item.currentStock}
                   </span>
                   <span className="rounded-full border border-[var(--admin-border)] bg-[var(--admin-soft-bg)] px-2 py-1 text-[var(--admin-text)]">
-                    Threshold: {item.lowStockThreshold}
+                    {t.threshold}: {item.lowStockThreshold}
                   </span>
                   <span className="rounded-full border border-amber-400/45 bg-amber-500/15 px-2 py-1 font-semibold text-[var(--admin-text)]">
-                    Suggested buy: {suggested}
+                    {t.suggested}: {suggested}
                   </span>
                 </div>
               </div>

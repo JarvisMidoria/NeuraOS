@@ -7,26 +7,38 @@ type BillingConsoleProps = {
   currentPlan: string;
   currentStatus: string;
   renewsAt?: string | null;
+  lang: "en" | "fr";
 };
 
 const PLANS = ["STARTER", "GROWTH", "ENTERPRISE"] as const;
 
-export function BillingConsole({ currentPlan, currentStatus, renewsAt }: BillingConsoleProps) {
+export function BillingConsole({ currentPlan, currentStatus, renewsAt, lang }: BillingConsoleProps) {
   const [loadingPlan, setLoadingPlan] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [portalLoading, setPortalLoading] = useState(false);
+  const locale = lang === "fr" ? "fr-FR" : "en-US";
 
   const text = useMemo(
     () => ({
-      title: "Billing",
-      subtitle: "Manage your subscription and payment settings.",
-      currentPlan: "Current plan",
-      currentStatus: "Status",
-      renewsAt: "Renews at",
-      openPortal: "Open billing portal",
-      upgrade: "Choose plan",
+      title: lang === "fr" ? "Facturation" : "Billing",
+      subtitle:
+        lang === "fr"
+          ? "Gerez votre abonnement et vos parametres de paiement."
+          : "Manage your subscription and payment settings.",
+      currentPlan: lang === "fr" ? "Plan actuel" : "Current plan",
+      currentStatus: lang === "fr" ? "Statut" : "Status",
+      renewsAt: lang === "fr" ? "Renouvellement" : "Renews at",
+      openPortal: lang === "fr" ? "Ouvrir le portail de facturation" : "Open billing portal",
+      upgrade: lang === "fr" ? "Choisir un plan" : "Choose plan",
+      checkoutOpenFailed: lang === "fr" ? "Impossible d'ouvrir le checkout" : "Unable to open checkout",
+      portalOpenFailed:
+        lang === "fr" ? "Impossible d'ouvrir le portail de facturation" : "Unable to open billing portal",
+      loading: lang === "fr" ? "Chargement..." : "Loading...",
+      openingCheckout: lang === "fr" ? "Ouverture du checkout..." : "Opening checkout...",
+      startSubscription: lang === "fr" ? "Demarrer l'abonnement" : "Start subscription",
+      notAvailable: lang === "fr" ? "Indisponible" : "-",
     }),
-    [],
+    [lang],
   );
 
   const openCheckout = async (plan: string) => {
@@ -40,11 +52,11 @@ export function BillingConsole({ currentPlan, currentStatus, renewsAt }: Billing
       });
       const payload = await response.json().catch(() => null);
       if (!response.ok || !payload?.url) {
-        throw new Error(payload?.error ?? "Unable to open checkout");
+        throw new Error(payload?.error ?? text.checkoutOpenFailed);
       }
       window.location.href = payload.url as string;
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Unable to open checkout");
+      setError(err instanceof Error ? err.message : text.checkoutOpenFailed);
     } finally {
       setLoadingPlan(null);
     }
@@ -57,11 +69,11 @@ export function BillingConsole({ currentPlan, currentStatus, renewsAt }: Billing
       const response = await fetch("/api/saas/billing/portal", { method: "POST" });
       const payload = await response.json().catch(() => null);
       if (!response.ok || !payload?.url) {
-        throw new Error(payload?.error ?? "Unable to open billing portal");
+        throw new Error(payload?.error ?? text.portalOpenFailed);
       }
       window.location.href = payload.url as string;
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Unable to open billing portal");
+      setError(err instanceof Error ? err.message : text.portalOpenFailed);
     } finally {
       setPortalLoading(false);
     }
@@ -86,7 +98,9 @@ export function BillingConsole({ currentPlan, currentStatus, renewsAt }: Billing
           </div>
           <div className="liquid-surface rounded-lg px-3 py-2 text-sm">
             <p className="text-xs uppercase tracking-wide text-[var(--admin-muted)]">{text.renewsAt}</p>
-            <p className="font-semibold text-[var(--admin-text)]">{renewsAt ? new Date(renewsAt).toLocaleDateString("en-US") : "-"}</p>
+            <p className="font-semibold text-[var(--admin-text)]">
+              {renewsAt ? new Date(renewsAt).toLocaleDateString(locale) : text.notAvailable}
+            </p>
           </div>
         </div>
 
@@ -95,7 +109,7 @@ export function BillingConsole({ currentPlan, currentStatus, renewsAt }: Billing
           disabled={portalLoading}
           icon="right"
           className="mt-4 disabled:opacity-50"
-          label={portalLoading ? "Loading..." : text.openPortal}
+          label={portalLoading ? text.loading : text.openPortal}
         />
       </section>
 
@@ -113,7 +127,7 @@ export function BillingConsole({ currentPlan, currentStatus, renewsAt }: Billing
               <span className="flex flex-col items-start">
                 <span className="text-sm font-semibold text-[var(--admin-text)]">{plan}</span>
                 <span className="mt-1 text-xs text-[var(--admin-muted)]">
-                  {loadingPlan === plan ? "Opening checkout..." : "Start subscription"}
+                  {loadingPlan === plan ? text.openingCheckout : text.startSubscription}
                 </span>
               </span>
               <ActionIcon name={loadingPlan === plan ? "refresh" : "right"} className={loadingPlan === plan ? "animate-spin" : ""} />
