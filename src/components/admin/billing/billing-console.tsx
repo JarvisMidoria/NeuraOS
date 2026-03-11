@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { ActionButton, ActionIcon } from "../action-button";
+import { AdminInlineAlert } from "../admin-inline-alert";
 
 type BillingConsoleProps = {
   currentPlan: string;
@@ -81,7 +82,7 @@ export function BillingConsole({ currentPlan, currentStatus, renewsAt, lang }: B
 
   return (
     <div className="space-y-6">
-      {error && <div className="rounded-md bg-rose-50 px-4 py-2 text-sm text-rose-700">{error}</div>}
+      {error ? <AdminInlineAlert tone="error">{error}</AdminInlineAlert> : null}
 
       <section className="liquid-surface rounded-2xl p-5">
         <h2 className="text-xl font-semibold text-[var(--admin-text)]">{text.title}</h2>

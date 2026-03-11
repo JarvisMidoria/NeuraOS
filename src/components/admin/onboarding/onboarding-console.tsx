@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { ActionButton, ActionLinkButton } from "../action-button";
 import { AdminToolbar, AdminToolbarGroup } from "../admin-toolbar";
+import { AdminInlineAlert } from "../admin-inline-alert";
 
 type ChecklistItem = {
   id: string;
@@ -110,7 +111,7 @@ export function OnboardingConsole({ lang }: { lang: "en" | "fr" }) {
   if (error || !payload) {
     return (
       <div className="space-y-3">
-        <p className="text-sm text-rose-400">{error ?? text.loadingError}</p>
+        <AdminInlineAlert tone="error">{error ?? text.loadingError}</AdminInlineAlert>
         <ActionButton onClick={load} icon="refresh" label={text.refresh} />
       </div>
     );
@@ -149,7 +150,13 @@ export function OnboardingConsole({ lang }: { lang: "en" | "fr" }) {
                 <p className="text-xs text-[var(--admin-muted)]">{item.value}/{item.target}</p>
               </div>
               <div className="flex items-center gap-2">
-                <span className={`rounded-full px-2 py-0.5 text-xs font-semibold ${item.done ? "bg-emerald-100 text-emerald-700" : "bg-amber-100 text-amber-700"}`}>
+                <span
+                  className={`rounded-full border px-2 py-0.5 text-xs font-semibold ${
+                    item.done
+                      ? "border-emerald-400/45 bg-emerald-500/15 text-[var(--admin-text)]"
+                      : "border-amber-400/45 bg-amber-500/15 text-[var(--admin-text)]"
+                  }`}
+                >
                   {item.done ? text.done : text.pending}
                 </span>
                 <ActionLinkButton

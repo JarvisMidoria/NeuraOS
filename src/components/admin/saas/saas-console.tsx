@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { ActionButton } from "../action-button";
+import { AdminInlineAlert } from "../admin-inline-alert";
 
 type Subscription = {
   id: string;
@@ -223,7 +224,7 @@ export function SaasConsole() {
 
   return (
     <div className="space-y-6">
-      {error && <div className="rounded-md bg-rose-50 px-4 py-2 text-sm text-rose-700">{error}</div>}
+      {error ? <AdminInlineAlert tone="error">{error}</AdminInlineAlert> : null}
 
       <section className="liquid-surface rounded-2xl p-5">
         <h2 className="text-lg font-semibold text-[var(--admin-text)]">{text.createTenant}</h2>
@@ -328,8 +329,10 @@ export function SaasConsole() {
                 <div className="mt-2 flex items-center gap-2 text-xs">
                   <span className="text-[var(--admin-muted)]">{text.aiAccess}:</span>
                   <span
-                    className={`rounded-full px-2 py-0.5 font-medium ${
-                      tenant.llm?.isEnabled ? "bg-emerald-50 text-emerald-700" : "bg-zinc-100 text-[var(--admin-text)]"
+                    className={`rounded-full border px-2 py-0.5 font-medium ${
+                      tenant.llm?.isEnabled
+                        ? "border-emerald-400/45 bg-emerald-500/15 text-[var(--admin-text)]"
+                        : "border-[var(--admin-border)] bg-[var(--admin-soft-bg)] text-[var(--admin-text)]"
                     }`}
                   >
                     {tenant.llm?.isEnabled ? text.aiOn : text.aiOff}

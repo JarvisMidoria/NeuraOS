@@ -4,6 +4,7 @@ import type { ChangeEvent, DragEvent } from "react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { ActionButton, ActionLinkButton } from "../action-button";
 import { AdminToolbar, AdminToolbarGroup } from "../admin-toolbar";
+import { AdminInlineAlert } from "../admin-inline-alert";
 
 type IngestionAction = {
   id: string;
@@ -281,8 +282,16 @@ export function ImportCenter({ lang }: { lang: "en" | "fr" }) {
           onChange={onFileSelect}
         />
 
-        {status ? <p className="mt-3 text-xs text-emerald-500">{status}</p> : null}
-        {error ? <p className="mt-3 text-xs text-rose-400">{error}</p> : null}
+        {status ? (
+          <div className="mt-3">
+            <AdminInlineAlert tone="success">{status}</AdminInlineAlert>
+          </div>
+        ) : null}
+        {error ? (
+          <div className="mt-3">
+            <AdminInlineAlert tone="error">{error}</AdminInlineAlert>
+          </div>
+        ) : null}
       </section>
 
       <section className="space-y-3">
@@ -295,11 +304,11 @@ export function ImportCenter({ lang }: { lang: "en" | "fr" }) {
           const canApply = job.status === "READY_APPLY" || job.status === "ANALYZED";
           const statusClass =
             job.status === "APPLIED"
-              ? "border-emerald-300 bg-emerald-100/80 text-emerald-700"
+              ? "border-emerald-400/45 bg-emerald-500/15 text-[var(--admin-text)]"
               : job.status === "FAILED"
-                ? "border-rose-300 bg-rose-100/80 text-rose-700"
-              : job.status === "READY_APPLY" || job.status === "ANALYZED"
-                  ? "border-sky-300 bg-sky-100/80 text-sky-700"
+                ? "border-rose-400/45 bg-rose-500/15 text-[var(--admin-text)]"
+                : job.status === "READY_APPLY" || job.status === "ANALYZED"
+                  ? "border-sky-400/45 bg-sky-500/15 text-[var(--admin-text)]"
                   : "border-[var(--admin-border)] bg-[var(--admin-soft-bg)] text-[var(--admin-text)]";
 
           return (
