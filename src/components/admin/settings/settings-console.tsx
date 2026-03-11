@@ -3,6 +3,7 @@
 import { type ReactNode, useCallback, useEffect, useMemo, useState } from "react";
 import { ALLOWED_CURRENCY_CODES } from "@/lib/currency";
 import { ActionButton } from "../action-button";
+import { AdminInlineAlert } from "../admin-inline-alert";
 
 type CompanySettings = {
   id: string;
@@ -651,8 +652,8 @@ export function SettingsConsole({ lang = "en" }: { lang?: "en" | "fr" }) {
 
   return (
     <div className="space-y-6">
-      {status ? <div className="rounded-md bg-emerald-50 px-4 py-2 text-sm text-emerald-700">{status}</div> : null}
-      {error ? <div className="rounded-md bg-red-50 px-4 py-2 text-sm text-red-700">{error}</div> : null}
+      {status ? <AdminInlineAlert tone="success">{status}</AdminInlineAlert> : null}
+      {error ? <AdminInlineAlert tone="error">{error}</AdminInlineAlert> : null}
 
       <SettingsSection
         title={tCompany.title}

@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { ActionButton, ActionLinkButton } from "../action-button";
 import { AdminModal } from "../admin-modal";
+import { AdminInlineAlert } from "../admin-inline-alert";
 
 type Warehouse = {
   id: string;
@@ -199,8 +200,8 @@ export function StockConsole({ warehouses, products, lowStock, lang }: StockCons
 
   return (
     <div className="space-y-6">
-      {status && <div className="rounded-md bg-emerald-50 px-4 py-2 text-sm text-emerald-700">{status}</div>}
-      {error && <div className="rounded-md bg-red-50 px-4 py-2 text-sm text-red-700">{error}</div>}
+      {status ? <AdminInlineAlert tone="success">{status}</AdminInlineAlert> : null}
+      {error ? <AdminInlineAlert tone="error">{error}</AdminInlineAlert> : null}
 
       <div className="liquid-surface rounded-xl p-6">
         <div className="mb-4">

@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState } from "react";
 import { ActionButton } from "../action-button";
 import { AdminToolbar, AdminToolbarGroup } from "../admin-toolbar";
 import { AdminModal } from "../admin-modal";
+import { AdminInlineAlert } from "../admin-inline-alert";
 
 type Supplier = {
   id: string;
@@ -131,8 +132,8 @@ export function SuppliersManager({ lang = "en" }: { lang?: "en" | "fr" }) {
 
   return (
     <div className="space-y-6">
-      {status ? <div className="rounded-md bg-emerald-50 px-4 py-2 text-sm text-emerald-700">{status}</div> : null}
-      {error ? <div className="rounded-md bg-red-50 px-4 py-2 text-sm text-red-700">{error}</div> : null}
+      {status ? <AdminInlineAlert tone="success">{status}</AdminInlineAlert> : null}
+      {error ? <AdminInlineAlert tone="error">{error}</AdminInlineAlert> : null}
 
       <div className="liquid-surface rounded-2xl p-6">
         <div className="mb-4">

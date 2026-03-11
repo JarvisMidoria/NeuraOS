@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState } from "react";
 import { ActionButton } from "../action-button";
 import { AdminToolbar, AdminToolbarGroup } from "../admin-toolbar";
 import { AdminModal } from "../admin-modal";
+import { AdminInlineAlert } from "../admin-inline-alert";
 
 type Warehouse = {
   id: string;
@@ -139,7 +140,7 @@ export function WarehousesManager({ lang }: { lang: "en" | "fr" }) {
 
   return (
     <div className="space-y-6">
-      {error && <div className="rounded-md bg-red-50 px-4 py-2 text-sm text-red-700">{error}</div>}
+      {error ? <AdminInlineAlert tone="error">{error}</AdminInlineAlert> : null}
 
       <div className="liquid-surface rounded-xl p-6">
         <div className="mb-4">
