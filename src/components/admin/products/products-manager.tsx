@@ -48,6 +48,8 @@ interface ProductsManagerProps {
 
 const PAGE_SIZE = 10;
 const ALLOWED_UNITS = new Set(["EA", "M", "L", "KG"]);
+const INTERACTIVE_CARD_CLASS =
+  "liquid-surface cursor-pointer rounded-2xl p-4 transition hover:-translate-y-0.5 hover:border-[var(--accent)] hover:bg-[color-mix(in_srgb,var(--accent)_10%,var(--admin-soft-bg))]";
 
 export function ProductsManager({
   categories,
@@ -312,7 +314,10 @@ export function ProductsManager({
                 type="button"
                 icon="refresh"
                 onClick={loadProducts}
+                iconOnly
+                size="icon"
                 label={t.refresh}
+                title={t.refresh}
               />
             </AdminToolbarGroup>
           </AdminToolbar>
@@ -341,7 +346,7 @@ export function ProductsManager({
                     handleEdit(product);
                   }
                 }}
-                className="liquid-surface rounded-2xl p-4 transition cursor-pointer"
+                className={INTERACTIVE_CARD_CLASS}
               >
                 <div className="grid gap-3 md:grid-cols-[1fr_auto] md:items-start">
                   <div className="space-y-2">

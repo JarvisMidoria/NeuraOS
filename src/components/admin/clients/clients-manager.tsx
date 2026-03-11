@@ -24,6 +24,15 @@ type ClientsManagerProps = {
   lang: "en" | "fr";
 };
 
+const INTERACTIVE_CARD_CLASS =
+  "liquid-surface cursor-pointer rounded-xl p-3 transition hover:-translate-y-0.5 hover:border-[var(--accent)] hover:bg-[color-mix(in_srgb,var(--accent)_10%,var(--admin-soft-bg))]";
+
+const QUOTES_BADGE_CLASS =
+  "liquid-pill border-[color-mix(in_srgb,var(--accent)_45%,transparent)] bg-[color-mix(in_srgb,var(--accent)_18%,transparent)] px-2 py-0.5 text-[11px] font-medium text-[var(--admin-text)] transition hover:bg-[color-mix(in_srgb,var(--accent)_26%,transparent)]";
+
+const ORDERS_BADGE_CLASS =
+  "liquid-pill border-[color-mix(in_srgb,#7c3aed_45%,transparent)] bg-[color-mix(in_srgb,#7c3aed_18%,transparent)] px-2 py-0.5 text-[11px] font-medium text-[var(--admin-text)] transition hover:bg-[color-mix(in_srgb,#7c3aed_26%,transparent)]";
+
 export function ClientsManager({ lang }: ClientsManagerProps) {
   const [clients, setClients] = useState<ClientRecord[]>([]);
   const [loading, setLoading] = useState(true);
@@ -186,7 +195,15 @@ export function ClientsManager({ lang }: ClientsManagerProps) {
             </div>
             <AdminToolbarGroup align="end">
               <ActionButton type="button" icon="plus" tone="primary" onClick={openCreate} label={t.addClient} />
-              <ActionButton type="button" icon="refresh" onClick={loadClients} label={t.refresh} />
+              <ActionButton
+                type="button"
+                icon="refresh"
+                iconOnly
+                size="icon"
+                onClick={loadClients}
+                label={t.refresh}
+                title={t.refresh}
+              />
             </AdminToolbarGroup>
           </AdminToolbar>
         </div>
@@ -214,20 +231,20 @@ export function ClientsManager({ lang }: ClientsManagerProps) {
                     startEdit(client);
                   }
                 }}
-                className="liquid-surface rounded-xl p-3 transition"
+                className={INTERACTIVE_CARD_CLASS}
               >
                 <div className="flex items-start justify-between gap-2">
                   <p className="text-sm font-semibold text-[var(--admin-text)]">{client.name}</p>
                   <div className="flex gap-1">
                     <Link
                       href={`/admin/sales/quotes?clientId=${encodeURIComponent(client.id)}`}
-                      className="rounded-full bg-sky-100 px-2 py-0.5 text-[11px] font-medium text-sky-700 transition hover:bg-sky-200"
+                      className={QUOTES_BADGE_CLASS}
                     >
                       Q {client._count.salesQuotes}
                     </Link>
                     <Link
                       href={`/admin/sales/orders?clientId=${encodeURIComponent(client.id)}`}
-                      className="rounded-full bg-indigo-100 px-2 py-0.5 text-[11px] font-medium text-indigo-700 transition hover:bg-indigo-200"
+                      className={ORDERS_BADGE_CLASS}
                     >
                       O {client._count.salesOrders}
                     </Link>

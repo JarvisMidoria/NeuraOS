@@ -14,6 +14,9 @@ type Supplier = {
   address?: string | null;
 };
 
+const INTERACTIVE_CARD_CLASS =
+  "liquid-surface cursor-pointer rounded-2xl p-4 transition hover:-translate-y-0.5 hover:border-[var(--accent)] hover:bg-[color-mix(in_srgb,var(--accent)_10%,var(--admin-soft-bg))]";
+
 export function SuppliersManager({ lang = "en" }: { lang?: "en" | "fr" }) {
   const [suppliers, setSuppliers] = useState<Supplier[]>([]);
   const [loading, setLoading] = useState(true);
@@ -142,7 +145,15 @@ export function SuppliersManager({ lang = "en" }: { lang?: "en" | "fr" }) {
             <h2 className="text-lg font-semibold text-[var(--admin-text)]">{t.suppliers}</h2>
             <AdminToolbarGroup align="end">
               <ActionButton type="button" icon="plus" tone="primary" onClick={openCreate} label={t.addSupplier} />
-              <ActionButton type="button" icon="refresh" onClick={load} label={t.refresh} />
+              <ActionButton
+                type="button"
+                icon="refresh"
+                iconOnly
+                size="icon"
+                onClick={load}
+                label={t.refresh}
+                title={t.refresh}
+              />
             </AdminToolbarGroup>
           </AdminToolbar>
         </div>
@@ -169,7 +180,7 @@ export function SuppliersManager({ lang = "en" }: { lang?: "en" | "fr" }) {
                     startEdit(supplier);
                   }
                 }}
-                className="liquid-surface rounded-2xl p-4 transition cursor-pointer"
+                className={INTERACTIVE_CARD_CLASS}
               >
                 <div className="flex items-center justify-between gap-3">
                   <div>

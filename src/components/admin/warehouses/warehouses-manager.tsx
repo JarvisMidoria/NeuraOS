@@ -12,6 +12,9 @@ type Warehouse = {
   location?: string | null;
 };
 
+const INTERACTIVE_CARD_CLASS =
+  "liquid-surface flex items-center justify-between rounded-2xl p-4 text-sm transition cursor-pointer hover:-translate-y-0.5 hover:border-[var(--accent)] hover:bg-[color-mix(in_srgb,var(--accent)_10%,var(--admin-soft-bg))]";
+
 export function WarehousesManager({ lang }: { lang: "en" | "fr" }) {
   const [warehouses, setWarehouses] = useState<Warehouse[]>([]);
   const [formData, setFormData] = useState({ id: "", name: "", location: "" });
@@ -157,8 +160,11 @@ export function WarehousesManager({ lang }: { lang: "en" | "fr" }) {
               <ActionButton
                 type="button"
                 icon="refresh"
+                iconOnly
+                size="icon"
                 onClick={loadWarehouses}
                 label={t.refresh}
+                title={t.refresh}
               />
             </AdminToolbarGroup>
           </AdminToolbar>
@@ -187,7 +193,7 @@ export function WarehousesManager({ lang }: { lang: "en" | "fr" }) {
                     handleEdit(warehouse);
                   }
                 }}
-                className="liquid-surface flex items-center justify-between rounded-2xl p-4 text-sm transition cursor-pointer"
+                className={INTERACTIVE_CARD_CLASS}
               >
                 <div>
                   <p className="font-medium text-[var(--admin-text)]">{warehouse.name}</p>
