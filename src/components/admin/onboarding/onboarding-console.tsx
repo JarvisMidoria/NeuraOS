@@ -66,7 +66,8 @@ export function OnboardingConsole({ lang }: { lang: "en" | "fr" }) {
       loadingError: lang === "fr" ? "Impossible de charger les donnees." : "Failed to load data.",
       done: lang === "fr" ? "Termine" : "Done",
       pending: lang === "fr" ? "A faire" : "Pending",
-      open: lang === "fr" ? "Ouvrir" : "Open",
+      checklist: lang === "fr" ? "Checklist" : "Checklist",
+      openModule: lang === "fr" ? "Ouvrir module" : "Open module",
     }),
     [lang],
   );
@@ -139,7 +140,7 @@ export function OnboardingConsole({ lang }: { lang: "en" | "fr" }) {
       </section>
 
       <section className="liquid-surface rounded-2xl p-5">
-        <h3 className="text-lg font-semibold text-[var(--admin-text)]">Checklist</h3>
+        <h3 className="text-lg font-semibold text-[var(--admin-text)]">{text.checklist}</h3>
         <div className="mt-3 space-y-2">
           {payload.checklist.map((item) => (
             <div key={item.id} className="liquid-surface flex items-center justify-between rounded-lg px-3 py-2">
@@ -154,9 +155,8 @@ export function OnboardingConsole({ lang }: { lang: "en" | "fr" }) {
                 <ActionLinkButton
                   href={checklistHref(item.id)}
                   icon="right"
-                  label={text.open}
-                  iconOnly
-                  className="h-7 w-7 text-[var(--admin-text)]"
+                  label={text.openModule}
+                  className="px-2.5 py-1 text-xs"
                 />
               </div>
             </div>

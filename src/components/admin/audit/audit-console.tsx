@@ -232,10 +232,10 @@ export function AuditConsole({ lang }: { lang: "en" | "fr" }) {
                         {metadataString !== "-" ? (
                           <ActionButton
                             type="button"
-                            size="icon"
-                            iconOnly
                             icon={isExpanded ? "close" : "plus"}
                             label={isExpanded ? text.hideContext : text.showContext}
+                            size="sm"
+                            className="text-[11px]"
                             onClick={() =>
                               setExpandedRows((prev) =>
                                 prev.includes(row.id)

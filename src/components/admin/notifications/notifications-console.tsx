@@ -42,12 +42,12 @@ export function NotificationsConsole({ lang }: { lang: "en" | "fr" }) {
       loading: lang === "fr" ? "Chargement..." : "Loading...",
       empty: lang === "fr" ? "Aucune notification" : "No notifications",
       emptyUnread: lang === "fr" ? "Aucune notification non lue" : "No unread notifications",
-      open: lang === "fr" ? "Ouvrir" : "Open",
       low: lang === "fr" ? "Faible" : "Low",
       medium: lang === "fr" ? "Moyen" : "Medium",
       high: lang === "fr" ? "Eleve" : "High",
       all: lang === "fr" ? "Toutes" : "All",
       unreadOnly: lang === "fr" ? "Non lues" : "Unread only",
+      details: lang === "fr" ? "Voir details" : "View details",
     }),
     [lang],
   );
@@ -143,7 +143,16 @@ export function NotificationsConsole({ lang }: { lang: "en" | "fr" }) {
               className={`liquid-surface rounded-xl p-4 ${item.readAt ? "" : "liquid-selected"}`}
             >
               <div className="flex flex-wrap items-center justify-between gap-2">
-                <h3 className="text-sm font-semibold text-[var(--admin-text)]">{item.title}</h3>
+                {item.href ? (
+                  <a
+                    href={item.href}
+                    className="text-sm font-semibold text-[var(--admin-text)] underline-offset-2 hover:underline"
+                  >
+                    {item.title}
+                  </a>
+                ) : (
+                  <h3 className="text-sm font-semibold text-[var(--admin-text)]">{item.title}</h3>
+                )}
                 <span className={`rounded-full px-2 py-0.5 text-xs font-semibold ${BADGE_BY_SEVERITY[item.severity]}`}>
                   {severityLabel[item.severity]}
                 </span>
@@ -156,19 +165,17 @@ export function NotificationsConsole({ lang }: { lang: "en" | "fr" }) {
                     <ActionLinkButton
                       href={item.href}
                       icon="right"
-                      label={text.open}
-                      iconOnly
-                      className="h-8 w-8 text-[var(--admin-text)]"
+                      label={text.details}
+                      className="px-2.5 py-1 text-xs"
                     />
                   )}
                   {!item.readAt && (
                     <ActionButton
                       onClick={() => markOneRead(item.id)}
                       icon="apply"
-                      size="icon"
-                      iconOnly
+                      size="sm"
                       label={text.markRead}
-                      className="h-8 w-8 text-[var(--admin-text)]"
+                      className="text-xs"
                     />
                   )}
                 </div>
