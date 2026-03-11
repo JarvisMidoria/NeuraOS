@@ -60,18 +60,49 @@ const TYPE_LABELS: Record<string, { en: string; fr: string }> = {
   "Purchase Order": { en: "Purchase Order", fr: "Commande achat" },
 };
 
+const PERIOD_FILTER_CLASS =
+  "liquid-pill px-3 py-1 text-sm transition hover:-translate-y-0.5";
+
+const INTERACTIVE_CARD_CLASS =
+  "group relative liquid-surface rounded-2xl p-5 transition duration-200 hover:-translate-y-0.5 hover:border-[color-mix(in_srgb,var(--accent)_44%,var(--admin-border))] hover:bg-[color-mix(in_srgb,var(--admin-soft-bg)_88%,white_4%)]";
+
+const INTERACTIVE_ROW_CLASS =
+  "group block liquid-surface rounded-xl p-4 transition duration-200 hover:-translate-y-0.5 hover:border-[color-mix(in_srgb,var(--accent)_40%,var(--admin-border))] hover:bg-[color-mix(in_srgb,var(--admin-soft-bg)_86%,white_3%)]";
+
+const STATUS_BADGE_BASE =
+  "liquid-pill inline-flex w-fit items-center px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wide";
+
 const STATUS_BADGE_CLASSES: Record<string, string> = {
-  DRAFT: "bg-slate-100 text-slate-700",
-  SENT: "bg-sky-100 text-sky-700",
-  APPROVED: "bg-emerald-100 text-emerald-700",
-  CONFIRMED: "bg-blue-100 text-blue-700",
-  CONVERTED: "bg-violet-100 text-violet-700",
-  REJECTED: "bg-rose-100 text-rose-700",
-  FULFILLED: "bg-teal-100 text-teal-700",
-  CLOSED: "bg-zinc-200 text-[var(--admin-text)]",
-  PARTIAL: "bg-amber-100 text-amber-700",
-  PARTIALLY_RECEIVED: "bg-cyan-100 text-cyan-700",
+  DRAFT:
+    "border-[color-mix(in_srgb,#94a3b8_58%,var(--admin-border))] bg-[color-mix(in_srgb,#64748b_22%,transparent)] text-[color-mix(in_srgb,#d5deee_86%,var(--admin-text))]",
+  SENT:
+    "border-[color-mix(in_srgb,#38bdf8_60%,var(--admin-border))] bg-[color-mix(in_srgb,#0ea5e9_24%,transparent)] text-[color-mix(in_srgb,#c9ecff_82%,var(--admin-text))]",
+  APPROVED:
+    "border-[color-mix(in_srgb,#34d399_60%,var(--admin-border))] bg-[color-mix(in_srgb,#10b981_22%,transparent)] text-[color-mix(in_srgb,#c9ffe7_82%,var(--admin-text))]",
+  CONFIRMED:
+    "border-[color-mix(in_srgb,#60a5fa_60%,var(--admin-border))] bg-[color-mix(in_srgb,#3b82f6_22%,transparent)] text-[color-mix(in_srgb,#d3e8ff_84%,var(--admin-text))]",
+  CONVERTED:
+    "border-[color-mix(in_srgb,#a78bfa_62%,var(--admin-border))] bg-[color-mix(in_srgb,#8b5cf6_22%,transparent)] text-[color-mix(in_srgb,#e8ddff_84%,var(--admin-text))]",
+  REJECTED:
+    "border-[color-mix(in_srgb,#fb7185_62%,var(--admin-border))] bg-[color-mix(in_srgb,#f43f5e_24%,transparent)] text-[color-mix(in_srgb,#ffd8df_86%,var(--admin-text))]",
+  FULFILLED:
+    "border-[color-mix(in_srgb,#2dd4bf_60%,var(--admin-border))] bg-[color-mix(in_srgb,#14b8a6_22%,transparent)] text-[color-mix(in_srgb,#c9fff4_84%,var(--admin-text))]",
+  CLOSED:
+    "border-[color-mix(in_srgb,var(--admin-border)_86%,transparent)] bg-[color-mix(in_srgb,var(--admin-soft-bg)_84%,transparent)] text-[var(--admin-text)]",
+  PARTIAL:
+    "border-[color-mix(in_srgb,#fbbf24_62%,var(--admin-border))] bg-[color-mix(in_srgb,#f59e0b_24%,transparent)] text-[color-mix(in_srgb,#ffe9b6_85%,var(--admin-text))]",
+  PARTIALLY_RECEIVED:
+    "border-[color-mix(in_srgb,#22d3ee_60%,var(--admin-border))] bg-[color-mix(in_srgb,#06b6d4_22%,transparent)] text-[color-mix(in_srgb,#cff7ff_84%,var(--admin-text))]",
 };
+
+const TASK_SEVERITY_BADGE_CLASSES = {
+  high:
+    "border-[color-mix(in_srgb,#fb7185_62%,var(--admin-border))] bg-[color-mix(in_srgb,#f43f5e_24%,transparent)] text-[color-mix(in_srgb,#ffd8df_86%,var(--admin-text))]",
+  medium:
+    "border-[color-mix(in_srgb,#fbbf24_62%,var(--admin-border))] bg-[color-mix(in_srgb,#f59e0b_24%,transparent)] text-[color-mix(in_srgb,#ffe9b6_85%,var(--admin-text))]",
+  low:
+    "border-[color-mix(in_srgb,#34d399_60%,var(--admin-border))] bg-[color-mix(in_srgb,#10b981_22%,transparent)] text-[color-mix(in_srgb,#c9ffe7_82%,var(--admin-text))]",
+} as const;
 
 const KPI_LINKS: Record<string, string> = {
   "sales-mtd": "/admin/sales/orders",
@@ -151,10 +182,10 @@ export default async function AdminDashboard({ searchParams }: AdminDashboardPro
             <Link
               key={value}
               href={`/admin?months=${value}`}
-              className={`rounded-full border px-3 py-1 text-sm ${
+              className={`${PERIOD_FILTER_CLASS} ${
                 months === value
-                  ? "border-zinc-900 bg-zinc-900 text-white"
-                  : "border-zinc-200 text-[var(--admin-muted)] hover:bg-zinc-100"
+                  ? "liquid-selected"
+                  : "text-[var(--admin-muted)]"
               }`}
             >
               {value}m
@@ -168,9 +199,9 @@ export default async function AdminDashboard({ searchParams }: AdminDashboardPro
           <Link
             key={kpi.id}
             href={KPI_LINKS[kpi.id] ?? "/admin"}
-            className="group relative liquid-surface rounded-2xl p-5 transition hover:border-indigo-200 hover:bg-zinc-50"
+            className={INTERACTIVE_CARD_CLASS}
           >
-            <span className="absolute right-4 top-4 inline-flex h-7 w-7 items-center justify-center rounded-full border border-zinc-200 text-[var(--admin-muted)] transition group-hover:border-indigo-200 group-hover:text-indigo-600">
+            <span className="absolute right-4 top-4 inline-flex h-7 w-7 items-center justify-center rounded-full border border-[var(--admin-border)] text-[var(--admin-muted)] transition group-hover:border-[color-mix(in_srgb,var(--accent)_48%,var(--admin-border))] group-hover:text-[color-mix(in_srgb,var(--accent)_74%,var(--admin-text))]">
               <svg aria-hidden viewBox="0 0 24 24" className="h-3.5 w-3.5 fill-none stroke-current" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M9 5H19V15" />
                 <path d="M19 5L5 19" />
@@ -225,7 +256,7 @@ export default async function AdminDashboard({ searchParams }: AdminDashboardPro
               const percentage = Math.round((entry.total / maxMonthlyValue) * 100);
               return (
                 <div key={entry.iso} className="flex flex-1 flex-col items-center gap-3">
-                  <div className="flex h-48 w-full items-end rounded-xl bg-zinc-100 p-2">
+                  <div className="flex h-48 w-full items-end rounded-xl border border-[var(--admin-border)] bg-[color-mix(in_srgb,var(--admin-soft-bg)_88%,transparent)] p-2">
                     <div
                       className="w-full rounded-lg bg-gradient-to-t from-emerald-500 to-emerald-400"
                       style={{ height: `${percentage || 4}%` }}
@@ -250,7 +281,7 @@ export default async function AdminDashboard({ searchParams }: AdminDashboardPro
               <p className="text-sm uppercase tracking-wide text-[var(--admin-muted)]">{text.inventory}</p>
               <h2 className="text-xl font-semibold text-[var(--admin-text)]">{text.lowStock}</h2>
             </div>
-            <Link href="/admin/stock" className="text-sm font-medium text-emerald-600 hover:text-emerald-700">
+            <Link href="/admin/stock" className="liquid-pill px-2.5 py-1 text-xs font-semibold uppercase tracking-wide text-[var(--admin-text)]">
               {text.viewStock}
             </Link>
           </div>
@@ -266,7 +297,7 @@ export default async function AdminDashboard({ searchParams }: AdminDashboardPro
                 <Link
                   key={item.id}
                   href="/admin/stock"
-                  className="group block liquid-surface rounded-xl p-4 transition"
+                  className={INTERACTIVE_ROW_CLASS}
                 >
                   <p className="text-sm font-semibold text-[var(--admin-text)]">
                     {item.sku} · {item.name}
@@ -282,7 +313,7 @@ export default async function AdminDashboard({ searchParams }: AdminDashboardPro
                       {text.threshold} {formatMetric(threshold, "number", locale, currencyCode)}
                     </span>
                   </div>
-                  <div className="mt-2 h-2 rounded-full bg-zinc-100">
+                  <div className="mt-2 h-2 rounded-full border border-[var(--admin-border)] bg-[color-mix(in_srgb,var(--admin-soft-bg)_90%,transparent)]">
                     <div
                       className="h-full rounded-full bg-rose-500"
                       style={{ width: `${Math.min((current / Math.max(threshold, 1)) * 100, 100)}%` }}
@@ -291,7 +322,7 @@ export default async function AdminDashboard({ searchParams }: AdminDashboardPro
                   <p className="mt-2 text-xs text-rose-600">
                     {text.suggested}: {formatMetric(Math.ceil(deficit), "number", locale, currencyCode)}
                   </p>
-                  <div className="mt-2 flex justify-end text-indigo-600 opacity-0 transition group-hover:opacity-100">
+                  <div className="mt-2 flex justify-end text-[color-mix(in_srgb,var(--accent)_74%,var(--admin-text))] opacity-0 transition group-hover:opacity-100">
                     <svg aria-hidden viewBox="0 0 24 24" className="h-4 w-4 fill-none stroke-current" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round">
                       <path d="M9 5H19V15" />
                       <path d="M19 5L5 19" />
@@ -317,7 +348,7 @@ export default async function AdminDashboard({ searchParams }: AdminDashboardPro
               <Link
                 key={`${doc.type}-${doc.id}`}
                 href={doc.href}
-                className="group block liquid-surface rounded-2xl p-4 transition"
+                className={INTERACTIVE_ROW_CLASS}
               >
                 <div className="grid gap-2 sm:grid-cols-[minmax(120px,1fr)_minmax(170px,1fr)_auto_120px_auto] sm:items-center sm:gap-4">
                   <div className="flex min-w-[7rem] flex-col">
@@ -331,14 +362,14 @@ export default async function AdminDashboard({ searchParams }: AdminDashboardPro
                     <p className="text-xs text-[var(--admin-muted)]">{new Date(doc.date).toLocaleDateString(locale)}</p>
                   </div>
                   <span
-                    className={`w-fit rounded-full px-3 py-1 text-xs font-medium ${STATUS_BADGE_CLASSES[doc.status] ?? "bg-zinc-100 text-[var(--admin-text)]"}`}
+                    className={`${STATUS_BADGE_BASE} ${STATUS_BADGE_CLASSES[doc.status] ?? "border-[var(--admin-border)] bg-[color-mix(in_srgb,var(--admin-soft-bg)_84%,transparent)] text-[var(--admin-text)]"}`}
                   >
                     {(STATUS_LABELS[doc.status]?.[lang] ?? doc.status) as string}
                   </span>
                   <p className="text-sm font-semibold text-[var(--admin-text)] sm:text-right">
                     {doc.total === null ? "—" : formatMetric(doc.total, "currency", locale, currencyCode)}
                   </p>
-                  <span className="inline-flex h-7 w-7 items-center justify-center rounded-full border border-zinc-200 text-[var(--admin-muted)] transition group-hover:border-indigo-200 group-hover:text-indigo-600">
+                  <span className="inline-flex h-7 w-7 items-center justify-center rounded-full border border-[var(--admin-border)] text-[var(--admin-muted)] transition group-hover:border-[color-mix(in_srgb,var(--accent)_48%,var(--admin-border))] group-hover:text-[color-mix(in_srgb,var(--accent)_74%,var(--admin-text))]">
                     <svg aria-hidden viewBox="0 0 24 24" className="h-3.5 w-3.5 fill-none stroke-current" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round">
                       <path d="M9 5H19V15" />
                       <path d="M19 5L5 19" />
@@ -362,7 +393,7 @@ export default async function AdminDashboard({ searchParams }: AdminDashboardPro
           </div>
           <div className="mt-4 space-y-4">
             {snapshot.operationalTodo.map((task) => (
-              <Link key={task.id} href={task.href} className="group block liquid-surface rounded-2xl p-4 transition">
+              <Link key={task.id} href={task.href} className={INTERACTIVE_ROW_CLASS}>
                 <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                   <p className="font-semibold text-[var(--admin-text)]">
                     {lang === "fr"
@@ -373,12 +404,12 @@ export default async function AdminDashboard({ searchParams }: AdminDashboardPro
                       : task.label}
                   </p>
                   <span
-                    className={`w-fit rounded-full px-2 py-0.5 text-xs font-semibold ${
+                    className={`${STATUS_BADGE_BASE} ${
                       task.severity === "high"
-                        ? "bg-rose-100 text-rose-600"
+                        ? TASK_SEVERITY_BADGE_CLASSES.high
                         : task.severity === "medium"
-                          ? "bg-amber-100 text-amber-700"
-                          : "bg-emerald-100 text-emerald-600"
+                          ? TASK_SEVERITY_BADGE_CLASSES.medium
+                          : TASK_SEVERITY_BADGE_CLASSES.low
                     }`}
                   >
                     {formatMetric(task.count, "number", locale, currencyCode)}
@@ -392,7 +423,7 @@ export default async function AdminDashboard({ searchParams }: AdminDashboardPro
                         .replace("Follow up with suppliers on late inbound shipments.", "Relancer les fournisseurs sur les livraisons en retard.")
                     : task.description}
                 </p>
-                <div className="mt-2 flex justify-end text-indigo-600 opacity-0 transition group-hover:opacity-100">
+                <div className="mt-2 flex justify-end text-[color-mix(in_srgb,var(--accent)_74%,var(--admin-text))] opacity-0 transition group-hover:opacity-100">
                   <svg aria-hidden viewBox="0 0 24 24" className="h-4 w-4 fill-none stroke-current" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round">
                     <path d="M9 5H19V15" />
                     <path d="M19 5L5 19" />

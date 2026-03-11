@@ -35,6 +35,57 @@ const STATUS_LABELS: Record<string, { en: string; fr: string }> = {
   CANCELLED: { en: "Cancelled", fr: "Annule" },
 };
 
+const PERIOD_FILTER_CLASS =
+  "liquid-pill px-3 py-1 text-sm transition hover:-translate-y-0.5";
+
+const INTERACTIVE_CARD_CLASS =
+  "group liquid-surface rounded-2xl p-5 transition duration-200 hover:-translate-y-0.5 hover:border-[color-mix(in_srgb,var(--accent)_44%,var(--admin-border))] hover:bg-[color-mix(in_srgb,var(--admin-soft-bg)_88%,white_4%)]";
+
+const INTERACTIVE_ROW_CLASS =
+  "group liquid-surface flex items-center justify-between rounded-lg px-3 py-2 transition duration-200 hover:-translate-y-0.5 hover:border-[color-mix(in_srgb,var(--accent)_40%,var(--admin-border))] hover:bg-[color-mix(in_srgb,var(--admin-soft-bg)_86%,white_3%)]";
+
+const INTERACTIVE_BLOCK_CLASS =
+  "group block liquid-surface rounded-lg p-3 transition duration-200 hover:-translate-y-0.5 hover:border-[color-mix(in_srgb,var(--accent)_40%,var(--admin-border))] hover:bg-[color-mix(in_srgb,var(--admin-soft-bg)_86%,white_3%)]";
+
+const STATUS_BADGE_BASE =
+  "liquid-pill inline-flex w-fit items-center px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wide";
+
+const STATUS_BADGE_CLASSES: Record<string, string> = {
+  DRAFT:
+    "border-[color-mix(in_srgb,#94a3b8_58%,var(--admin-border))] bg-[color-mix(in_srgb,#64748b_22%,transparent)] text-[color-mix(in_srgb,#d5deee_86%,var(--admin-text))]",
+  SENT:
+    "border-[color-mix(in_srgb,#38bdf8_60%,var(--admin-border))] bg-[color-mix(in_srgb,#0ea5e9_24%,transparent)] text-[color-mix(in_srgb,#c9ecff_82%,var(--admin-text))]",
+  APPROVED:
+    "border-[color-mix(in_srgb,#34d399_60%,var(--admin-border))] bg-[color-mix(in_srgb,#10b981_22%,transparent)] text-[color-mix(in_srgb,#c9ffe7_82%,var(--admin-text))]",
+  CONFIRMED:
+    "border-[color-mix(in_srgb,#60a5fa_60%,var(--admin-border))] bg-[color-mix(in_srgb,#3b82f6_22%,transparent)] text-[color-mix(in_srgb,#d3e8ff_84%,var(--admin-text))]",
+  CONVERTED:
+    "border-[color-mix(in_srgb,#a78bfa_62%,var(--admin-border))] bg-[color-mix(in_srgb,#8b5cf6_22%,transparent)] text-[color-mix(in_srgb,#e8ddff_84%,var(--admin-text))]",
+  REJECTED:
+    "border-[color-mix(in_srgb,#fb7185_62%,var(--admin-border))] bg-[color-mix(in_srgb,#f43f5e_24%,transparent)] text-[color-mix(in_srgb,#ffd8df_86%,var(--admin-text))]",
+  FULFILLED:
+    "border-[color-mix(in_srgb,#2dd4bf_60%,var(--admin-border))] bg-[color-mix(in_srgb,#14b8a6_22%,transparent)] text-[color-mix(in_srgb,#c9fff4_84%,var(--admin-text))]",
+  CLOSED:
+    "border-[color-mix(in_srgb,var(--admin-border)_86%,transparent)] bg-[color-mix(in_srgb,var(--admin-soft-bg)_84%,transparent)] text-[var(--admin-text)]",
+  PARTIAL:
+    "border-[color-mix(in_srgb,#fbbf24_62%,var(--admin-border))] bg-[color-mix(in_srgb,#f59e0b_24%,transparent)] text-[color-mix(in_srgb,#ffe9b6_85%,var(--admin-text))]",
+  PARTIALLY_RECEIVED:
+    "border-[color-mix(in_srgb,#22d3ee_60%,var(--admin-border))] bg-[color-mix(in_srgb,#06b6d4_22%,transparent)] text-[color-mix(in_srgb,#cff7ff_84%,var(--admin-text))]",
+  RECEIVED:
+    "border-[color-mix(in_srgb,#2dd4bf_60%,var(--admin-border))] bg-[color-mix(in_srgb,#14b8a6_22%,transparent)] text-[color-mix(in_srgb,#c9fff4_84%,var(--admin-text))]",
+  CANCELLED:
+    "border-[color-mix(in_srgb,#fb7185_62%,var(--admin-border))] bg-[color-mix(in_srgb,#f43f5e_24%,transparent)] text-[color-mix(in_srgb,#ffd8df_86%,var(--admin-text))]",
+};
+
+const COUNT_BADGE_CLASSES = {
+  low:
+    "border-[color-mix(in_srgb,#34d399_60%,var(--admin-border))] bg-[color-mix(in_srgb,#10b981_22%,transparent)] text-[color-mix(in_srgb,#c9ffe7_82%,var(--admin-text))]",
+  medium:
+    "border-[color-mix(in_srgb,#fbbf24_62%,var(--admin-border))] bg-[color-mix(in_srgb,#f59e0b_24%,transparent)] text-[color-mix(in_srgb,#ffe9b6_85%,var(--admin-text))]",
+  high:
+    "border-[color-mix(in_srgb,#fb7185_62%,var(--admin-border))] bg-[color-mix(in_srgb,#f43f5e_24%,transparent)] text-[color-mix(in_srgb,#ffd8df_86%,var(--admin-text))]",
+} as const;
+
 const ANALYTICS_METRIC_LINKS: Record<string, string> = {
   sales: "/admin/sales/orders",
   purchases: "/admin/purchases/orders",
@@ -103,10 +154,10 @@ export default async function AdminAnalyticsPage({ searchParams }: AnalyticsPage
               <Link
                 key={value}
                 href={`/admin/analytics?months=${value}`}
-                className={`rounded-full border px-3 py-1 text-sm ${
+                className={`${PERIOD_FILTER_CLASS} ${
                   months === value
-                    ? "border-zinc-900 bg-zinc-900 text-white"
-                    : "border-zinc-200 text-[var(--admin-muted)] hover:bg-zinc-100"
+                    ? "liquid-selected"
+                    : "text-[var(--admin-muted)]"
                 }`}
               >
                 {value}m
@@ -120,28 +171,28 @@ export default async function AdminAnalyticsPage({ searchParams }: AnalyticsPage
       </section>
 
       <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        <Link href={ANALYTICS_METRIC_LINKS.sales} className="group liquid-surface rounded-2xl p-5 transition hover:border-indigo-200 hover:bg-zinc-50">
+        <Link href={ANALYTICS_METRIC_LINKS.sales} className={INTERACTIVE_CARD_CLASS}>
           <p className="text-sm text-[var(--admin-muted)]">{text.sales}</p>
           <p className="mt-2 text-3xl font-semibold text-[var(--admin-text)]">{formatCurrency(snapshot.metrics.salesTotal, locale, currencyCode, 0)}</p>
-          <p className="mt-2 text-xs font-medium text-indigo-600 transition group-hover:translate-x-0.5">↗</p>
+          <p className="mt-2 text-xs font-medium text-[color-mix(in_srgb,var(--accent)_74%,var(--admin-text))] transition group-hover:translate-x-0.5">↗</p>
         </Link>
-        <Link href={ANALYTICS_METRIC_LINKS.purchases} className="group liquid-surface rounded-2xl p-5 transition hover:border-indigo-200 hover:bg-zinc-50">
+        <Link href={ANALYTICS_METRIC_LINKS.purchases} className={INTERACTIVE_CARD_CLASS}>
           <p className="text-sm text-[var(--admin-muted)]">{text.purchases}</p>
           <p className="mt-2 text-3xl font-semibold text-[var(--admin-text)]">{formatCurrency(snapshot.metrics.purchaseTotal, locale, currencyCode, 0)}</p>
-          <p className="mt-2 text-xs font-medium text-indigo-600 transition group-hover:translate-x-0.5">↗</p>
+          <p className="mt-2 text-xs font-medium text-[color-mix(in_srgb,var(--accent)_74%,var(--admin-text))] transition group-hover:translate-x-0.5">↗</p>
         </Link>
-        <Link href={ANALYTICS_METRIC_LINKS.quoteConv} className="group liquid-surface rounded-2xl p-5 transition hover:border-indigo-200 hover:bg-zinc-50">
+        <Link href={ANALYTICS_METRIC_LINKS.quoteConv} className={INTERACTIVE_CARD_CLASS}>
           <p className="text-sm text-[var(--admin-muted)]">{text.quoteConv}</p>
           <p className="mt-2 text-3xl font-semibold text-[var(--admin-text)]">{snapshot.metrics.conversionRate.toFixed(1)}%</p>
           <p className="mt-1 text-xs text-[var(--admin-muted)]">
             {snapshot.metrics.quoteConverted}/{snapshot.metrics.quoteSent}
           </p>
-          <p className="mt-2 text-xs font-medium text-indigo-600 transition group-hover:translate-x-0.5">↗</p>
+          <p className="mt-2 text-xs font-medium text-[color-mix(in_srgb,var(--accent)_74%,var(--admin-text))] transition group-hover:translate-x-0.5">↗</p>
         </Link>
-        <Link href={ANALYTICS_METRIC_LINKS.openPo} className="group liquid-surface rounded-2xl p-5 transition hover:border-indigo-200 hover:bg-zinc-50">
+        <Link href={ANALYTICS_METRIC_LINKS.openPo} className={INTERACTIVE_CARD_CLASS}>
           <p className="text-sm text-[var(--admin-muted)]">{text.openPo}</p>
           <p className="mt-2 text-3xl font-semibold text-[var(--admin-text)]">{formatNumber(snapshot.metrics.openPurchaseCount, locale)}</p>
-          <p className="mt-2 text-xs font-medium text-indigo-600 transition group-hover:translate-x-0.5">↗</p>
+          <p className="mt-2 text-xs font-medium text-[color-mix(in_srgb,var(--accent)_74%,var(--admin-text))] transition group-hover:translate-x-0.5">↗</p>
         </Link>
       </section>
 
@@ -154,7 +205,7 @@ export default async function AdminAnalyticsPage({ searchParams }: AnalyticsPage
               <div className="flex items-end gap-2">
                 {snapshot.monthly.map((entry) => (
                   <div key={`sales-${entry.iso}`} className="flex min-w-0 flex-1 flex-col items-center gap-2">
-                    <div className="h-32 w-full rounded bg-zinc-100 p-1">
+                    <div className="h-32 w-full rounded border border-[var(--admin-border)] bg-[color-mix(in_srgb,var(--admin-soft-bg)_88%,transparent)] p-1">
                       <div
                         className="h-full w-full rounded bg-emerald-500"
                         style={{ transformOrigin: "bottom", transform: `scaleY(${Math.max(entry.sales / maxSales, 0.03)})` }}
@@ -170,7 +221,7 @@ export default async function AdminAnalyticsPage({ searchParams }: AnalyticsPage
               <div className="flex items-end gap-2">
                 {snapshot.monthly.map((entry) => (
                   <div key={`purchase-${entry.iso}`} className="flex min-w-0 flex-1 flex-col items-center gap-2">
-                    <div className="h-32 w-full rounded bg-zinc-100 p-1">
+                    <div className="h-32 w-full rounded border border-[var(--admin-border)] bg-[color-mix(in_srgb,var(--admin-soft-bg)_88%,transparent)] p-1">
                       <div
                         className="h-full w-full rounded bg-blue-500"
                         style={{ transformOrigin: "bottom", transform: `scaleY(${Math.max(entry.purchases / maxPurchases, 0.03)})` }}
@@ -192,13 +243,13 @@ export default async function AdminAnalyticsPage({ searchParams }: AnalyticsPage
                 <Link
                   key={entry.status}
                   href={`/admin/sales/quotes?status=${encodeURIComponent(entry.status)}`}
-                  className="group liquid-surface flex items-center justify-between rounded-lg px-3 py-2 transition"
+                  className={INTERACTIVE_ROW_CLASS}
                   title={text.openQuotesFiltered}
                 >
                   <span className="text-sm text-[var(--admin-text)]">{STATUS_LABELS[entry.status]?.[lang] ?? entry.status}</span>
                   <div className="flex items-center gap-2">
-                    <span className="liquid-pill px-2 py-0.5 text-xs font-semibold text-[var(--admin-text)]">{formatNumber(entry.count, locale)}</span>
-                    <span className="text-indigo-600 opacity-0 transition group-hover:opacity-100">↗</span>
+                    <span className={`${STATUS_BADGE_BASE} ${STATUS_BADGE_CLASSES[entry.status] ?? "border-[var(--admin-border)] bg-[color-mix(in_srgb,var(--admin-soft-bg)_84%,transparent)] text-[var(--admin-text)]"}`}>{formatNumber(entry.count, locale)}</span>
+                    <span className="text-[color-mix(in_srgb,var(--accent)_74%,var(--admin-text))] opacity-0 transition group-hover:opacity-100">↗</span>
                   </div>
                 </Link>
               ))}
@@ -217,12 +268,12 @@ export default async function AdminAnalyticsPage({ searchParams }: AnalyticsPage
                   <Link
                     key={client.id}
                     href={`/admin/sales/orders?clientId=${encodeURIComponent(client.id)}`}
-                    className="group block liquid-surface rounded-lg p-3 transition"
+                    className={INTERACTIVE_BLOCK_CLASS}
                   >
                     <p className="text-sm font-semibold text-[var(--admin-text)]">{client.name}</p>
                     <p className="text-xs text-[var(--admin-muted)]">{client.orders} {text.orders}</p>
                     <p className="mt-1 text-sm text-[var(--admin-text)]">{formatCurrency(client.total, locale, currencyCode)}</p>
-                    <div className="mt-1 flex justify-end text-indigo-600 opacity-0 transition group-hover:opacity-100">↗</div>
+                    <div className="mt-1 flex justify-end text-[color-mix(in_srgb,var(--accent)_74%,var(--admin-text))] opacity-0 transition group-hover:opacity-100">↗</div>
                   </Link>
                 ))}
               </div>
@@ -232,11 +283,11 @@ export default async function AdminAnalyticsPage({ searchParams }: AnalyticsPage
               <div className="mt-3 space-y-2">
                 {snapshot.topProducts.length === 0 && <p className="text-sm text-[var(--admin-muted)]">{text.noData}</p>}
                 {snapshot.topProducts.map((product) => (
-                  <Link key={product.id} href="/admin/stock" className="group block liquid-surface rounded-lg p-3 transition">
+                  <Link key={product.id} href="/admin/stock" className={INTERACTIVE_BLOCK_CLASS}>
                     <p className="text-sm font-semibold text-[var(--admin-text)]">{product.sku} · {product.name}</p>
                     <p className="text-xs text-[var(--admin-muted)]">{formatNumber(product.quantity, locale)} {text.units}</p>
                     <p className="mt-1 text-sm text-[var(--admin-text)]">{formatCurrency(product.revenue, locale, currencyCode)}</p>
-                    <div className="mt-1 flex justify-end text-indigo-600 opacity-0 transition group-hover:opacity-100">↗</div>
+                    <div className="mt-1 flex justify-end text-[color-mix(in_srgb,var(--accent)_74%,var(--admin-text))] opacity-0 transition group-hover:opacity-100">↗</div>
                   </Link>
                 ))}
               </div>
@@ -248,26 +299,26 @@ export default async function AdminAnalyticsPage({ searchParams }: AnalyticsPage
           <div className="liquid-surface rounded-2xl p-5">
             <h2 className="text-lg font-semibold text-[var(--admin-text)]">{text.stockAlerts}</h2>
             <div className="mt-3 space-y-2">
-              <Link href="/admin/stock" className="group liquid-surface flex items-center justify-between rounded-lg px-3 py-2 transition">
+              <Link href="/admin/stock" className={INTERACTIVE_ROW_CLASS}>
                 <span className="text-sm text-[var(--admin-text)]">{text.lowStock}</span>
                 <div className="flex items-center gap-2">
-                  <span className="rounded-full bg-amber-100 px-2 py-0.5 text-xs font-semibold text-amber-700">
+                  <span className={`${STATUS_BADGE_BASE} ${COUNT_BADGE_CLASSES.medium}`}>
                     {formatNumber(snapshot.stockAlerts.lowStockCount, locale)}
                   </span>
-                  <span className="text-indigo-600 opacity-0 transition group-hover:opacity-100">↗</span>
+                  <span className="text-[color-mix(in_srgb,var(--accent)_74%,var(--admin-text))] opacity-0 transition group-hover:opacity-100">↗</span>
                 </div>
               </Link>
-              <Link href="/admin/stock" className="group liquid-surface flex items-center justify-between rounded-lg px-3 py-2 transition">
+              <Link href="/admin/stock" className={INTERACTIVE_ROW_CLASS}>
                 <span className="text-sm text-[var(--admin-text)]">{text.outStock}</span>
                 <div className="flex items-center gap-2">
-                  <span className="rounded-full bg-rose-100 px-2 py-0.5 text-xs font-semibold text-rose-700">
+                  <span className={`${STATUS_BADGE_BASE} ${COUNT_BADGE_CLASSES.high}`}>
                     {formatNumber(snapshot.stockAlerts.outOfStockCount, locale)}
                   </span>
-                  <span className="text-indigo-600 opacity-0 transition group-hover:opacity-100">↗</span>
+                  <span className="text-[color-mix(in_srgb,var(--accent)_74%,var(--admin-text))] opacity-0 transition group-hover:opacity-100">↗</span>
                 </div>
               </Link>
             </div>
-            <Link href="/admin/stock" className="mt-3 inline-flex text-sm font-medium text-indigo-600 hover:text-indigo-700">
+            <Link href="/admin/stock" className="liquid-pill mt-3 inline-flex w-fit px-2.5 py-1 text-xs font-semibold uppercase tracking-wide text-[var(--admin-text)]">
               {text.seeStock}
             </Link>
           </div>
@@ -276,21 +327,21 @@ export default async function AdminAnalyticsPage({ searchParams }: AnalyticsPage
             <h2 className="text-lg font-semibold text-[var(--admin-text)]">{text.logistics}</h2>
             <div className="mt-3 space-y-2">
               {snapshot.logisticsTasks.map((task) => (
-                <Link key={task.id} href={task.href} className="group liquid-surface flex items-center justify-between rounded-lg px-3 py-2 transition">
+                <Link key={task.id} href={task.href} className={INTERACTIVE_ROW_CLASS}>
                   <span className="text-sm text-[var(--admin-text)]">{task.label}</span>
                   <div className="flex items-center gap-2">
                     <span
-                      className={`rounded-full px-2 py-0.5 text-xs font-semibold ${
+                      className={`${STATUS_BADGE_BASE} ${
                         task.severity === "high"
-                          ? "bg-rose-100 text-rose-700"
+                          ? COUNT_BADGE_CLASSES.high
                           : task.severity === "medium"
-                            ? "bg-amber-100 text-amber-700"
-                            : "bg-emerald-100 text-emerald-700"
+                            ? COUNT_BADGE_CLASSES.medium
+                            : COUNT_BADGE_CLASSES.low
                       }`}
                     >
                       {formatNumber(task.count, locale)}
                     </span>
-                    <span className="text-indigo-600 opacity-0 transition group-hover:opacity-100">↗</span>
+                    <span className="text-[color-mix(in_srgb,var(--accent)_74%,var(--admin-text))] opacity-0 transition group-hover:opacity-100">↗</span>
                   </div>
                 </Link>
               ))}
