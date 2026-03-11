@@ -44,6 +44,7 @@ export function SuppliersManager({ lang = "en" }: { lang?: "en" | "fr" }) {
     phone: lang === "fr" ? "Telephone" : "Phone",
     address: lang === "fr" ? "Adresse" : "Address",
     addSupplier: lang === "fr" ? "Ajouter fournisseur" : "Add supplier",
+    noSuppliers: lang === "fr" ? "Aucun fournisseur." : "No suppliers yet.",
   };
 
   const load = useCallback(async () => {
@@ -147,6 +148,13 @@ export function SuppliersManager({ lang = "en" }: { lang?: "en" | "fr" }) {
         </div>
         {loading ? (
           <p className="text-sm text-[var(--admin-muted)]">{t.loading}</p>
+        ) : suppliers.length === 0 ? (
+          <div className="liquid-surface rounded-2xl p-5">
+            <p className="text-sm text-[var(--admin-muted)]">{t.noSuppliers}</p>
+            <div className="mt-3">
+              <ActionButton type="button" icon="plus" tone="primary" onClick={openCreate} label={t.addSupplier} />
+            </div>
+          </div>
         ) : (
           <div className="space-y-3">
             {suppliers.map((supplier) => (

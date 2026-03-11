@@ -194,7 +194,12 @@ export function ClientsManager({ lang }: ClientsManagerProps) {
         {loading ? (
           <p className="text-sm text-[var(--admin-muted)]">{t.loading}</p>
         ) : clients.length === 0 ? (
-          <p className="text-sm text-[var(--admin-muted)]">{t.noClients}</p>
+          <div className="liquid-surface rounded-2xl p-5">
+            <p className="text-sm text-[var(--admin-muted)]">{t.noClients}</p>
+            <div className="mt-3">
+              <ActionButton type="button" icon="plus" tone="primary" onClick={openCreate} label={t.addClient} />
+            </div>
+          </div>
         ) : (
           <div className="grid gap-3 sm:grid-cols-2">
             {clients.map((client) => (

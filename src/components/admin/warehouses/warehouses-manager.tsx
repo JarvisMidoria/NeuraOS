@@ -45,6 +45,7 @@ export function WarehousesManager({ lang }: { lang: "en" | "fr" }) {
     edit: lang === "fr" ? "Modifier" : "Edit",
     delete: lang === "fr" ? "Supprimer" : "Delete",
     addWarehouse: lang === "fr" ? "Ajouter entrepot" : "Add warehouse",
+    noWarehouses: lang === "fr" ? "Aucun entrepot." : "No warehouses yet.",
   };
 
   const loadWarehouses = useCallback(async () => {
@@ -165,6 +166,13 @@ export function WarehousesManager({ lang }: { lang: "en" | "fr" }) {
 
         {loading ? (
           <p className="text-sm text-[var(--admin-muted)]">{t.loading}</p>
+        ) : warehouses.length === 0 ? (
+          <div className="liquid-surface rounded-2xl p-5">
+            <p className="text-sm text-[var(--admin-muted)]">{t.noWarehouses}</p>
+            <div className="mt-3">
+              <ActionButton type="button" icon="plus" tone="primary" onClick={openCreate} label={t.addWarehouse} />
+            </div>
+          </div>
         ) : (
           <div className="space-y-3">
             {warehouses.map((warehouse) => (

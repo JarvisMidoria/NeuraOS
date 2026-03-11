@@ -120,6 +120,7 @@ export function ProductsManager({
       refresh: lang === "fr" ? "Actualiser" : "Refresh",
       loading: lang === "fr" ? "Chargement des produits..." : "Loading products...",
       customValuesEmpty: lang === "fr" ? "Aucune valeur personnalisee" : "No custom values",
+      noProducts: lang === "fr" ? "Aucun produit pour ce filtre." : "No products for this filter.",
       editRow: lang === "fr" ? "Modifier" : "Edit",
       deleteRow: lang === "fr" ? "Supprimer" : "Delete",
       page: lang === "fr" ? "Page" : "Page",
@@ -319,6 +320,13 @@ export function ProductsManager({
 
         {loading ? (
           <p className="text-sm text-[var(--admin-muted)]">{t.loading}</p>
+        ) : products.length === 0 ? (
+          <div className="liquid-surface rounded-2xl p-5">
+            <p className="text-sm text-[var(--admin-muted)]">{t.noProducts}</p>
+            <div className="mt-3">
+              <ActionButton type="button" icon="plus" tone="primary" onClick={openCreate} label={t.addProduct} />
+            </div>
+          </div>
         ) : (
           <div className="space-y-3">
             {products.map((product) => (
