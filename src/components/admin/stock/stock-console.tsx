@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { ActionButton, ActionLinkButton } from "../action-button";
+import { AdminModal } from "../admin-modal";
 
 type Warehouse = {
   id: string;
@@ -31,6 +32,8 @@ type LowStockItem = {
   lowStockThreshold: string;
 };
 
+type MovementType = "inbound" | "outbound" | "adjustment" | "transfer";
+
 interface StockConsoleProps {
   warehouses: Warehouse[];
   products: ProductStockSnapshot[];
@@ -56,6 +59,7 @@ export function StockConsole({ warehouses, products, lowStock, lang }: StockCons
   const [outboundForm, setOutboundForm] = useState({ productId: "", warehouseId: "", quantity: "", reference: "" });
   const [adjustForm, setAdjustForm] = useState({ productId: "", warehouseId: "", quantity: "", reference: "" });
   const [transferForm, setTransferForm] = useState({ productId: "", fromWarehouseId: "", toWarehouseId: "", quantity: "", reference: "" });
+  const [activeMovement, setActiveMovement] = useState<MovementType | null>(null);
   const [status, setStatus] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [lowStockItems, setLowStockItems] = useState(lowStock);
@@ -68,6 +72,11 @@ export function StockConsole({ warehouses, products, lowStock, lang }: StockCons
         ? "Stock mis a jour. Actualisez la page pour voir les soldes."
         : "Stock updated. Refresh page to see the latest balances.",
     loadLowStockFailed: lang === "fr" ? "Impossible de charger le stock bas" : "Failed to load low stock items",
+    movementHub: lang === "fr" ? "Mouvements de stock" : "Stock Movements",
+    movementHubHelp:
+      lang === "fr"
+        ? "Enregistrez rapidement une entree, sortie, correction ou transfert."
+        : "Record inbound, outbound, adjustments, or transfers from one entry point.",
     inbound: lang === "fr" ? "Entree de stock" : "Inbound Stock",
     inboundHelp:
       lang === "fr"
@@ -101,8 +110,6 @@ export function StockConsole({ warehouses, products, lowStock, lang }: StockCons
     lowStockHelp: lang === "fr" ? "Produits sous leur seuil defini." : "Products below their defined thresholds.",
     refreshing: lang === "fr" ? "Actualisation..." : "Refreshing...",
     refresh: lang === "fr" ? "Actualiser" : "Refresh",
-    sku: "SKU",
-    name: lang === "fr" ? "Nom" : "Name",
     stock: lang === "fr" ? "Stock" : "Stock",
     threshold: lang === "fr" ? "Seuil" : "Threshold",
     allAbove:
@@ -113,19 +120,21 @@ export function StockConsole({ warehouses, products, lowStock, lang }: StockCons
         ? "Totaux actuels par entrepot (actualisez apres mouvements)."
         : "Current totals by warehouse (refresh page after posting movements).",
     refreshPage: lang === "fr" ? "Actualiser la page" : "Refresh page",
-    product: lang === "fr" ? "Produit" : "Product",
     total: lang === "fr" ? "Total" : "Total",
-    warehouses: lang === "fr" ? "Entrepots" : "Warehouses",
     noMovements: lang === "fr" ? "Aucun mouvement" : "No movements yet",
     openProducts: lang === "fr" ? "Ouvrir produits" : "Open products",
     openReplenishment: lang === "fr" ? "Ouvrir reappro" : "Open replenishment",
+    openInbound: lang === "fr" ? "Ajouter entree" : "Add inbound",
+    openOutbound: lang === "fr" ? "Ajouter sortie" : "Add outbound",
+    openAdjustment: lang === "fr" ? "Ajuster stock" : "Adjust stock",
+    openTransfer: lang === "fr" ? "Transferer" : "Transfer",
   };
 
   const formatUnit = (unit?: string) => {
     const normalized = String(unit ?? "").toUpperCase();
     switch (normalized) {
       case "M":
-        return lang === "fr" ? "m" : "m";
+        return "m";
       case "KG":
         return "kg";
       case "L":
@@ -137,6 +146,8 @@ export function StockConsole({ warehouses, products, lowStock, lang }: StockCons
   };
 
   const withUnit = (value: string, unit?: string) => `${value} ${formatUnit(unit)}`;
+
+  const closeMovementModal = () => setActiveMovement(null);
 
   const submitHandler = async (
     event: React.FormEvent<HTMLFormElement>,
@@ -151,6 +162,7 @@ export function StockConsole({ warehouses, products, lowStock, lang }: StockCons
       await submitMovement(endpoint, payload, t.opFailed);
       setStatus(t.updated);
       reset();
+      closeMovementModal();
     } catch (err) {
       setError(err instanceof Error ? err.message : t.opFailed);
     }
@@ -190,247 +202,16 @@ export function StockConsole({ warehouses, products, lowStock, lang }: StockCons
       {status && <div className="rounded-md bg-emerald-50 px-4 py-2 text-sm text-emerald-700">{status}</div>}
       {error && <div className="rounded-md bg-red-50 px-4 py-2 text-sm text-red-700">{error}</div>}
 
-      <div className="grid gap-6 lg:grid-cols-2">
-        <div className="liquid-surface rounded-xl p-6">
-          <h2 className="text-lg font-semibold text-[var(--admin-text)]">{t.inbound}</h2>
-          <p className="mb-4 text-sm text-[var(--admin-muted)]">{t.inboundHelp}</p>
-          <form
-            className="space-y-3"
-            onSubmit={(event) =>
-              submitHandler(
-                event,
-                "/api/stock/in",
-                {
-                  productId: inboundForm.productId,
-                  warehouseId: inboundForm.warehouseId,
-                  quantity: inboundForm.quantity,
-                  reference: inboundForm.reference || null,
-                },
-                () => setInboundForm({ productId: "", warehouseId: "", quantity: "", reference: "" }),
-              )
-            }
-          >
-            <select
-              required
-              className="admin-toolbar-control w-full"
-              value={inboundForm.productId}
-              onChange={(event) => setInboundForm((prev) => ({ ...prev, productId: event.target.value }))}
-            >
-              <option value="">{t.selectProduct}</option>
-              {productOptions}
-            </select>
-            <select
-              required
-              className="admin-toolbar-control w-full"
-              value={inboundForm.warehouseId}
-              onChange={(event) => setInboundForm((prev) => ({ ...prev, warehouseId: event.target.value }))}
-            >
-              <option value="">{t.selectWarehouse}</option>
-              {warehouseOptions}
-            </select>
-            <input
-              type="number"
-              step="0.01"
-              min="0"
-              required
-              className="admin-toolbar-control w-full"
-              placeholder={t.quantity}
-              value={inboundForm.quantity}
-              onChange={(event) => setInboundForm((prev) => ({ ...prev, quantity: event.target.value }))}
-            />
-            <input
-              className="admin-toolbar-control w-full"
-              placeholder={t.reference}
-              value={inboundForm.reference}
-              onChange={(event) => setInboundForm((prev) => ({ ...prev, reference: event.target.value }))}
-            />
-            <ActionButton type="submit" tone="primary" icon="save" className="w-full justify-center" label={t.recordInbound} />
-          </form>
+      <div className="liquid-surface rounded-xl p-6">
+        <div className="mb-4">
+          <h2 className="text-lg font-semibold text-[var(--admin-text)]">{t.movementHub}</h2>
+          <p className="text-sm text-[var(--admin-muted)]">{t.movementHubHelp}</p>
         </div>
-
-        <div className="liquid-surface rounded-xl p-6">
-          <h2 className="text-lg font-semibold text-[var(--admin-text)]">{t.outbound}</h2>
-          <p className="mb-4 text-sm text-[var(--admin-muted)]">{t.outboundHelp}</p>
-          <form
-            className="space-y-3"
-            onSubmit={(event) =>
-              submitHandler(
-                event,
-                "/api/stock/out",
-                {
-                  productId: outboundForm.productId,
-                  warehouseId: outboundForm.warehouseId,
-                  quantity: outboundForm.quantity,
-                  reference: outboundForm.reference || null,
-                },
-                () => setOutboundForm({ productId: "", warehouseId: "", quantity: "", reference: "" }),
-              )
-            }
-          >
-            <select
-              required
-              className="admin-toolbar-control w-full"
-              value={outboundForm.productId}
-              onChange={(event) => setOutboundForm((prev) => ({ ...prev, productId: event.target.value }))}
-            >
-              <option value="">{t.selectProduct}</option>
-              {productOptions}
-            </select>
-            <select
-              required
-              className="admin-toolbar-control w-full"
-              value={outboundForm.warehouseId}
-              onChange={(event) => setOutboundForm((prev) => ({ ...prev, warehouseId: event.target.value }))}
-            >
-              <option value="">{t.selectWarehouse}</option>
-              {warehouseOptions}
-            </select>
-            <input
-              type="number"
-              step="0.01"
-              min="0"
-              required
-              className="admin-toolbar-control w-full"
-              placeholder={t.quantity}
-              value={outboundForm.quantity}
-              onChange={(event) => setOutboundForm((prev) => ({ ...prev, quantity: event.target.value }))}
-            />
-            <input
-              className="admin-toolbar-control w-full"
-              placeholder={t.reference}
-              value={outboundForm.reference}
-              onChange={(event) => setOutboundForm((prev) => ({ ...prev, reference: event.target.value }))}
-            />
-            <ActionButton type="submit" tone="primary" icon="save" className="w-full justify-center" label={t.recordOutbound} />
-          </form>
-        </div>
-      </div>
-
-      <div className="grid gap-6 lg:grid-cols-2">
-        <div className="liquid-surface rounded-xl p-6">
-          <h2 className="text-lg font-semibold text-[var(--admin-text)]">{t.adjustment}</h2>
-          <p className="mb-4 text-sm text-[var(--admin-muted)]">{t.adjustmentHelp}</p>
-          <form
-            className="space-y-3"
-            onSubmit={(event) =>
-              submitHandler(
-                event,
-                "/api/stock/adjust",
-                {
-                  productId: adjustForm.productId,
-                  warehouseId: adjustForm.warehouseId,
-                  quantity: adjustForm.quantity,
-                  reference: adjustForm.reference || null,
-                },
-                () => setAdjustForm({ productId: "", warehouseId: "", quantity: "", reference: "" }),
-              )
-            }
-          >
-            <select
-              required
-              className="admin-toolbar-control w-full"
-              value={adjustForm.productId}
-              onChange={(event) => setAdjustForm((prev) => ({ ...prev, productId: event.target.value }))}
-            >
-              <option value="">{t.selectProduct}</option>
-              {productOptions}
-            </select>
-            <select
-              required
-              className="admin-toolbar-control w-full"
-              value={adjustForm.warehouseId}
-              onChange={(event) => setAdjustForm((prev) => ({ ...prev, warehouseId: event.target.value }))}
-            >
-              <option value="">{t.selectWarehouse}</option>
-              {warehouseOptions}
-            </select>
-            <input
-              type="number"
-              step="0.01"
-              className="admin-toolbar-control w-full"
-              placeholder={t.quantityAdjust}
-              value={adjustForm.quantity}
-              onChange={(event) => setAdjustForm((prev) => ({ ...prev, quantity: event.target.value }))}
-              required
-            />
-            <input
-              className="admin-toolbar-control w-full"
-              placeholder={t.reference}
-              value={adjustForm.reference}
-              onChange={(event) => setAdjustForm((prev) => ({ ...prev, reference: event.target.value }))}
-            />
-            <ActionButton type="submit" tone="primary" icon="save" className="w-full justify-center" label={t.recordAdjustment} />
-          </form>
-        </div>
-
-        <div className="liquid-surface rounded-xl p-6">
-          <h2 className="text-lg font-semibold text-[var(--admin-text)]">{t.transfer}</h2>
-          <p className="mb-4 text-sm text-[var(--admin-muted)]">{t.transferHelp}</p>
-          <form
-            className="space-y-3"
-            onSubmit={(event) =>
-              submitHandler(
-                event,
-                "/api/stock/transfer",
-                {
-                  productId: transferForm.productId,
-                  fromWarehouseId: transferForm.fromWarehouseId,
-                  toWarehouseId: transferForm.toWarehouseId,
-                  quantity: transferForm.quantity,
-                  reference: transferForm.reference || null,
-                },
-                () =>
-                  setTransferForm({ productId: "", fromWarehouseId: "", toWarehouseId: "", quantity: "", reference: "" }),
-              )
-            }
-          >
-            <select
-              required
-              className="admin-toolbar-control w-full"
-              value={transferForm.productId}
-              onChange={(event) => setTransferForm((prev) => ({ ...prev, productId: event.target.value }))}
-            >
-              <option value="">{t.selectProduct}</option>
-              {productOptions}
-            </select>
-            <div className="grid gap-3 md:grid-cols-2">
-              <select
-                required
-                className="admin-toolbar-control"
-                value={transferForm.fromWarehouseId}
-                onChange={(event) => setTransferForm((prev) => ({ ...prev, fromWarehouseId: event.target.value }))}
-              >
-                <option value="">{t.fromWarehouse}</option>
-                {warehouseOptions}
-              </select>
-              <select
-                required
-                className="admin-toolbar-control"
-                value={transferForm.toWarehouseId}
-                onChange={(event) => setTransferForm((prev) => ({ ...prev, toWarehouseId: event.target.value }))}
-              >
-                <option value="">{t.toWarehouse}</option>
-                {warehouseOptions}
-              </select>
-            </div>
-            <input
-              type="number"
-              step="0.01"
-              min="0"
-              required
-              className="admin-toolbar-control w-full"
-              placeholder={t.quantity}
-              value={transferForm.quantity}
-              onChange={(event) => setTransferForm((prev) => ({ ...prev, quantity: event.target.value }))}
-            />
-            <input
-              className="admin-toolbar-control w-full"
-              placeholder={t.reference}
-              value={transferForm.reference}
-              onChange={(event) => setTransferForm((prev) => ({ ...prev, reference: event.target.value }))}
-            />
-            <ActionButton type="submit" tone="primary" icon="save" className="w-full justify-center" label={t.transferStock} />
-          </form>
+        <div className="grid gap-2 sm:grid-cols-2 xl:grid-cols-4">
+          <ActionButton type="button" icon="plus" tone="primary" onClick={() => setActiveMovement("inbound")} label={t.openInbound} />
+          <ActionButton type="button" icon="plus" onClick={() => setActiveMovement("outbound")} label={t.openOutbound} />
+          <ActionButton type="button" icon="plus" onClick={() => setActiveMovement("adjustment")} label={t.openAdjustment} />
+          <ActionButton type="button" icon="plus" onClick={() => setActiveMovement("transfer")} label={t.openTransfer} />
         </div>
       </div>
 
@@ -455,10 +236,10 @@ export function StockConsole({ warehouses, products, lowStock, lang }: StockCons
                 <p className="font-mono text-xs text-[var(--admin-muted)]">{item.sku}</p>
                 <p className="mt-1 text-base font-semibold text-[var(--admin-text)]">{item.name}</p>
                 <div className="mt-2 flex flex-wrap gap-2 text-xs">
-                  <span className="rounded-full bg-zinc-100 px-2 py-1">
+                  <span className="rounded-full border border-[var(--admin-border)] bg-[var(--admin-soft-bg)] px-2 py-1 text-[var(--admin-text)]">
                     {t.stock}: <span className="font-semibold text-red-600">{withUnit(item.currentStock, item.unitOfMeasure)}</span>
                   </span>
-                  <span className="rounded-full bg-zinc-100 px-2 py-1">
+                  <span className="rounded-full border border-[var(--admin-border)] bg-[var(--admin-soft-bg)] px-2 py-1 text-[var(--admin-text)]">
                     {t.threshold}: {withUnit(item.lowStockThreshold, item.unitOfMeasure)}
                   </span>
                 </div>
@@ -500,14 +281,17 @@ export function StockConsole({ warehouses, products, lowStock, lang }: StockCons
                     </p>
                   ) : null}
                 </div>
-                <span className="rounded-full bg-zinc-100 px-2 py-1 text-xs font-semibold">
+                <span className="rounded-full border border-[var(--admin-border)] bg-[var(--admin-soft-bg)] px-2 py-1 text-xs font-semibold text-[var(--admin-text)]">
                   {t.total}: {withUnit(item.totalQuantity, item.unitOfMeasure)}
                 </span>
               </div>
               <div className="mt-3 flex flex-wrap gap-2 text-xs text-[var(--admin-muted)]">
                 {item.warehouses.length ? (
                   item.warehouses.map((warehouse) => (
-                    <span key={warehouse.warehouseId} className="rounded-full bg-zinc-100 px-2 py-0.5">
+                    <span
+                      key={warehouse.warehouseId}
+                      className="rounded-full border border-[var(--admin-border)] bg-[var(--admin-soft-bg)] px-2 py-0.5 text-[var(--admin-text)]"
+                    >
                       {warehouse.warehouseName}: {withUnit(warehouse.quantity, item.unitOfMeasure)}
                     </span>
                   ))
@@ -522,6 +306,241 @@ export function StockConsole({ warehouses, products, lowStock, lang }: StockCons
           ))}
         </div>
       </div>
+
+      <AdminModal open={activeMovement === "inbound"} onClose={closeMovementModal} title={t.inbound}>
+        <p className="mb-4 text-sm text-[var(--admin-muted)]">{t.inboundHelp}</p>
+        <form
+          className="space-y-3"
+          onSubmit={(event) =>
+            submitHandler(
+              event,
+              "/api/stock/in",
+              {
+                productId: inboundForm.productId,
+                warehouseId: inboundForm.warehouseId,
+                quantity: inboundForm.quantity,
+                reference: inboundForm.reference || null,
+              },
+              () => setInboundForm({ productId: "", warehouseId: "", quantity: "", reference: "" }),
+            )
+          }
+        >
+          <select
+            required
+            className="admin-toolbar-control w-full"
+            value={inboundForm.productId}
+            onChange={(event) => setInboundForm((prev) => ({ ...prev, productId: event.target.value }))}
+          >
+            <option value="">{t.selectProduct}</option>
+            {productOptions}
+          </select>
+          <select
+            required
+            className="admin-toolbar-control w-full"
+            value={inboundForm.warehouseId}
+            onChange={(event) => setInboundForm((prev) => ({ ...prev, warehouseId: event.target.value }))}
+          >
+            <option value="">{t.selectWarehouse}</option>
+            {warehouseOptions}
+          </select>
+          <input
+            type="number"
+            step="0.01"
+            min="0"
+            required
+            className="admin-toolbar-control w-full"
+            placeholder={t.quantity}
+            value={inboundForm.quantity}
+            onChange={(event) => setInboundForm((prev) => ({ ...prev, quantity: event.target.value }))}
+          />
+          <input
+            className="admin-toolbar-control w-full"
+            placeholder={t.reference}
+            value={inboundForm.reference}
+            onChange={(event) => setInboundForm((prev) => ({ ...prev, reference: event.target.value }))}
+          />
+          <ActionButton type="submit" tone="primary" icon="save" className="w-full justify-center" label={t.recordInbound} />
+        </form>
+      </AdminModal>
+
+      <AdminModal open={activeMovement === "outbound"} onClose={closeMovementModal} title={t.outbound}>
+        <p className="mb-4 text-sm text-[var(--admin-muted)]">{t.outboundHelp}</p>
+        <form
+          className="space-y-3"
+          onSubmit={(event) =>
+            submitHandler(
+              event,
+              "/api/stock/out",
+              {
+                productId: outboundForm.productId,
+                warehouseId: outboundForm.warehouseId,
+                quantity: outboundForm.quantity,
+                reference: outboundForm.reference || null,
+              },
+              () => setOutboundForm({ productId: "", warehouseId: "", quantity: "", reference: "" }),
+            )
+          }
+        >
+          <select
+            required
+            className="admin-toolbar-control w-full"
+            value={outboundForm.productId}
+            onChange={(event) => setOutboundForm((prev) => ({ ...prev, productId: event.target.value }))}
+          >
+            <option value="">{t.selectProduct}</option>
+            {productOptions}
+          </select>
+          <select
+            required
+            className="admin-toolbar-control w-full"
+            value={outboundForm.warehouseId}
+            onChange={(event) => setOutboundForm((prev) => ({ ...prev, warehouseId: event.target.value }))}
+          >
+            <option value="">{t.selectWarehouse}</option>
+            {warehouseOptions}
+          </select>
+          <input
+            type="number"
+            step="0.01"
+            min="0"
+            required
+            className="admin-toolbar-control w-full"
+            placeholder={t.quantity}
+            value={outboundForm.quantity}
+            onChange={(event) => setOutboundForm((prev) => ({ ...prev, quantity: event.target.value }))}
+          />
+          <input
+            className="admin-toolbar-control w-full"
+            placeholder={t.reference}
+            value={outboundForm.reference}
+            onChange={(event) => setOutboundForm((prev) => ({ ...prev, reference: event.target.value }))}
+          />
+          <ActionButton type="submit" tone="primary" icon="save" className="w-full justify-center" label={t.recordOutbound} />
+        </form>
+      </AdminModal>
+
+      <AdminModal open={activeMovement === "adjustment"} onClose={closeMovementModal} title={t.adjustment}>
+        <p className="mb-4 text-sm text-[var(--admin-muted)]">{t.adjustmentHelp}</p>
+        <form
+          className="space-y-3"
+          onSubmit={(event) =>
+            submitHandler(
+              event,
+              "/api/stock/adjust",
+              {
+                productId: adjustForm.productId,
+                warehouseId: adjustForm.warehouseId,
+                quantity: adjustForm.quantity,
+                reference: adjustForm.reference || null,
+              },
+              () => setAdjustForm({ productId: "", warehouseId: "", quantity: "", reference: "" }),
+            )
+          }
+        >
+          <select
+            required
+            className="admin-toolbar-control w-full"
+            value={adjustForm.productId}
+            onChange={(event) => setAdjustForm((prev) => ({ ...prev, productId: event.target.value }))}
+          >
+            <option value="">{t.selectProduct}</option>
+            {productOptions}
+          </select>
+          <select
+            required
+            className="admin-toolbar-control w-full"
+            value={adjustForm.warehouseId}
+            onChange={(event) => setAdjustForm((prev) => ({ ...prev, warehouseId: event.target.value }))}
+          >
+            <option value="">{t.selectWarehouse}</option>
+            {warehouseOptions}
+          </select>
+          <input
+            type="number"
+            step="0.01"
+            required
+            className="admin-toolbar-control w-full"
+            placeholder={t.quantityAdjust}
+            value={adjustForm.quantity}
+            onChange={(event) => setAdjustForm((prev) => ({ ...prev, quantity: event.target.value }))}
+          />
+          <input
+            className="admin-toolbar-control w-full"
+            placeholder={t.reference}
+            value={adjustForm.reference}
+            onChange={(event) => setAdjustForm((prev) => ({ ...prev, reference: event.target.value }))}
+          />
+          <ActionButton type="submit" tone="primary" icon="save" className="w-full justify-center" label={t.recordAdjustment} />
+        </form>
+      </AdminModal>
+
+      <AdminModal open={activeMovement === "transfer"} onClose={closeMovementModal} title={t.transfer}>
+        <p className="mb-4 text-sm text-[var(--admin-muted)]">{t.transferHelp}</p>
+        <form
+          className="space-y-3"
+          onSubmit={(event) =>
+            submitHandler(
+              event,
+              "/api/stock/transfer",
+              {
+                productId: transferForm.productId,
+                fromWarehouseId: transferForm.fromWarehouseId,
+                toWarehouseId: transferForm.toWarehouseId,
+                quantity: transferForm.quantity,
+                reference: transferForm.reference || null,
+              },
+              () => setTransferForm({ productId: "", fromWarehouseId: "", toWarehouseId: "", quantity: "", reference: "" }),
+            )
+          }
+        >
+          <select
+            required
+            className="admin-toolbar-control w-full"
+            value={transferForm.productId}
+            onChange={(event) => setTransferForm((prev) => ({ ...prev, productId: event.target.value }))}
+          >
+            <option value="">{t.selectProduct}</option>
+            {productOptions}
+          </select>
+          <div className="grid gap-3 md:grid-cols-2">
+            <select
+              required
+              className="admin-toolbar-control"
+              value={transferForm.fromWarehouseId}
+              onChange={(event) => setTransferForm((prev) => ({ ...prev, fromWarehouseId: event.target.value }))}
+            >
+              <option value="">{t.fromWarehouse}</option>
+              {warehouseOptions}
+            </select>
+            <select
+              required
+              className="admin-toolbar-control"
+              value={transferForm.toWarehouseId}
+              onChange={(event) => setTransferForm((prev) => ({ ...prev, toWarehouseId: event.target.value }))}
+            >
+              <option value="">{t.toWarehouse}</option>
+              {warehouseOptions}
+            </select>
+          </div>
+          <input
+            type="number"
+            step="0.01"
+            min="0"
+            required
+            className="admin-toolbar-control w-full"
+            placeholder={t.quantity}
+            value={transferForm.quantity}
+            onChange={(event) => setTransferForm((prev) => ({ ...prev, quantity: event.target.value }))}
+          />
+          <input
+            className="admin-toolbar-control w-full"
+            placeholder={t.reference}
+            value={transferForm.reference}
+            onChange={(event) => setTransferForm((prev) => ({ ...prev, reference: event.target.value }))}
+          />
+          <ActionButton type="submit" tone="primary" icon="save" className="w-full justify-center" label={t.transferStock} />
+        </form>
+      </AdminModal>
     </div>
   );
 }
