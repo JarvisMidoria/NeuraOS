@@ -20,9 +20,9 @@ export default async function PurchasesReceiptsPage() {
   return (
     <div className="space-y-6">
       <div>
-        <p className="text-xs uppercase tracking-[0.2em] text-zinc-500">Purchases</p>
-        <h1 className="text-3xl font-semibold tracking-tight text-zinc-900">Goods Receipts</h1>
-        <p className="text-sm text-zinc-500">Receive supplier deliveries and post inbound stock.</p>
+        <p className="text-xs uppercase tracking-[0.2em] text-[var(--admin-muted)]">Purchases</p>
+        <h1 className="text-3xl font-semibold tracking-tight text-[var(--admin-text)]">Goods Receipts</h1>
+        <p className="text-sm text-[var(--admin-muted)]">Receive supplier deliveries and post inbound stock.</p>
       </div>
       <PurchasesReceiptsManager warehouses={warehouses} currencyCode={company?.currencyCode ?? "USD"} />
     </div>

@@ -38,6 +38,11 @@ type Receipt = {
 };
 
 const PAGE_SIZE = 10;
+const STATUS_BADGES: Record<string, string> = {
+  DRAFT: "border border-[var(--admin-border)] bg-[var(--admin-soft-bg)] text-[var(--admin-text)]",
+  CONFIRMED: "border border-blue-400/45 bg-blue-500/15 text-[var(--admin-text)]",
+  CANCELLED: "border border-rose-400/45 bg-rose-500/15 text-[var(--admin-text)]",
+};
 
 export function PurchasesReceiptsManager({ warehouses, currencyCode }: { warehouses: Warehouse[]; currencyCode: string }) {
   const [orders, setOrders] = useState<PurchaseOrder[]>([]);
@@ -171,13 +176,21 @@ export function PurchasesReceiptsManager({ warehouses, currencyCode }: { warehou
 
   return (
     <div className="space-y-6">
-      {status ? <div className="rounded-md bg-emerald-50 px-4 py-2 text-sm text-emerald-700">{status}</div> : null}
-      {error ? <div className="rounded-md bg-red-50 px-4 py-2 text-sm text-red-700">{error}</div> : null}
+      {status ? (
+        <div className="liquid-surface rounded-xl border border-emerald-400/45 bg-emerald-500/10 px-4 py-2 text-sm text-[var(--admin-text)]">
+          {status}
+        </div>
+      ) : null}
+      {error ? (
+        <div className="liquid-surface rounded-xl border border-rose-400/45 bg-rose-500/10 px-4 py-2 text-sm text-[var(--admin-text)]">
+          {error}
+        </div>
+      ) : null}
 
-      <div className="rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm">
+      <div className="liquid-surface rounded-2xl p-6">
         <div className="mb-4">
           <AdminToolbar>
-            <h2 className="text-lg font-semibold text-zinc-900">Receipts</h2>
+            <h2 className="text-lg font-semibold text-[var(--admin-text)]">Receipts</h2>
             <AdminToolbarGroup align="end">
               <ActionButton type="button" icon="plus" tone="primary" onClick={openCreator} label="Add receipt" />
               <ActionButton type="button" icon="refresh" onClick={loadData} label="Refresh" />
@@ -186,30 +199,47 @@ export function PurchasesReceiptsManager({ warehouses, currencyCode }: { warehou
         </div>
 
         {loading ? (
-          <p className="text-sm text-zinc-500">Loading receipts...</p>
+          <p className="text-sm text-[var(--admin-muted)]">Loading receipts...</p>
         ) : (
           <div className="space-y-3">
-            {receipts.map((receipt) => (
-              <div key={receipt.id} className="rounded-2xl border border-zinc-100 p-4">
-                <div className="flex flex-wrap items-center justify-between gap-2">
-                  <p className="font-mono text-xs text-zinc-500">GR-{receipt.receiptNumber}</p>
-                  <span className="rounded-full bg-zinc-100 px-2 py-1 text-xs font-medium text-zinc-700">{receipt.status}</span>
+            {receipts.length === 0 ? (
+              <p className="text-sm text-[var(--admin-muted)]">No receipts yet.</p>
+            ) : (
+              receipts.map((receipt) => (
+                <div key={receipt.id} className="liquid-surface rounded-2xl p-4">
+                  <div className="flex flex-wrap items-center justify-between gap-2">
+                    <p className="font-mono text-xs text-[var(--admin-muted)]">GR-{receipt.receiptNumber}</p>
+                    <span
+                      className={`rounded-full px-2 py-1 text-xs font-medium ${STATUS_BADGES[receipt.status] ?? "border border-[var(--admin-border)] bg-[var(--admin-soft-bg)] text-[var(--admin-text)]"}`}
+                    >
+                      {receipt.status}
+                    </span>
+                  </div>
+                  <div className="mt-2 grid gap-2 sm:grid-cols-2">
+                    <p className="text-sm text-[var(--admin-text)]">
+                      <span className="text-[var(--admin-muted)]">PO: </span>
+                      {receipt.purchaseOrder ? `PO-${receipt.purchaseOrder.poNumber}` : "—"}
+                    </p>
+                    <p className="text-sm text-[var(--admin-text)] sm:text-right">
+                      <span className="text-[var(--admin-muted)]">Warehouse: </span>
+                      {receipt.warehouse?.name ?? "—"}
+                    </p>
+                  </div>
+                  <div className="mt-2 space-y-1 text-xs text-[var(--admin-muted)]">
+                    {receipt.lines.map((line) => (
+                      <div key={line.id}>
+                        {line.product?.name ?? "Product"} · Qty {line.quantity} @{" "}
+                        {formatCurrency(Number(line.unitPrice), locale, currencyCode)}
+                      </div>
+                    ))}
+                  </div>
                 </div>
-                <div className="mt-2 grid gap-2 sm:grid-cols-2">
-                  <p className="text-sm text-zinc-700"><span className="text-zinc-500">PO: </span>{receipt.purchaseOrder ? `PO-${receipt.purchaseOrder.poNumber}` : "—"}</p>
-                  <p className="text-sm text-zinc-700 sm:text-right"><span className="text-zinc-500">Warehouse: </span>{receipt.warehouse?.name ?? "—"}</p>
-                </div>
-                <div className="mt-2 space-y-1 text-xs text-zinc-600">
-                  {receipt.lines.map((line) => (
-                    <div key={line.id}>{line.product?.name ?? "Product"} · Qty {line.quantity} @ {formatCurrency(Number(line.unitPrice), locale, currencyCode)}</div>
-                  ))}
-                </div>
-              </div>
-            ))}
+              ))
+            )}
           </div>
         )}
 
-        <div className="mt-4 flex items-center justify-between text-sm text-zinc-600">
+        <div className="mt-4 flex items-center justify-between text-sm text-[var(--admin-muted)]">
           <span>Page {page} of {totalPages}</span>
           <div className="flex gap-2">
             <ActionButton size="sm" icon="left" disabled={page <= 1} onClick={() => setPage((p) => Math.max(1, p - 1))} label="Previous" />
@@ -224,7 +254,7 @@ export function PurchasesReceiptsManager({ warehouses, currencyCode }: { warehou
             <select
               value={selectedOrderId}
               onChange={(e) => setSelectedOrderId(e.target.value)}
-              className="rounded-md border border-zinc-300 px-3 py-2 text-sm"
+              className="admin-toolbar-control"
             >
               <option value="">Select PO</option>
               {orders.map((order) => (
@@ -236,7 +266,7 @@ export function PurchasesReceiptsManager({ warehouses, currencyCode }: { warehou
             <select
               value={selectedWarehouseId}
               onChange={(e) => setSelectedWarehouseId(e.target.value)}
-              className="rounded-md border border-zinc-300 px-3 py-2 text-sm"
+              className="admin-toolbar-control"
             >
               {warehouses.map((warehouse) => (
                 <option key={warehouse.id} value={warehouse.id}>
@@ -245,7 +275,7 @@ export function PurchasesReceiptsManager({ warehouses, currencyCode }: { warehou
               ))}
             </select>
             <input
-              className="rounded-md border border-zinc-300 px-3 py-2 text-sm"
+              className="admin-toolbar-control"
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
               placeholder="Notes"
@@ -255,7 +285,7 @@ export function PurchasesReceiptsManager({ warehouses, currencyCode }: { warehou
           {selectedOrder ? (
             <div className="space-y-2">
               <div className="flex items-center justify-between gap-2">
-                <p className="text-sm font-medium text-zinc-700">Lines</p>
+                <p className="text-sm font-medium text-[var(--admin-muted)]">Lines</p>
                 <ActionButton
                   type="button"
                   size="sm"
@@ -266,24 +296,24 @@ export function PurchasesReceiptsManager({ warehouses, currencyCode }: { warehou
               </div>
               {showLines
                 ? selectedOrder.lines.map((line) => (
-                    <div key={line.id} className="grid gap-2 rounded-xl border border-zinc-100 p-3 md:grid-cols-[1fr_120px_120px] md:items-center">
-                      <div className="text-sm text-zinc-700">
+                    <div key={line.id} className="liquid-surface grid gap-2 rounded-xl p-3 md:grid-cols-[1fr_120px_120px] md:items-center">
+                      <div className="text-sm text-[var(--admin-text)]">
                         {line.product?.sku} — {line.product?.name}
                       </div>
                       <input
                         type="number"
                         step="0.01"
-                        className="rounded-md border border-zinc-300 px-3 py-2 text-sm"
+                        className="admin-toolbar-control"
                         value={quantities[line.id] ?? line.quantity}
                         onChange={(e) => setQuantities((prev) => ({ ...prev, [line.id]: e.target.value }))}
                       />
-                      <div className="text-sm text-zinc-500">@ {formatCurrency(Number(line.unitPrice), locale, currencyCode)}</div>
+                      <div className="text-sm text-[var(--admin-muted)]">@ {formatCurrency(Number(line.unitPrice), locale, currencyCode)}</div>
                     </div>
                   ))
                 : null}
             </div>
           ) : (
-            <p className="text-sm text-zinc-500">Pick a purchase order to receive lines.</p>
+            <p className="text-sm text-[var(--admin-muted)]">Pick a purchase order to receive lines.</p>
           )}
 
           <div className="flex items-center gap-2">

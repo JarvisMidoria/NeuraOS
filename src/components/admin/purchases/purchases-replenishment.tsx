@@ -37,22 +37,26 @@ export function PurchasesReplenishment() {
   }, []);
 
   return (
-    <div className="rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm">
+    <div className="liquid-surface rounded-2xl p-6">
       <div className="mb-4">
         <AdminToolbar>
-          <h2 className="text-lg font-semibold text-zinc-900">Low Stock Suggestions</h2>
+          <h2 className="text-lg font-semibold text-[var(--admin-text)]">Low Stock Suggestions</h2>
           <AdminToolbarGroup align="end">
             <ActionButton type="button" icon="refresh" onClick={load} label="Refresh" />
           </AdminToolbarGroup>
         </AdminToolbar>
       </div>
 
-      {error ? <div className="rounded-md bg-red-50 px-4 py-2 text-sm text-red-700">{error}</div> : null}
+      {error ? (
+        <div className="liquid-surface rounded-xl border border-rose-400/45 bg-rose-500/10 px-4 py-2 text-sm text-[var(--admin-text)]">
+          {error}
+        </div>
+      ) : null}
 
       {loading ? (
-        <p className="text-sm text-zinc-500">Loading suggestions...</p>
+        <p className="text-sm text-[var(--admin-muted)]">Loading suggestions...</p>
       ) : items.length === 0 ? (
-        <p className="text-sm text-zinc-500">No replenishment action required.</p>
+        <p className="text-sm text-[var(--admin-muted)]">No replenishment action required.</p>
       ) : (
         <div className="space-y-3">
           {items.map((item) => {
@@ -60,13 +64,19 @@ export function PurchasesReplenishment() {
             const threshold = Number(item.lowStockThreshold);
             const suggested = Math.max(Math.ceil(threshold - current), 0);
             return (
-              <div key={item.id} className="rounded-2xl border border-zinc-100 p-4">
-                <p className="font-mono text-xs text-zinc-500">{item.sku}</p>
-                <p className="mt-1 text-base font-semibold text-zinc-900">{item.name}</p>
+              <div key={item.id} className="liquid-surface rounded-2xl p-4">
+                <p className="font-mono text-xs text-[var(--admin-muted)]">{item.sku}</p>
+                <p className="mt-1 text-base font-semibold text-[var(--admin-text)]">{item.name}</p>
                 <div className="mt-2 flex flex-wrap gap-2 text-xs">
-                  <span className="rounded-full bg-zinc-100 px-2 py-1">Current: {item.currentStock}</span>
-                  <span className="rounded-full bg-zinc-100 px-2 py-1">Threshold: {item.lowStockThreshold}</span>
-                  <span className="rounded-full bg-amber-100 px-2 py-1 font-semibold text-amber-700">Suggested buy: {suggested}</span>
+                  <span className="rounded-full border border-[var(--admin-border)] bg-[var(--admin-soft-bg)] px-2 py-1 text-[var(--admin-text)]">
+                    Current: {item.currentStock}
+                  </span>
+                  <span className="rounded-full border border-[var(--admin-border)] bg-[var(--admin-soft-bg)] px-2 py-1 text-[var(--admin-text)]">
+                    Threshold: {item.lowStockThreshold}
+                  </span>
+                  <span className="rounded-full border border-amber-400/45 bg-amber-500/15 px-2 py-1 font-semibold text-[var(--admin-text)]">
+                    Suggested buy: {suggested}
+                  </span>
                 </div>
               </div>
             );
