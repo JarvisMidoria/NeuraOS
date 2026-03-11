@@ -347,7 +347,15 @@ export function SalesOrdersManager({
                   </option>
                 ))}
               </AdminToolbarSelect>
-              <ActionButton type="button" icon="refresh" onClick={loadOrders} label={t.refresh} />
+              <ActionButton
+                type="button"
+                icon="refresh"
+                onClick={loadOrders}
+                label={t.refresh}
+                iconOnly
+                size="icon"
+                title={t.refresh}
+              />
             </AdminToolbarGroup>
           </AdminToolbar>
         </div>

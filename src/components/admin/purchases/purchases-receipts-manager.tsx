@@ -245,7 +245,15 @@ export function PurchasesReceiptsManager({
             <h2 className="text-lg font-semibold text-[var(--admin-text)]">{t.title}</h2>
             <AdminToolbarGroup align="end">
               <ActionButton type="button" icon="plus" tone="primary" onClick={openCreator} label={t.addReceipt} />
-              <ActionButton type="button" icon="refresh" onClick={loadData} label={t.refresh} />
+              <ActionButton
+                type="button"
+                icon="refresh"
+                onClick={loadData}
+                label={t.refresh}
+                iconOnly
+                size="icon"
+                title={t.refresh}
+              />
             </AdminToolbarGroup>
           </AdminToolbar>
         </div>

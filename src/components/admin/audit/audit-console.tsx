@@ -168,7 +168,15 @@ export function AuditConsole({ lang }: { lang: "en" | "fr" }) {
           </AdminToolbarGroup>
           <AdminToolbarGroup align="end">
             <ActionLinkButton href={csvHref} icon="download" label={text.exportCsv} />
-            <ActionButton type="button" icon="refresh" onClick={load} label={text.refresh} />
+            <ActionButton
+              type="button"
+              icon="refresh"
+              onClick={load}
+              label={text.refresh}
+              iconOnly
+              size="icon"
+              title={text.refresh}
+            />
           </AdminToolbarGroup>
         </AdminToolbar>
       </section>

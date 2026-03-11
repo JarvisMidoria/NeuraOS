@@ -391,7 +391,15 @@ export function SalesQuotesManager({
                   </option>
                 ))}
               </AdminToolbarSelect>
-              <ActionButton type="button" icon="refresh" onClick={loadQuotes} label={t.refresh} />
+              <ActionButton
+                type="button"
+                icon="refresh"
+                onClick={loadQuotes}
+                label={t.refresh}
+                iconOnly
+                size="icon"
+                title={t.refresh}
+              />
             </AdminToolbarGroup>
           </AdminToolbar>
         </div>

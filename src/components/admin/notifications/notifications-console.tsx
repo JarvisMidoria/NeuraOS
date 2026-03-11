@@ -16,9 +16,9 @@ type NotificationItem = {
 };
 
 const BADGE_BY_SEVERITY: Record<NotificationItem["severity"], string> = {
-  LOW: "bg-emerald-100 text-emerald-700",
-  MEDIUM: "bg-amber-100 text-amber-700",
-  HIGH: "bg-rose-100 text-rose-700",
+  LOW: "border border-emerald-400/45 bg-emerald-500/15 text-[var(--admin-text)]",
+  MEDIUM: "border border-amber-400/45 bg-amber-500/15 text-[var(--admin-text)]",
+  HIGH: "border border-rose-400/45 bg-rose-500/15 text-[var(--admin-text)]",
 };
 
 export function NotificationsConsole({ lang }: { lang: "en" | "fr" }) {
@@ -112,7 +112,14 @@ export function NotificationsConsole({ lang }: { lang: "en" | "fr" }) {
 
         <div className="mt-4">
           <AdminToolbarGroup>
-            <ActionButton onClick={() => load(false)} icon="refresh" label={text.refresh} />
+            <ActionButton
+              onClick={() => load(false)}
+              icon="refresh"
+              label={text.refresh}
+              iconOnly
+              size="icon"
+              title={text.refresh}
+            />
             <ActionButton onClick={() => load(true)} icon="refresh" label={text.sync} />
             <ActionButton onClick={markAllRead} icon="apply" label={text.markAll} />
             <ActionButton

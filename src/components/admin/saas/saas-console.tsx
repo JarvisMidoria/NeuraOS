@@ -262,7 +262,14 @@ export function SaasConsole() {
             value={query}
             onChange={(e) => setQuery(e.target.value)}
           />
-          <ActionButton onClick={load} icon="refresh" label={text.refresh} />
+          <ActionButton
+            onClick={load}
+            icon="refresh"
+            label={text.refresh}
+            iconOnly
+            size="icon"
+            title={text.refresh}
+          />
         </div>
 
         <div className="space-y-4">

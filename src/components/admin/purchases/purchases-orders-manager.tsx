@@ -255,7 +255,15 @@ export function PurchasesOrdersManager({
             <h2 className="text-lg font-semibold text-[var(--admin-text)]">{t.title}</h2>
             <AdminToolbarGroup align="end">
               <ActionButton type="button" icon="plus" tone="primary" onClick={openComposer} label={t.addPo} />
-              <ActionButton type="button" icon="refresh" onClick={loadOrders} label={t.refresh} />
+              <ActionButton
+                type="button"
+                icon="refresh"
+                onClick={loadOrders}
+                label={t.refresh}
+                iconOnly
+                size="icon"
+                title={t.refresh}
+              />
             </AdminToolbarGroup>
           </AdminToolbar>
         </div>

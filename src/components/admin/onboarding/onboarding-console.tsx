@@ -112,7 +112,14 @@ export function OnboardingConsole({ lang }: { lang: "en" | "fr" }) {
     return (
       <div className="space-y-3">
         <AdminInlineAlert tone="error">{error ?? text.loadingError}</AdminInlineAlert>
-        <ActionButton onClick={load} icon="refresh" label={text.refresh} />
+        <ActionButton
+          onClick={load}
+          icon="refresh"
+          label={text.refresh}
+          iconOnly
+          size="icon"
+          title={text.refresh}
+        />
       </div>
     );
   }
@@ -126,7 +133,14 @@ export function OnboardingConsole({ lang }: { lang: "en" | "fr" }) {
             <p className="text-sm text-[var(--admin-muted)]">{text.subtitle}</p>
           </div>
           <AdminToolbarGroup align="end">
-            <ActionButton onClick={load} icon="refresh" label={text.refresh} />
+            <ActionButton
+              onClick={load}
+              icon="refresh"
+              label={text.refresh}
+              iconOnly
+              size="icon"
+              title={text.refresh}
+            />
           </AdminToolbarGroup>
         </AdminToolbar>
 

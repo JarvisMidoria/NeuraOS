@@ -58,7 +58,15 @@ export function PurchasesReplenishment({ lang }: { lang: "en" | "fr" }) {
         <AdminToolbar>
           <h2 className="text-lg font-semibold text-[var(--admin-text)]">{t.title}</h2>
           <AdminToolbarGroup align="end">
-            <ActionButton type="button" icon="refresh" onClick={load} label={t.refresh} />
+            <ActionButton
+              type="button"
+              icon="refresh"
+              onClick={load}
+              label={t.refresh}
+              iconOnly
+              size="icon"
+              title={t.refresh}
+            />
           </AdminToolbarGroup>
         </AdminToolbar>
       </div>
