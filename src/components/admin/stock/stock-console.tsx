@@ -228,6 +228,10 @@ export function StockConsole({ warehouses, products, lowStock, lang }: StockCons
             onClick={refreshLowStock}
             disabled={refreshing}
             label={refreshing ? t.refreshing : t.refresh}
+            iconOnly
+            size="icon"
+            title={refreshing ? t.refreshing : t.refresh}
+            className={refreshing ? "animate-spin" : undefined}
           />
         </div>
         {lowStockItems.length ? (
@@ -267,7 +271,15 @@ export function StockConsole({ warehouses, products, lowStock, lang }: StockCons
             <h2 className="text-lg font-semibold text-[var(--admin-text)]">{t.stockByProduct}</h2>
             <p className="text-sm text-[var(--admin-muted)]">{t.stockByProductHelp}</p>
           </div>
-          <ActionButton type="button" icon="refresh" onClick={() => window.location.reload()} label={t.refreshPage} />
+          <ActionButton
+            type="button"
+            icon="refresh"
+            onClick={() => window.location.reload()}
+            label={t.refreshPage}
+            iconOnly
+            size="icon"
+            title={t.refreshPage}
+          />
         </div>
         <div className="space-y-3">
           {products.map((item) => (
