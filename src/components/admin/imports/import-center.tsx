@@ -36,6 +36,22 @@ type JobsResponse = {
   pageSize: number;
 };
 
+const STATUS_BADGE_BASE =
+  "inline-flex items-center rounded-full border px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wide";
+
+const STATUS_BADGE_CLASS: Record<string, string> = {
+  APPLIED:
+    "border-emerald-400/45 bg-emerald-500/15 text-[var(--admin-text)]",
+  FAILED:
+    "border-rose-400/45 bg-rose-500/15 text-[var(--admin-text)]",
+  READY_APPLY:
+    "border-sky-400/45 bg-sky-500/15 text-[var(--admin-text)]",
+  ANALYZED:
+    "border-sky-400/45 bg-sky-500/15 text-[var(--admin-text)]",
+};
+
+const META_CELL_CLASS = "liquid-surface rounded-xl px-3 py-2";
+
 async function parseApiJson<T>(res: Response): Promise<T> {
   const contentType = (res.headers.get("content-type") ?? "").toLowerCase();
   if (!contentType.includes("application/json")) {
@@ -303,48 +319,60 @@ export function ImportCenter({ lang }: { lang: "en" | "fr" }) {
           const confidence = typeof job.analysis?.confidence === "number" ? job.analysis.confidence : null;
           const canApply = job.status === "READY_APPLY" || job.status === "ANALYZED";
           const statusClass =
-            job.status === "APPLIED"
-              ? "border-emerald-400/45 bg-emerald-500/15 text-[var(--admin-text)]"
-              : job.status === "FAILED"
-                ? "border-rose-400/45 bg-rose-500/15 text-[var(--admin-text)]"
-                : job.status === "READY_APPLY" || job.status === "ANALYZED"
-                  ? "border-sky-400/45 bg-sky-500/15 text-[var(--admin-text)]"
-                  : "border-[var(--admin-border)] bg-[var(--admin-soft-bg)] text-[var(--admin-text)]";
+            STATUS_BADGE_CLASS[job.status] ??
+            "border-[var(--admin-border)] bg-[var(--admin-soft-bg)] text-[var(--admin-text)]";
 
           return (
-            <article key={job.id} className="liquid-surface rounded-2xl p-4">
+            <article
+              key={job.id}
+              className="liquid-surface rounded-2xl p-4 transition hover:-translate-y-0.5 hover:border-[var(--accent)] hover:bg-[color-mix(in_srgb,var(--accent)_8%,var(--admin-soft-bg))]"
+            >
               <div className="flex flex-wrap items-start justify-between gap-3">
                 <div className="min-w-0 flex-1">
                   <p className="text-[11px] uppercase tracking-wide text-[var(--admin-muted)]">{text.file}</p>
-                  <p className="mt-1 truncate text-sm font-medium text-[var(--admin-text)]" title={job.fileName ?? "-"}>
+                  <p
+                    className="mt-1 break-all text-sm font-medium text-[var(--admin-text)]"
+                    title={job.fileName ?? "-"}
+                  >
                     {job.fileName || "-"}
                   </p>
                 </div>
                 <div className="flex items-center gap-2">
-                  <span className={`rounded-full border px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wide ${statusClass}`}>
+                  <span className={`${STATUS_BADGE_BASE} ${statusClass}`}>
                     {job.status}
                   </span>
                 </div>
               </div>
 
-              <div className="mt-2 flex flex-wrap items-center gap-2 text-xs text-[var(--admin-muted)]">
-                <span className="rounded-full bg-[var(--admin-soft-bg)] px-2.5 py-1">
-                  {text.type}: {job.docType}
-                </span>
-                <span className="rounded-full bg-[var(--admin-soft-bg)] px-2.5 py-1">
-                  {text.source}: {job.source}
-                </span>
-                <span className="rounded-full bg-[var(--admin-soft-bg)] px-2.5 py-1">
-                  {text.actions}: {job.actions.length}
-                </span>
+              <div className="mt-3 grid gap-2 sm:grid-cols-2 xl:grid-cols-4">
+                <div className={META_CELL_CLASS}>
+                  <p className="text-[10px] uppercase tracking-wide text-[var(--admin-muted)]">{text.type}</p>
+                  <p className="mt-1 text-xs font-medium text-[var(--admin-text)]">{job.docType}</p>
+                </div>
+                <div className={META_CELL_CLASS}>
+                  <p className="text-[10px] uppercase tracking-wide text-[var(--admin-muted)]">{text.source}</p>
+                  <p className="mt-1 text-xs font-medium text-[var(--admin-text)]">{job.source}</p>
+                </div>
+                <div className={META_CELL_CLASS}>
+                  <p className="text-[10px] uppercase tracking-wide text-[var(--admin-muted)]">{text.actions}</p>
+                  <p className="mt-1 text-xs font-medium text-[var(--admin-text)]">{job.actions.length}</p>
+                </div>
                 {confidence !== null ? (
-                  <span className="rounded-full bg-[var(--admin-soft-bg)] px-2.5 py-1">
-                    {text.confidence}: {(confidence * 100).toFixed(0)}%
-                  </span>
+                  <div className={META_CELL_CLASS}>
+                    <p className="text-[10px] uppercase tracking-wide text-[var(--admin-muted)]">
+                      {text.confidence}
+                    </p>
+                    <p className="mt-1 text-xs font-medium text-[var(--admin-text)]">
+                      {(confidence * 100).toFixed(0)}%
+                    </p>
+                  </div>
                 ) : null}
-                <span className="rounded-full bg-[var(--admin-soft-bg)] px-2.5 py-1">
-                  {text.createdAt}: {new Date(job.createdAt).toLocaleString(lang === "fr" ? "fr-FR" : "en-US")}
-                </span>
+                <div className={META_CELL_CLASS}>
+                  <p className="text-[10px] uppercase tracking-wide text-[var(--admin-muted)]">{text.createdAt}</p>
+                  <p className="mt-1 text-xs font-medium text-[var(--admin-text)] break-words">
+                    {new Date(job.createdAt).toLocaleString(lang === "fr" ? "fr-FR" : "en-US")}
+                  </p>
+                </div>
               </div>
 
               {warnings.length ? (

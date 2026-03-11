@@ -122,9 +122,9 @@ body {
   --admin-drawer-bg: #f3f7ff;
   --admin-modal-bg: rgba(248, 251, 255, 0.97);
   --admin-modal-border: rgba(15, 23, 42, 0.16);
-  --admin-warning-bg: rgba(255, 243, 214, 0.92);
-  --admin-warning-border: rgba(230, 179, 68, 0.55);
-  --admin-warning-text: #8a5b00;
+  --admin-warning-bg: rgba(255, 245, 222, 0.98);
+  --admin-warning-border: rgba(186, 127, 16, 0.42);
+  --admin-warning-text: #6f4200;
   --liquid-highlight: rgba(255, 255, 255, 0.7);
   --liquid-rim: rgba(255, 255, 255, 0.52);
   --liquid-blur: 18px;
