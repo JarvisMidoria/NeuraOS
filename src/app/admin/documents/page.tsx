@@ -37,7 +37,7 @@ function ActionLink({
     <Link
       href={href}
       target={external ? "_blank" : undefined}
-      className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-zinc-300 text-zinc-700 transition hover:border-indigo-300 hover:bg-indigo-50 hover:text-indigo-700"
+      className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-[var(--admin-border)] text-[var(--admin-text)] transition hover:border-indigo-300 hover:bg-indigo-50 hover:text-indigo-700"
       aria-label={label}
       title={label}
     >
@@ -72,26 +72,26 @@ function DocumentsSection({
   locale: string;
 }) {
   return (
-    <section className="rounded-2xl border border-zinc-200 bg-white p-5 shadow-sm">
+    <section className="liquid-surface rounded-2xl p-5">
       <div className="mb-3 flex items-center justify-between">
-        <h2 className="text-lg font-semibold text-zinc-900">{label}</h2>
-        <span className="text-xs text-zinc-500">
+        <h2 className="text-lg font-semibold text-[var(--admin-text)]">{label}</h2>
+        <span className="text-xs text-[var(--admin-muted)]">
           {text.templates}: {text.clean} / {text.compact}
         </span>
       </div>
       {rows.length === 0 ? (
-        <p className="text-sm text-zinc-500">{text.empty}</p>
+        <p className="text-sm text-[var(--admin-muted)]">{text.empty}</p>
       ) : (
         <div className="space-y-3">
           {rows.map((row) => (
-            <article key={row.id} className="rounded-xl border border-zinc-100 p-4">
+            <article key={row.id} className="liquid-surface rounded-xl p-4">
               <div className="flex flex-wrap items-center justify-between gap-3">
                 <div>
-                  <p className="text-sm font-semibold text-zinc-900">{row.code}</p>
-                  <p className="text-xs text-zinc-500">
+                  <p className="text-sm font-semibold text-[var(--admin-text)]">{row.code}</p>
+                  <p className="text-xs text-[var(--admin-muted)]">
                     {text.counterpart}: {row.counterpart}
                   </p>
-                  <p className="text-xs text-zinc-500">
+                  <p className="text-xs text-[var(--admin-muted)]">
                     {text.date}: {row.date.toLocaleDateString(locale)}
                   </p>
                 </div>
@@ -205,9 +205,9 @@ export default async function AdminDocumentsPage() {
 
   return (
     <div className="space-y-6">
-      <section className="rounded-2xl border border-zinc-200 bg-white p-5 shadow-sm">
-        <h1 className="text-2xl font-semibold text-zinc-900">{text.title}</h1>
-        <p className="mt-1 text-sm text-zinc-500">{text.subtitle}</p>
+      <section className="liquid-surface rounded-2xl p-5">
+        <h1 className="text-2xl font-semibold text-[var(--admin-text)]">{text.title}</h1>
+        <p className="mt-1 text-sm text-[var(--admin-muted)]">{text.subtitle}</p>
       </section>
 
       <DocumentsSection label={text.quotes} rows={quoteRows} text={text} locale={locale} />

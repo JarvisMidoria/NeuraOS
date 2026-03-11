@@ -29,9 +29,9 @@ export default async function SalesQuotesPage() {
   return (
     <div className="space-y-6">
       <div>
-        <p className="text-xs uppercase tracking-[0.2em] text-zinc-500">{lang === "fr" ? "Ventes" : "Sales"}</p>
-        <h1 className="text-3xl font-semibold tracking-tight text-zinc-900">{lang === "fr" ? "Devis" : "Quotes"}</h1>
-        <p className="text-sm text-zinc-500">
+        <p className="text-xs uppercase tracking-[0.2em] text-[var(--admin-muted)]">{lang === "fr" ? "Ventes" : "Sales"}</p>
+        <h1 className="text-3xl font-semibold tracking-tight text-[var(--admin-text)]">{lang === "fr" ? "Devis" : "Quotes"}</h1>
+        <p className="text-sm text-[var(--admin-muted)]">
           {lang === "fr"
             ? "Preparez les devis, appliquez les taxes et convertissez les devis approuves en commandes."
             : "Draft quotes, apply taxes, and convert approved quotes into orders."}

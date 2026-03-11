@@ -13,11 +13,11 @@ export default async function WarehousesPage() {
   return (
     <div className="space-y-6">
       <div>
-        <p className="text-xs uppercase tracking-[0.2em] text-zinc-500">{lang === "fr" ? "Stock" : "Inventory"}</p>
-        <h1 className="text-3xl font-semibold tracking-tight text-zinc-900">
+        <p className="text-xs uppercase tracking-[0.2em] text-[var(--admin-muted)]">{lang === "fr" ? "Stock" : "Inventory"}</p>
+        <h1 className="text-3xl font-semibold tracking-tight text-[var(--admin-text)]">
           {lang === "fr" ? "Entrepots" : "Warehouses"}
         </h1>
-        <p className="text-sm text-zinc-500">
+        <p className="text-sm text-[var(--admin-muted)]">
           {lang === "fr"
             ? "Definissez les lieux de stockage disponibles pour les mouvements de stock."
             : "Define the storage locations available for inventory movements."}

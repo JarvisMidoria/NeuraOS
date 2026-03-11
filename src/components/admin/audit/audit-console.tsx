@@ -123,7 +123,7 @@ export function AuditConsole({ lang }: { lang: "en" | "fr" }) {
 
   return (
     <div className="space-y-6">
-      <section className="rounded-2xl border border-zinc-200 bg-white p-5 shadow-sm">
+      <section className="liquid-surface rounded-2xl p-5">
         <AdminToolbar>
           <AdminToolbarGroup className="w-full flex-1">
             <AdminToolbarInput
@@ -173,11 +173,11 @@ export function AuditConsole({ lang }: { lang: "en" | "fr" }) {
         </AdminToolbar>
       </section>
 
-      <section className="rounded-2xl border border-zinc-200 bg-white p-5 shadow-sm">
+      <section className="liquid-surface rounded-2xl p-5">
         <div className="overflow-x-auto">
           <table className="min-w-full border-separate border-spacing-y-2 text-sm">
             <thead>
-              <tr className="text-left text-zinc-500">
+              <tr className="text-left text-[var(--admin-muted)]">
                 <th className="px-3 py-2">{text.date}</th>
                 <th className="px-3 py-2">{text.action}</th>
                 <th className="px-3 py-2">{text.entity}</th>
@@ -189,14 +189,14 @@ export function AuditConsole({ lang }: { lang: "en" | "fr" }) {
             <tbody>
               {loading && (
                 <tr>
-                  <td className="px-3 py-6 text-zinc-500" colSpan={6}>
+                  <td className="px-3 py-6 text-[var(--admin-muted)]" colSpan={6}>
                     {text.loading}
                   </td>
                 </tr>
               )}
               {!loading && rows.length === 0 && (
                 <tr>
-                  <td className="px-3 py-6 text-zinc-500" colSpan={6}>
+                  <td className="px-3 py-6 text-[var(--admin-muted)]" colSpan={6}>
                     {text.empty}
                   </td>
                 </tr>
@@ -206,15 +206,15 @@ export function AuditConsole({ lang }: { lang: "en" | "fr" }) {
                   const isExpanded = expandedRows.includes(row.id);
                   const metadataString = row.metadata ? JSON.stringify(row.metadata) : "-";
                   return (
-                  <tr key={row.id} className="rounded-lg border border-zinc-100 bg-zinc-50 align-top">
-                    <td className="px-3 py-2 text-zinc-700">{new Date(row.createdAt).toLocaleString(lang === "fr" ? "fr-FR" : "en-US")}</td>
-                    <td className="px-3 py-2 font-medium text-zinc-900">{row.action}</td>
-                    <td className="px-3 py-2 text-zinc-700">{row.entity}</td>
-                    <td className="px-3 py-2 text-zinc-700">
+                  <tr key={row.id} className="liquid-surface align-top">
+                    <td className="px-3 py-2 text-[var(--admin-text)]">{new Date(row.createdAt).toLocaleString(lang === "fr" ? "fr-FR" : "en-US")}</td>
+                    <td className="px-3 py-2 font-medium text-[var(--admin-text)]">{row.action}</td>
+                    <td className="px-3 py-2 text-[var(--admin-text)]">{row.entity}</td>
+                    <td className="px-3 py-2 text-[var(--admin-text)]">
                       {entityHref(row.entity) ? (
                         <a
                           href={entityHref(row.entity)}
-                          className="underline underline-offset-2 hover:text-zinc-900"
+                          className="underline underline-offset-2 hover:text-[var(--admin-text)]"
                           title={row.entityId}
                         >
                           {row.entityId}
@@ -223,8 +223,8 @@ export function AuditConsole({ lang }: { lang: "en" | "fr" }) {
                         row.entityId
                       )}
                     </td>
-                    <td className="px-3 py-2 text-zinc-700">{row.user?.name ?? "System"}</td>
-                    <td className="max-w-[320px] px-3 py-2 text-xs text-zinc-600">
+                    <td className="px-3 py-2 text-[var(--admin-text)]">{row.user?.name ?? "System"}</td>
+                    <td className="max-w-[320px] px-3 py-2 text-xs text-[var(--admin-muted)]">
                       <div className="space-y-2">
                         <pre className={`whitespace-pre-wrap break-all ${isExpanded ? "max-h-48 overflow-auto" : "max-h-10 overflow-hidden"}`}>
                           {metadataString}
@@ -253,7 +253,7 @@ export function AuditConsole({ lang }: { lang: "en" | "fr" }) {
           </table>
         </div>
 
-        <div className="mt-4 flex items-center justify-between text-sm text-zinc-600">
+        <div className="mt-4 flex items-center justify-between text-sm text-[var(--admin-muted)]">
           <span>
             {text.page} {page}/{totalPages} · {total}
           </span>
