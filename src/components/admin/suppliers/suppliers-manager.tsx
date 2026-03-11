@@ -134,10 +134,10 @@ export function SuppliersManager({ lang = "en" }: { lang?: "en" | "fr" }) {
       {status ? <div className="rounded-md bg-emerald-50 px-4 py-2 text-sm text-emerald-700">{status}</div> : null}
       {error ? <div className="rounded-md bg-red-50 px-4 py-2 text-sm text-red-700">{error}</div> : null}
 
-      <div className="rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm">
+      <div className="liquid-surface rounded-2xl p-6">
         <div className="mb-4">
           <AdminToolbar>
-            <h2 className="text-lg font-semibold text-zinc-900">{t.suppliers}</h2>
+            <h2 className="text-lg font-semibold text-[var(--admin-text)]">{t.suppliers}</h2>
             <AdminToolbarGroup align="end">
               <ActionButton type="button" icon="plus" tone="primary" onClick={openCreate} label={t.addSupplier} />
               <ActionButton type="button" icon="refresh" onClick={load} label={t.refresh} />
@@ -145,7 +145,7 @@ export function SuppliersManager({ lang = "en" }: { lang?: "en" | "fr" }) {
           </AdminToolbar>
         </div>
         {loading ? (
-          <p className="text-sm text-zinc-500">{t.loading}</p>
+          <p className="text-sm text-[var(--admin-muted)]">{t.loading}</p>
         ) : (
           <div className="space-y-3">
             {suppliers.map((supplier) => (
@@ -160,13 +160,13 @@ export function SuppliersManager({ lang = "en" }: { lang?: "en" | "fr" }) {
                     startEdit(supplier);
                   }
                 }}
-                className="rounded-2xl border border-zinc-100 p-4 transition hover:border-zinc-300 cursor-pointer"
+                className="liquid-surface rounded-2xl p-4 transition cursor-pointer"
               >
                 <div className="flex items-center justify-between gap-3">
                   <div>
-                    <p className="font-semibold text-zinc-900">{supplier.name}</p>
-                    <p className="text-xs text-zinc-500">{supplier.email ?? "—"} · {supplier.phone ?? "—"}</p>
-                    <p className="text-xs text-zinc-500">{supplier.address ?? "—"}</p>
+                    <p className="font-semibold text-[var(--admin-text)]">{supplier.name}</p>
+                    <p className="text-xs text-[var(--admin-muted)]">{supplier.email ?? "—"} · {supplier.phone ?? "—"}</p>
+                    <p className="text-xs text-[var(--admin-muted)]">{supplier.address ?? "—"}</p>
                   </div>
                   <div className="flex gap-2 text-xs">
                     <ActionButton
@@ -208,26 +208,26 @@ export function SuppliersManager({ lang = "en" }: { lang?: "en" | "fr" }) {
       >
         <form onSubmit={submit} className="grid gap-3 md:grid-cols-2">
           <input
-            className="rounded-md border border-zinc-300 px-3 py-2 text-sm"
+            className="admin-toolbar-control"
             value={form.name}
             onChange={(e) => setForm((p) => ({ ...p, name: e.target.value }))}
             placeholder={t.name}
             required
           />
           <input
-            className="rounded-md border border-zinc-300 px-3 py-2 text-sm"
+            className="admin-toolbar-control"
             value={form.email}
             onChange={(e) => setForm((p) => ({ ...p, email: e.target.value }))}
             placeholder={t.email}
           />
           <input
-            className="rounded-md border border-zinc-300 px-3 py-2 text-sm"
+            className="admin-toolbar-control"
             value={form.phone}
             onChange={(e) => setForm((p) => ({ ...p, phone: e.target.value }))}
             placeholder={t.phone}
           />
           <input
-            className="rounded-md border border-zinc-300 px-3 py-2 text-sm"
+            className="admin-toolbar-control"
             value={form.address}
             onChange={(e) => setForm((p) => ({ ...p, address: e.target.value }))}
             placeholder={t.address}

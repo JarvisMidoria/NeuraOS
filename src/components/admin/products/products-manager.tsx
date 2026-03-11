@@ -288,12 +288,12 @@ export function ProductsManager({
         </div>
       )}
 
-      <div className="rounded-xl border border-zinc-200 bg-white p-6 shadow-sm">
+      <div className="liquid-surface rounded-xl p-6">
         <div className="mb-4">
           <AdminToolbar>
             <div>
-              <h2 className="text-lg font-semibold text-zinc-900">{t.products}</h2>
-              <p className="text-sm text-zinc-500">
+              <h2 className="text-lg font-semibold text-[var(--admin-text)]">{t.products}</h2>
+              <p className="text-sm text-[var(--admin-muted)]">
                 {t.showing} {products.length} {t.of} {total} {lang === "fr" ? "produits" : "products"}
               </p>
             </div>
@@ -321,7 +321,7 @@ export function ProductsManager({
         </div>
 
         {loading ? (
-          <p className="text-sm text-zinc-500">{t.loading}</p>
+          <p className="text-sm text-[var(--admin-muted)]">{t.loading}</p>
         ) : (
           <div className="space-y-3">
             {products.map((product) => (
@@ -336,32 +336,32 @@ export function ProductsManager({
                     handleEdit(product);
                   }
                 }}
-                className="rounded-2xl border border-zinc-100 p-4 transition hover:border-zinc-300 cursor-pointer"
+                className="liquid-surface rounded-2xl p-4 transition cursor-pointer"
               >
                 <div className="grid gap-3 md:grid-cols-[1fr_auto] md:items-start">
                   <div className="space-y-2">
-                    <p className="font-mono text-xs text-zinc-500">{product.sku}</p>
-                    <p className="text-base font-semibold text-zinc-900">{product.name}</p>
-                    <div className="flex flex-wrap gap-2 text-xs text-zinc-600">
-                      <span className="rounded-full bg-zinc-100 px-2 py-1">
+                    <p className="font-mono text-xs text-[var(--admin-muted)]">{product.sku}</p>
+                    <p className="text-base font-semibold text-[var(--admin-text)]">{product.name}</p>
+                    <div className="flex flex-wrap gap-2 text-xs text-[var(--admin-muted)]">
+                      <span className="liquid-pill px-2 py-1">
                         {t.category}: {product.category?.name ?? "—"}
                       </span>
-                      <span className="rounded-full bg-zinc-100 px-2 py-1">
+                      <span className="liquid-pill px-2 py-1">
                         {t.unitPrice}: {Number(product.unitPrice ?? 0).toFixed(2)} {companySettings.currencyCode}
                       </span>
-                      <span className="rounded-full bg-zinc-100 px-2 py-1">
+                      <span className="liquid-pill px-2 py-1">
                         {t.lowStock}: {product.lowStockThreshold ?? "—"}
                       </span>
                     </div>
-                    <div className="flex flex-wrap gap-1 text-xs text-zinc-600">
+                    <div className="flex flex-wrap gap-1 text-xs text-[var(--admin-muted)]">
                       {product.customFields.length ? (
                         product.customFields.map((field) => (
-                          <span key={field.fieldId} className="rounded-full bg-zinc-100 px-2 py-0.5">
+                          <span key={field.fieldId} className="liquid-pill px-2 py-0.5">
                             {field.label}: {field.value}
                           </span>
                         ))
                       ) : (
-                        <span className="text-zinc-400">{t.customValuesEmpty}</span>
+                        <span className="text-[var(--admin-muted)]">{t.customValuesEmpty}</span>
                       )}
                     </div>
                   </div>
@@ -396,7 +396,7 @@ export function ProductsManager({
           </div>
         )}
 
-        <div className="mt-4 flex items-center justify-between text-sm text-zinc-600">
+        <div className="mt-4 flex items-center justify-between text-sm text-[var(--admin-muted)]">
           <span>
             {t.page} {page} {t.of} {totalPages}
           </span>
@@ -431,48 +431,48 @@ export function ProductsManager({
       >
         <form onSubmit={handleSubmit} className="grid gap-4 md:grid-cols-2">
           <div className="space-y-2">
-            <label className="text-sm font-medium text-zinc-700">{t.sku}</label>
+            <label className="text-sm font-medium text-[var(--admin-text)]">{t.sku}</label>
             <input
-              className="w-full rounded-md border border-zinc-300 px-3 py-2 text-sm"
+              className="admin-toolbar-control w-full"
               value={formData.sku}
               onChange={(event) => setFormData((prev) => ({ ...prev, sku: event.target.value }))}
               required
             />
           </div>
           <div className="space-y-2">
-            <label className="text-sm font-medium text-zinc-700">{t.name}</label>
+            <label className="text-sm font-medium text-[var(--admin-text)]">{t.name}</label>
             <input
-              className="w-full rounded-md border border-zinc-300 px-3 py-2 text-sm"
+              className="admin-toolbar-control w-full"
               value={formData.name}
               onChange={(event) => setFormData((prev) => ({ ...prev, name: event.target.value }))}
               required
             />
           </div>
           <div className="space-y-2">
-            <label className="text-sm font-medium text-zinc-700">{t.unitPrice}</label>
+            <label className="text-sm font-medium text-[var(--admin-text)]">{t.unitPrice}</label>
             <input
               type="number"
               step="0.01"
-              className="w-full rounded-md border border-zinc-300 px-3 py-2 text-sm"
+              className="admin-toolbar-control w-full"
               value={formData.unitPrice}
               onChange={(event) => setFormData((prev) => ({ ...prev, unitPrice: event.target.value }))}
               required
             />
           </div>
           <div className="space-y-2">
-            <label className="text-sm font-medium text-zinc-700">{t.uom}</label>
+            <label className="text-sm font-medium text-[var(--admin-text)]">{t.uom}</label>
             {companySettings.productUnitMode === "GLOBAL" ? (
               <>
                 <input
-                  className="w-full rounded-md border border-zinc-300 bg-zinc-50 px-3 py-2 text-sm text-zinc-600"
+                  className="admin-toolbar-control w-full opacity-80"
                   value={companySettings.defaultProductUnit}
                   disabled
                 />
-                <p className="text-xs text-zinc-500">{t.unitModeGlobal}</p>
+                <p className="text-xs text-[var(--admin-muted)]">{t.unitModeGlobal}</p>
               </>
             ) : (
               <select
-                className="w-full rounded-md border border-zinc-300 px-3 py-2 text-sm"
+                className="admin-toolbar-control w-full"
                 value={formData.unitOfMeasure}
                 onChange={(event) =>
                   setFormData((prev) => ({ ...prev, unitOfMeasure: normalizeUnit(event.target.value) }))
@@ -487,9 +487,9 @@ export function ProductsManager({
             )}
           </div>
           <div className="space-y-2">
-            <label className="text-sm font-medium text-zinc-700">{t.category}</label>
+            <label className="text-sm font-medium text-[var(--admin-text)]">{t.category}</label>
             <select
-              className="w-full rounded-md border border-zinc-300 px-3 py-2 text-sm"
+              className="admin-toolbar-control w-full"
               value={formData.categoryId}
               onChange={(event) => setFormData((prev) => ({ ...prev, categoryId: event.target.value }))}
             >
@@ -502,8 +502,8 @@ export function ProductsManager({
             </select>
           </div>
           <div className="space-y-2">
-            <label className="text-sm font-medium text-zinc-700">{t.lowStock}</label>
-            <label className="flex items-center gap-2 text-sm text-zinc-600">
+            <label className="text-sm font-medium text-[var(--admin-text)]">{t.lowStock}</label>
+            <label className="flex items-center gap-2 text-sm text-[var(--admin-muted)]">
               <input
                 type="checkbox"
                 checked={formData.restockAlertEnabled}
@@ -521,7 +521,7 @@ export function ProductsManager({
             <input
               type="number"
               step="0.01"
-              className="w-full rounded-md border border-zinc-300 px-3 py-2 text-sm"
+              className="admin-toolbar-control w-full"
               value={formData.lowStockThreshold}
               onChange={(event) =>
                 setFormData((prev) => ({ ...prev, lowStockThreshold: event.target.value }))
@@ -531,9 +531,9 @@ export function ProductsManager({
             />
           </div>
           <div className="space-y-2 md:col-span-2">
-            <label className="text-sm font-medium text-zinc-700">{t.description}</label>
+            <label className="text-sm font-medium text-[var(--admin-text)]">{t.description}</label>
             <textarea
-              className="w-full rounded-md border border-zinc-300 px-3 py-2 text-sm"
+              className="admin-toolbar-control w-full"
               rows={3}
               value={formData.description}
               onChange={(event) => setFormData((prev) => ({ ...prev, description: event.target.value }))}
@@ -542,13 +542,13 @@ export function ProductsManager({
 
           {customFieldDefinitions.length > 0 && (
             <div className="space-y-4 md:col-span-2">
-              <p className="text-sm font-medium text-zinc-700">{t.customFields}</p>
+              <p className="text-sm font-medium text-[var(--admin-text)]">{t.customFields}</p>
               <div className="grid gap-4 md:grid-cols-2">
                 {customFieldDefinitions.map((definition) => (
                   <div key={definition.id} className="space-y-2">
-                    <label className="text-sm text-zinc-700">{definition.label}</label>
+                    <label className="text-sm text-[var(--admin-text)]">{definition.label}</label>
                     <input
-                      className="w-full rounded-md border border-zinc-300 px-3 py-2 text-sm"
+                      className="admin-toolbar-control w-full"
                       value={customValues[definition.id] ?? ""}
                       onChange={(event) =>
                         setCustomValues((prev) => ({ ...prev, [definition.id]: event.target.value }))

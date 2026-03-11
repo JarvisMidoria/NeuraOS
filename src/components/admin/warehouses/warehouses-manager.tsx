@@ -141,12 +141,12 @@ export function WarehousesManager({ lang }: { lang: "en" | "fr" }) {
     <div className="space-y-6">
       {error && <div className="rounded-md bg-red-50 px-4 py-2 text-sm text-red-700">{error}</div>}
 
-      <div className="rounded-xl border border-zinc-200 bg-white p-6 shadow-sm">
+      <div className="liquid-surface rounded-xl p-6">
         <div className="mb-4">
           <AdminToolbar>
             <div>
-              <h2 className="text-lg font-semibold text-zinc-900">{t.warehouses}</h2>
-              <p className="text-sm text-zinc-500">
+              <h2 className="text-lg font-semibold text-[var(--admin-text)]">{t.warehouses}</h2>
+              <p className="text-sm text-[var(--admin-muted)]">
                 {warehouses.length} {t.total}
               </p>
             </div>
@@ -163,7 +163,7 @@ export function WarehousesManager({ lang }: { lang: "en" | "fr" }) {
         </div>
 
         {loading ? (
-          <p className="text-sm text-zinc-500">{t.loading}</p>
+          <p className="text-sm text-[var(--admin-muted)]">{t.loading}</p>
         ) : (
           <div className="space-y-3">
             {warehouses.map((warehouse) => (
@@ -178,11 +178,11 @@ export function WarehousesManager({ lang }: { lang: "en" | "fr" }) {
                     handleEdit(warehouse);
                   }
                 }}
-                className="flex items-center justify-between rounded-2xl border border-zinc-100 p-4 text-sm transition hover:border-zinc-300 cursor-pointer"
+                className="liquid-surface flex items-center justify-between rounded-2xl p-4 text-sm transition cursor-pointer"
               >
                 <div>
-                  <p className="font-medium text-zinc-900">{warehouse.name}</p>
-                  <p className="text-xs text-zinc-500">{warehouse.location ?? t.noLocation}</p>
+                  <p className="font-medium text-[var(--admin-text)]">{warehouse.name}</p>
+                  <p className="text-xs text-[var(--admin-muted)]">{warehouse.location ?? t.noLocation}</p>
                 </div>
                 <div className="flex gap-3 text-xs">
                   <ActionButton
@@ -224,18 +224,18 @@ export function WarehousesManager({ lang }: { lang: "en" | "fr" }) {
       >
         <form onSubmit={handleSubmit} className="grid gap-4 md:grid-cols-2">
           <div className="space-y-2">
-            <label className="text-sm font-medium text-zinc-700">{t.name}</label>
+            <label className="text-sm font-medium text-[var(--admin-text)]">{t.name}</label>
             <input
-              className="w-full rounded-md border border-zinc-300 px-3 py-2 text-sm"
+              className="admin-toolbar-control w-full"
               value={formData.name}
               onChange={(event) => setFormData((prev) => ({ ...prev, name: event.target.value }))}
               required
             />
           </div>
           <div className="space-y-2">
-            <label className="text-sm font-medium text-zinc-700">{t.location}</label>
+            <label className="text-sm font-medium text-[var(--admin-text)]">{t.location}</label>
             <input
-              className="w-full rounded-md border border-zinc-300 px-3 py-2 text-sm"
+              className="admin-toolbar-control w-full"
               value={formData.location}
               onChange={(event) => setFormData((prev) => ({ ...prev, location: event.target.value }))}
               placeholder={t.optional}
