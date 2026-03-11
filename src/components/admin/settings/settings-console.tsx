@@ -131,11 +131,11 @@ function SettingsSection({
   children,
 }: SettingsSectionProps) {
   return (
-    <section className="rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm">
+    <section className="liquid-surface rounded-2xl p-6">
       <div className="flex items-start justify-between gap-3">
         <div>
-          <h2 className="text-lg font-semibold text-zinc-900">{title}</h2>
-          {subtitle ? <p className="mt-1 text-xs text-zinc-500">{subtitle}</p> : null}
+          <h2 className="text-lg font-semibold text-[var(--admin-text)]">{title}</h2>
+          {subtitle ? <p className="mt-1 text-xs text-[var(--admin-muted)]">{subtitle}</p> : null}
         </div>
         <ActionButton
           type="button"
@@ -646,7 +646,7 @@ export function SettingsConsole({ lang = "en" }: { lang?: "en" | "fr" }) {
   };
 
   if (loading) {
-    return <p className="text-sm text-zinc-500">{tCompany.loading}</p>;
+    return <p className="text-sm text-[var(--admin-muted)]">{tCompany.loading}</p>;
   }
 
   return (
@@ -713,7 +713,7 @@ export function SettingsConsole({ lang = "en" }: { lang?: "en" | "fr" }) {
           </select>
           <input className="rounded-md border border-zinc-300 px-3 py-2 text-sm" value={companyForm.locale} onChange={(e) => setCompanyForm((p) => ({ ...p, locale: e.target.value }))} placeholder={tCompany.locale} />
           <input className="rounded-md border border-zinc-300 px-3 py-2 text-sm md:col-span-2" value={companyForm.timezone} onChange={(e) => setCompanyForm((p) => ({ ...p, timezone: e.target.value }))} placeholder={tCompany.timezone} />
-          <p className="text-xs text-zinc-500 md:col-span-2">
+          <p className="text-xs text-[var(--admin-muted)] md:col-span-2">
             {tCompany.helper}
           </p>
           <ActionButton type="submit" tone="primary" icon="save" className="w-fit" label={tCompany.save} />
@@ -742,10 +742,10 @@ export function SettingsConsole({ lang = "en" }: { lang?: "en" | "fr" }) {
                       ? "bg-amber-500"
                       : "bg-emerald-500";
                 return (
-                  <div className="rounded-md border border-zinc-200 bg-zinc-50 px-3 py-3 text-xs">
+                  <div className="rounded-md border border-[var(--admin-border)] bg-[var(--admin-surface-muted)] px-3 py-3 text-xs">
                     <div className="mb-1 flex items-center justify-between">
-                      <p className="text-zinc-600">Monthly token usage</p>
-                      <p className="font-semibold text-zinc-900">{usedPct}%</p>
+                      <p className="text-[var(--admin-muted)]">Monthly token usage</p>
+                      <p className="font-semibold text-[var(--admin-text)]">{usedPct}%</p>
                     </div>
                     <div className="h-2 w-full overflow-hidden rounded-full bg-zinc-200">
                       <div className={`h-full rounded-full transition-all ${barClass}`} style={{ width: `${usedPct}%` }} />
@@ -756,21 +756,21 @@ export function SettingsConsole({ lang = "en" }: { lang?: "en" | "fr" }) {
             ) : null}
 
             <div className="grid gap-2 sm:grid-cols-3">
-              <div className="rounded-md border border-zinc-200 bg-zinc-50 px-3 py-2 text-xs">
-                <p className="text-zinc-500">Tokens used ({llmSettings.usage.period})</p>
-                <p className="text-sm font-semibold text-zinc-900">{llmSettings.usage.consumedTokens.toLocaleString()}</p>
+              <div className="rounded-md border border-[var(--admin-border)] bg-[var(--admin-surface-muted)] px-3 py-2 text-xs">
+                <p className="text-[var(--admin-muted)]">Tokens used ({llmSettings.usage.period})</p>
+                <p className="text-sm font-semibold text-[var(--admin-text)]">{llmSettings.usage.consumedTokens.toLocaleString()}</p>
               </div>
-              <div className="rounded-md border border-zinc-200 bg-zinc-50 px-3 py-2 text-xs">
-                <p className="text-zinc-500">Token limit</p>
-                <p className="text-sm font-semibold text-zinc-900">
+              <div className="rounded-md border border-[var(--admin-border)] bg-[var(--admin-surface-muted)] px-3 py-2 text-xs">
+                <p className="text-[var(--admin-muted)]">Token limit</p>
+                <p className="text-sm font-semibold text-[var(--admin-text)]">
                   {llmSettings.usage.monthlyLimitTokens === null
                     ? "BYOK (your provider)"
                     : llmSettings.usage.monthlyLimitTokens.toLocaleString()}
                 </p>
               </div>
-              <div className="rounded-md border border-zinc-200 bg-zinc-50 px-3 py-2 text-xs">
-                <p className="text-zinc-500">Tokens left</p>
-                <p className="text-sm font-semibold text-zinc-900">
+              <div className="rounded-md border border-[var(--admin-border)] bg-[var(--admin-surface-muted)] px-3 py-2 text-xs">
+                <p className="text-[var(--admin-muted)]">Tokens left</p>
+                <p className="text-sm font-semibold text-[var(--admin-text)]">
                   {llmSettings.usage.remainingTokens === null
                     ? "N/A"
                     : llmSettings.usage.remainingTokens.toLocaleString()}
@@ -795,8 +795,8 @@ export function SettingsConsole({ lang = "en" }: { lang?: "en" | "fr" }) {
                 disabled={sharedUnavailable}
               />
               <span>
-                <span className="block font-medium text-zinc-900">NeuraOS Shared AI</span>
-                <span className="block text-xs text-zinc-500">Plug-and-play. No API key required.</span>
+                <span className="block font-medium text-[var(--admin-text)]">NeuraOS Shared AI</span>
+                <span className="block text-xs text-[var(--admin-muted)]">Plug-and-play. No API key required.</span>
               </span>
             </label>
             <label className="flex items-start gap-2 rounded-md border border-zinc-300 px-3 py-2 text-sm">
@@ -807,8 +807,8 @@ export function SettingsConsole({ lang = "en" }: { lang?: "en" | "fr" }) {
                 onChange={() => setLlmForm((p) => ({ ...p, accessMode: "BYOK" }))}
               />
               <span>
-                <span className="block font-medium text-zinc-900">Bring Your Own Key</span>
-                <span className="block text-xs text-zinc-500">Connect OpenAI/OpenRouter/Groq/Together…</span>
+                <span className="block font-medium text-[var(--admin-text)]">Bring Your Own Key</span>
+                <span className="block text-xs text-[var(--admin-muted)]">Connect OpenAI/OpenRouter/Groq/Together…</span>
               </span>
             </label>
           </div>
@@ -845,7 +845,7 @@ export function SettingsConsole({ lang = "en" }: { lang?: "en" | "fr" }) {
             placeholder={llmSettings?.keyHint ? `Current key: ${llmSettings.keyHint} (leave blank to keep)` : "API key"}
             disabled={llmForm.accessMode !== "BYOK"}
           />
-          <label className="inline-flex items-center gap-2 text-sm text-zinc-700">
+          <label className="inline-flex items-center gap-2 text-sm text-[var(--admin-text)]">
             <input
               type="checkbox"
               checked={llmForm.isEnabled}
@@ -883,7 +883,7 @@ export function SettingsConsole({ lang = "en" }: { lang?: "en" | "fr" }) {
         toggleCloseLabel={sectionLabels.hide}
       >
         <form onSubmit={updateMessaging} className="grid gap-3 md:grid-cols-2">
-          <label className="inline-flex items-center gap-2 text-sm text-zinc-700">
+          <label className="inline-flex items-center gap-2 text-sm text-[var(--admin-text)]">
             <input
               type="checkbox"
               checked={messagingForm.whatsappEnabled}
@@ -927,7 +927,7 @@ export function SettingsConsole({ lang = "en" }: { lang?: "en" | "fr" }) {
             placeholder="WhatsApp verify token"
           />
 
-          <label className="inline-flex items-center gap-2 text-sm text-zinc-700">
+          <label className="inline-flex items-center gap-2 text-sm text-[var(--admin-text)]">
             <input
               type="checkbox"
               checked={messagingForm.telegramEnabled}
@@ -966,7 +966,7 @@ export function SettingsConsole({ lang = "en" }: { lang?: "en" | "fr" }) {
       >
         {stockRule ? (
           <form onSubmit={updateStockRule} className="flex flex-col gap-3">
-            <label className="inline-flex items-center gap-2 text-sm text-zinc-700">
+            <label className="inline-flex items-center gap-2 text-sm text-[var(--admin-text)]">
               <input type="checkbox" checked={stockRule.allowNegativeStock} onChange={(e) => setStockRule((p) => (p ? { ...p, allowNegativeStock: e.target.checked } : p))} />
               Allow negative stock
             </label>
@@ -987,7 +987,7 @@ export function SettingsConsole({ lang = "en" }: { lang?: "en" | "fr" }) {
           <input className="rounded-md border border-zinc-300 px-3 py-2 text-sm" value={taxForm.code} onChange={(e) => setTaxForm((p) => ({ ...p, code: e.target.value }))} placeholder="Code" />
           <input className="rounded-md border border-zinc-300 px-3 py-2 text-sm" value={taxForm.label} onChange={(e) => setTaxForm((p) => ({ ...p, label: e.target.value }))} placeholder="Label" />
           <input type="number" step="0.001" className="rounded-md border border-zinc-300 px-3 py-2 text-sm" value={taxForm.rate} onChange={(e) => setTaxForm((p) => ({ ...p, rate: e.target.value }))} placeholder="Rate" />
-          <label className="inline-flex items-center gap-2 text-sm text-zinc-700"><input type="checkbox" checked={taxForm.isDefault} onChange={(e) => setTaxForm((p) => ({ ...p, isDefault: e.target.checked }))} />Default</label>
+          <label className="inline-flex items-center gap-2 text-sm text-[var(--admin-text)]"><input type="checkbox" checked={taxForm.isDefault} onChange={(e) => setTaxForm((p) => ({ ...p, isDefault: e.target.checked }))} />Default</label>
           <ActionButton type="submit" tone="primary" icon="plus" label="Add tax" />
         </form>
         <div className="mt-4 space-y-2">
@@ -1030,7 +1030,7 @@ export function SettingsConsole({ lang = "en" }: { lang?: "en" | "fr" }) {
           </div>
           <div className="grid gap-2 md:grid-cols-3">
             {permissions.map((perm) => (
-              <label key={perm.id} className="inline-flex items-center gap-2 text-xs text-zinc-700">
+              <label key={perm.id} className="inline-flex items-center gap-2 text-xs text-[var(--admin-text)]">
                 <input
                   type="checkbox"
                   checked={roleForm.permissionIds.includes(perm.id)}
@@ -1052,10 +1052,10 @@ export function SettingsConsole({ lang = "en" }: { lang?: "en" | "fr" }) {
           {roles.map((role) => (
             <div key={role.id} className="rounded-xl border border-zinc-100 p-3">
               <div className="flex items-center justify-between gap-2">
-                <p className="text-sm font-semibold">{role.name} <span className="text-zinc-500">({role.userCount} users)</span></p>
+                <p className="text-sm font-semibold">{role.name} <span className="text-[var(--admin-muted)]">({role.userCount} users)</span></p>
                 <ActionButton size="sm" tone="danger" icon="delete" onClick={() => deleteRole(role.id)} label="Delete" />
               </div>
-              <p className="text-xs text-zinc-500">{role.description ?? "No description"}</p>
+              <p className="text-xs text-[var(--admin-muted)]">{role.description ?? "No description"}</p>
               <div className="mt-2 flex flex-wrap gap-1 text-xs">
                 {role.permissions.map((perm) => (
                   <span key={perm.id} className="rounded-full bg-zinc-100 px-2 py-0.5">{perm.code}</span>
@@ -1077,10 +1077,10 @@ export function SettingsConsole({ lang = "en" }: { lang?: "en" | "fr" }) {
           <input className="rounded-md border border-zinc-300 px-3 py-2 text-sm" value={userForm.email} onChange={(e) => setUserForm((p) => ({ ...p, email: e.target.value }))} placeholder="Email" />
           <input className="rounded-md border border-zinc-300 px-3 py-2 text-sm" value={userForm.name} onChange={(e) => setUserForm((p) => ({ ...p, name: e.target.value }))} placeholder="Name" />
           <input className="rounded-md border border-zinc-300 px-3 py-2 text-sm" value={userForm.password} onChange={(e) => setUserForm((p) => ({ ...p, password: e.target.value }))} placeholder="Password (min 8)" />
-          <label className="inline-flex items-center gap-2 text-sm text-zinc-700"><input type="checkbox" checked={userForm.isActive} onChange={(e) => setUserForm((p) => ({ ...p, isActive: e.target.checked }))} />Active</label>
+          <label className="inline-flex items-center gap-2 text-sm text-[var(--admin-text)]"><input type="checkbox" checked={userForm.isActive} onChange={(e) => setUserForm((p) => ({ ...p, isActive: e.target.checked }))} />Active</label>
           <div className="md:col-span-2 grid gap-2 md:grid-cols-3">
             {roleOptions.map((role) => (
-              <label key={role.id} className="inline-flex items-center gap-2 text-xs text-zinc-700">
+              <label key={role.id} className="inline-flex items-center gap-2 text-xs text-[var(--admin-text)]">
                 <input
                   type="checkbox"
                   checked={userForm.roleIds.includes(role.id)}
@@ -1104,7 +1104,7 @@ export function SettingsConsole({ lang = "en" }: { lang?: "en" | "fr" }) {
               <div className="flex flex-wrap items-center justify-between gap-2">
                 <div>
                   <p className="text-sm font-semibold">{user.name}</p>
-                  <p className="text-xs text-zinc-500">{user.email}</p>
+                  <p className="text-xs text-[var(--admin-muted)]">{user.email}</p>
                 </div>
                 <div className="flex gap-2 text-xs">
                   <ActionButton
@@ -1144,7 +1144,7 @@ export function SettingsConsole({ lang = "en" }: { lang?: "en" | "fr" }) {
           <input className="rounded-md border border-zinc-300 px-3 py-2 text-sm" value={fieldForm.fieldKey} onChange={(e) => setFieldForm((p) => ({ ...p, fieldKey: e.target.value }))} placeholder="field_key" />
           <input className="rounded-md border border-zinc-300 px-3 py-2 text-sm" value={fieldForm.label} onChange={(e) => setFieldForm((p) => ({ ...p, label: e.target.value }))} placeholder="Label" />
           <input className="rounded-md border border-zinc-300 px-3 py-2 text-sm" value={fieldForm.fieldType} onChange={(e) => setFieldForm((p) => ({ ...p, fieldType: e.target.value }))} placeholder="Type (text|number|date)" />
-          <label className="inline-flex items-center gap-2 text-sm text-zinc-700"><input type="checkbox" checked={fieldForm.isRequired} onChange={(e) => setFieldForm((p) => ({ ...p, isRequired: e.target.checked }))} />Required</label>
+          <label className="inline-flex items-center gap-2 text-sm text-[var(--admin-text)]"><input type="checkbox" checked={fieldForm.isRequired} onChange={(e) => setFieldForm((p) => ({ ...p, isRequired: e.target.checked }))} />Required</label>
           <ActionButton type="submit" tone="primary" icon="plus" className="w-fit" label="Create field" />
         </form>
 
@@ -1160,7 +1160,7 @@ export function SettingsConsole({ lang = "en" }: { lang?: "en" | "fr" }) {
         </div>
       </SettingsSection>
 
-      <div className="text-xs text-zinc-500">Company ID: {company?.id}</div>
+      <div className="text-xs text-[var(--admin-muted)]">Company ID: {company?.id}</div>
     </div>
   );
 }

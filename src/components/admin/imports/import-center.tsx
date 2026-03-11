@@ -298,9 +298,9 @@ export function ImportCenter({ lang }: { lang: "en" | "fr" }) {
               ? "border-emerald-300 bg-emerald-100/80 text-emerald-700"
               : job.status === "FAILED"
                 ? "border-rose-300 bg-rose-100/80 text-rose-700"
-                : job.status === "READY_APPLY" || job.status === "ANALYZED"
+              : job.status === "READY_APPLY" || job.status === "ANALYZED"
                   ? "border-sky-300 bg-sky-100/80 text-sky-700"
-                  : "border-zinc-300 bg-zinc-100/80 text-zinc-700";
+                  : "border-[var(--admin-border)] bg-[var(--admin-soft-bg)] text-[var(--admin-text)]";
 
           return (
             <article key={job.id} className="liquid-surface rounded-2xl p-4">
