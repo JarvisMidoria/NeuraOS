@@ -97,14 +97,14 @@ export function NotificationsConsole({ lang }: { lang: "en" | "fr" }) {
 
   return (
     <div className="space-y-6">
-      <section className="rounded-2xl border border-zinc-200 bg-white p-5 shadow-sm">
+      <section className="liquid-surface rounded-2xl p-5">
         <AdminToolbar>
           <div>
-            <h1 className="text-2xl font-semibold text-zinc-900">{text.title}</h1>
-            <p className="text-sm text-zinc-500">{text.subtitle}</p>
+            <h1 className="text-2xl font-semibold text-[var(--admin-text)]">{text.title}</h1>
+            <p className="text-sm text-[var(--admin-muted)]">{text.subtitle}</p>
           </div>
           <AdminToolbarGroup align="end">
-            <span className="rounded-full bg-zinc-900 px-3 py-1 text-xs font-medium text-white">
+            <span className="liquid-pill px-3 py-1 text-xs font-medium text-[var(--admin-text)]">
               {text.unread}: {unread}
             </span>
           </AdminToolbarGroup>
@@ -131,25 +131,25 @@ export function NotificationsConsole({ lang }: { lang: "en" | "fr" }) {
         </div>
       </section>
 
-      <section className="rounded-2xl border border-zinc-200 bg-white p-5 shadow-sm">
+      <section className="liquid-surface rounded-2xl p-5">
         <div className="space-y-3">
-          {loading && <p className="text-sm text-zinc-500">{text.loading}</p>}
+          {loading && <p className="text-sm text-[var(--admin-muted)]">{text.loading}</p>}
           {!loading && filteredItems.length === 0 && (
-            <p className="text-sm text-zinc-500">{filter === "unread" ? text.emptyUnread : text.empty}</p>
+            <p className="text-sm text-[var(--admin-muted)]">{filter === "unread" ? text.emptyUnread : text.empty}</p>
           )}
           {filteredItems.map((item) => (
             <article
               key={item.id}
-              className={`rounded-xl border p-4 ${item.readAt ? "border-zinc-100" : "border-zinc-200 bg-zinc-50"}`}
+              className={`liquid-surface rounded-xl p-4 ${item.readAt ? "" : "liquid-selected"}`}
             >
               <div className="flex flex-wrap items-center justify-between gap-2">
-                <h3 className="text-sm font-semibold text-zinc-900">{item.title}</h3>
+                <h3 className="text-sm font-semibold text-[var(--admin-text)]">{item.title}</h3>
                 <span className={`rounded-full px-2 py-0.5 text-xs font-semibold ${BADGE_BY_SEVERITY[item.severity]}`}>
                   {severityLabel[item.severity]}
                 </span>
               </div>
-              <p className="mt-2 text-sm text-zinc-700">{item.message}</p>
-              <div className="mt-3 flex flex-wrap items-center justify-between gap-2 text-xs text-zinc-500">
+              <p className="mt-2 text-sm text-[var(--admin-text)]">{item.message}</p>
+              <div className="mt-3 flex flex-wrap items-center justify-between gap-2 text-xs text-[var(--admin-muted)]">
                 <span>{new Date(item.createdAt).toLocaleString(lang === "fr" ? "fr-FR" : "en-US")}</span>
                 <div className="flex items-center gap-2">
                   {item.href && (
@@ -158,7 +158,7 @@ export function NotificationsConsole({ lang }: { lang: "en" | "fr" }) {
                       icon="right"
                       label={text.open}
                       iconOnly
-                      className="h-8 w-8 text-zinc-700"
+                      className="h-8 w-8 text-[var(--admin-text)]"
                     />
                   )}
                   {!item.readAt && (
@@ -168,7 +168,7 @@ export function NotificationsConsole({ lang }: { lang: "en" | "fr" }) {
                       size="icon"
                       iconOnly
                       label={text.markRead}
-                      className="h-8 w-8 text-zinc-700"
+                      className="h-8 w-8 text-[var(--admin-text)]"
                     />
                   )}
                 </div>

@@ -71,22 +71,22 @@ export function BillingConsole({ currentPlan, currentStatus, renewsAt }: Billing
     <div className="space-y-6">
       {error && <div className="rounded-md bg-rose-50 px-4 py-2 text-sm text-rose-700">{error}</div>}
 
-      <section className="rounded-2xl border border-zinc-200 bg-white p-5 shadow-sm">
-        <h2 className="text-xl font-semibold text-zinc-900">{text.title}</h2>
-        <p className="text-sm text-zinc-500">{text.subtitle}</p>
+      <section className="liquid-surface rounded-2xl p-5">
+        <h2 className="text-xl font-semibold text-[var(--admin-text)]">{text.title}</h2>
+        <p className="text-sm text-[var(--admin-muted)]">{text.subtitle}</p>
 
         <div className="mt-4 grid gap-3 sm:grid-cols-3">
-          <div className="rounded-lg border border-zinc-100 px-3 py-2 text-sm">
-            <p className="text-xs uppercase tracking-wide text-zinc-500">{text.currentPlan}</p>
-            <p className="font-semibold text-zinc-900">{currentPlan}</p>
+          <div className="liquid-surface rounded-lg px-3 py-2 text-sm">
+            <p className="text-xs uppercase tracking-wide text-[var(--admin-muted)]">{text.currentPlan}</p>
+            <p className="font-semibold text-[var(--admin-text)]">{currentPlan}</p>
           </div>
-          <div className="rounded-lg border border-zinc-100 px-3 py-2 text-sm">
-            <p className="text-xs uppercase tracking-wide text-zinc-500">{text.currentStatus}</p>
-            <p className="font-semibold text-zinc-900">{currentStatus}</p>
+          <div className="liquid-surface rounded-lg px-3 py-2 text-sm">
+            <p className="text-xs uppercase tracking-wide text-[var(--admin-muted)]">{text.currentStatus}</p>
+            <p className="font-semibold text-[var(--admin-text)]">{currentStatus}</p>
           </div>
-          <div className="rounded-lg border border-zinc-100 px-3 py-2 text-sm">
-            <p className="text-xs uppercase tracking-wide text-zinc-500">{text.renewsAt}</p>
-            <p className="font-semibold text-zinc-900">{renewsAt ? new Date(renewsAt).toLocaleDateString("en-US") : "-"}</p>
+          <div className="liquid-surface rounded-lg px-3 py-2 text-sm">
+            <p className="text-xs uppercase tracking-wide text-[var(--admin-muted)]">{text.renewsAt}</p>
+            <p className="font-semibold text-[var(--admin-text)]">{renewsAt ? new Date(renewsAt).toLocaleDateString("en-US") : "-"}</p>
           </div>
         </div>
 
@@ -99,8 +99,8 @@ export function BillingConsole({ currentPlan, currentStatus, renewsAt }: Billing
         />
       </section>
 
-      <section className="rounded-2xl border border-zinc-200 bg-white p-5 shadow-sm">
-        <h3 className="text-lg font-semibold text-zinc-900">{text.upgrade}</h3>
+      <section className="liquid-surface rounded-2xl p-5">
+        <h3 className="text-lg font-semibold text-[var(--admin-text)]">{text.upgrade}</h3>
         <div className="mt-3 grid gap-3 sm:grid-cols-3">
           {PLANS.map((plan) => (
             <ActionButton

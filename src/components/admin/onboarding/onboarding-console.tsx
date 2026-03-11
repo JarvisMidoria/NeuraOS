@@ -103,7 +103,7 @@ export function OnboardingConsole({ lang }: { lang: "en" | "fr" }) {
   }, [load]);
 
   if (loading) {
-    return <p className="text-sm text-zinc-500">{text.loading}</p>;
+    return <p className="text-sm text-[var(--admin-muted)]">{text.loading}</p>;
   }
 
   if (error || !payload) {
@@ -117,11 +117,11 @@ export function OnboardingConsole({ lang }: { lang: "en" | "fr" }) {
 
   return (
     <div className="space-y-6">
-      <section className="rounded-2xl border border-zinc-200 bg-white p-5 shadow-sm">
+      <section className="liquid-surface rounded-2xl p-5">
         <AdminToolbar>
           <div>
-            <h2 className="text-xl font-semibold text-zinc-900">{text.title}</h2>
-            <p className="text-sm text-zinc-500">{text.subtitle}</p>
+            <h2 className="text-xl font-semibold text-[var(--admin-text)]">{text.title}</h2>
+            <p className="text-sm text-[var(--admin-muted)]">{text.subtitle}</p>
           </div>
           <AdminToolbarGroup align="end">
             <ActionButton onClick={load} icon="refresh" label={text.refresh} />
@@ -129,23 +129,23 @@ export function OnboardingConsole({ lang }: { lang: "en" | "fr" }) {
         </AdminToolbar>
 
         <div className="mt-4">
-          <p className="text-sm text-zinc-600">
+          <p className="text-sm text-[var(--admin-muted)]">
             {text.progress}: {payload.progress.completed}/{payload.progress.total}
           </p>
-          <div className="mt-2 h-2 rounded-full bg-zinc-100">
+          <div className="mt-2 h-2 rounded-full bg-[var(--admin-soft-bg)]">
             <div className="h-full rounded-full bg-indigo-500" style={{ width: `${payload.progress.percent}%` }} />
           </div>
         </div>
       </section>
 
-      <section className="rounded-2xl border border-zinc-200 bg-white p-5 shadow-sm">
-        <h3 className="text-lg font-semibold text-zinc-900">Checklist</h3>
+      <section className="liquid-surface rounded-2xl p-5">
+        <h3 className="text-lg font-semibold text-[var(--admin-text)]">Checklist</h3>
         <div className="mt-3 space-y-2">
           {payload.checklist.map((item) => (
-            <div key={item.id} className="flex items-center justify-between rounded-lg border border-zinc-100 px-3 py-2">
+            <div key={item.id} className="liquid-surface flex items-center justify-between rounded-lg px-3 py-2">
               <div>
-                <p className="text-sm font-medium text-zinc-900">{item.label}</p>
-                <p className="text-xs text-zinc-500">{item.value}/{item.target}</p>
+                <p className="text-sm font-medium text-[var(--admin-text)]">{item.label}</p>
+                <p className="text-xs text-[var(--admin-muted)]">{item.value}/{item.target}</p>
               </div>
               <div className="flex items-center gap-2">
                 <span className={`rounded-full px-2 py-0.5 text-xs font-semibold ${item.done ? "bg-emerald-100 text-emerald-700" : "bg-amber-100 text-amber-700"}`}>
@@ -156,7 +156,7 @@ export function OnboardingConsole({ lang }: { lang: "en" | "fr" }) {
                   icon="right"
                   label={text.open}
                   iconOnly
-                  className="h-7 w-7 text-zinc-700"
+                  className="h-7 w-7 text-[var(--admin-text)]"
                 />
               </div>
             </div>
@@ -164,15 +164,15 @@ export function OnboardingConsole({ lang }: { lang: "en" | "fr" }) {
         </div>
       </section>
 
-      <section className="rounded-2xl border border-zinc-200 bg-white p-5 shadow-sm">
-        <h3 className="text-lg font-semibold text-zinc-900">{text.subscription}</h3>
-        <p className="mt-2 text-sm text-zinc-700">{payload.subscription.plan} · {payload.subscription.status}</p>
-        <h4 className="mt-4 text-sm font-semibold text-zinc-900">{text.limits}</h4>
+      <section className="liquid-surface rounded-2xl p-5">
+        <h3 className="text-lg font-semibold text-[var(--admin-text)]">{text.subscription}</h3>
+        <p className="mt-2 text-sm text-[var(--admin-muted)]">{payload.subscription.plan} · {payload.subscription.status}</p>
+        <h4 className="mt-4 text-sm font-semibold text-[var(--admin-text)]">{text.limits}</h4>
         <div className="mt-2 grid gap-2 sm:grid-cols-2 lg:grid-cols-4">
           {Object.entries(payload.subscription.limits).map(([key, value]) => (
-            <div key={key} className="rounded-lg border border-zinc-100 px-3 py-2 text-sm text-zinc-700">
-              <p className="uppercase text-xs tracking-wide text-zinc-500">{key}</p>
-              <p className="font-semibold">{value}</p>
+            <div key={key} className="liquid-surface rounded-lg px-3 py-2 text-sm text-[var(--admin-muted)]">
+              <p className="uppercase text-xs tracking-wide text-[var(--admin-muted)]">{key}</p>
+              <p className="font-semibold text-[var(--admin-text)]">{value}</p>
             </div>
           ))}
         </div>
