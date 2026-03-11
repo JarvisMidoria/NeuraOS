@@ -191,9 +191,9 @@ export function StockConsole({ warehouses, products, lowStock, lang }: StockCons
       {error && <div className="rounded-md bg-red-50 px-4 py-2 text-sm text-red-700">{error}</div>}
 
       <div className="grid gap-6 lg:grid-cols-2">
-        <div className="rounded-xl border border-zinc-200 bg-white p-6 shadow-sm">
-          <h2 className="text-lg font-semibold text-zinc-900">{t.inbound}</h2>
-          <p className="mb-4 text-sm text-zinc-500">{t.inboundHelp}</p>
+        <div className="liquid-surface rounded-xl p-6">
+          <h2 className="text-lg font-semibold text-[var(--admin-text)]">{t.inbound}</h2>
+          <p className="mb-4 text-sm text-[var(--admin-muted)]">{t.inboundHelp}</p>
           <form
             className="space-y-3"
             onSubmit={(event) =>
@@ -212,7 +212,7 @@ export function StockConsole({ warehouses, products, lowStock, lang }: StockCons
           >
             <select
               required
-              className="w-full rounded-md border border-zinc-300 px-3 py-2 text-sm"
+              className="admin-toolbar-control w-full"
               value={inboundForm.productId}
               onChange={(event) => setInboundForm((prev) => ({ ...prev, productId: event.target.value }))}
             >
@@ -221,7 +221,7 @@ export function StockConsole({ warehouses, products, lowStock, lang }: StockCons
             </select>
             <select
               required
-              className="w-full rounded-md border border-zinc-300 px-3 py-2 text-sm"
+              className="admin-toolbar-control w-full"
               value={inboundForm.warehouseId}
               onChange={(event) => setInboundForm((prev) => ({ ...prev, warehouseId: event.target.value }))}
             >
@@ -233,13 +233,13 @@ export function StockConsole({ warehouses, products, lowStock, lang }: StockCons
               step="0.01"
               min="0"
               required
-              className="w-full rounded-md border border-zinc-300 px-3 py-2 text-sm"
+              className="admin-toolbar-control w-full"
               placeholder={t.quantity}
               value={inboundForm.quantity}
               onChange={(event) => setInboundForm((prev) => ({ ...prev, quantity: event.target.value }))}
             />
             <input
-              className="w-full rounded-md border border-zinc-300 px-3 py-2 text-sm"
+              className="admin-toolbar-control w-full"
               placeholder={t.reference}
               value={inboundForm.reference}
               onChange={(event) => setInboundForm((prev) => ({ ...prev, reference: event.target.value }))}
@@ -248,9 +248,9 @@ export function StockConsole({ warehouses, products, lowStock, lang }: StockCons
           </form>
         </div>
 
-        <div className="rounded-xl border border-zinc-200 bg-white p-6 shadow-sm">
-          <h2 className="text-lg font-semibold text-zinc-900">{t.outbound}</h2>
-          <p className="mb-4 text-sm text-zinc-500">{t.outboundHelp}</p>
+        <div className="liquid-surface rounded-xl p-6">
+          <h2 className="text-lg font-semibold text-[var(--admin-text)]">{t.outbound}</h2>
+          <p className="mb-4 text-sm text-[var(--admin-muted)]">{t.outboundHelp}</p>
           <form
             className="space-y-3"
             onSubmit={(event) =>
@@ -269,7 +269,7 @@ export function StockConsole({ warehouses, products, lowStock, lang }: StockCons
           >
             <select
               required
-              className="w-full rounded-md border border-zinc-300 px-3 py-2 text-sm"
+              className="admin-toolbar-control w-full"
               value={outboundForm.productId}
               onChange={(event) => setOutboundForm((prev) => ({ ...prev, productId: event.target.value }))}
             >
@@ -278,7 +278,7 @@ export function StockConsole({ warehouses, products, lowStock, lang }: StockCons
             </select>
             <select
               required
-              className="w-full rounded-md border border-zinc-300 px-3 py-2 text-sm"
+              className="admin-toolbar-control w-full"
               value={outboundForm.warehouseId}
               onChange={(event) => setOutboundForm((prev) => ({ ...prev, warehouseId: event.target.value }))}
             >
@@ -290,13 +290,13 @@ export function StockConsole({ warehouses, products, lowStock, lang }: StockCons
               step="0.01"
               min="0"
               required
-              className="w-full rounded-md border border-zinc-300 px-3 py-2 text-sm"
+              className="admin-toolbar-control w-full"
               placeholder={t.quantity}
               value={outboundForm.quantity}
               onChange={(event) => setOutboundForm((prev) => ({ ...prev, quantity: event.target.value }))}
             />
             <input
-              className="w-full rounded-md border border-zinc-300 px-3 py-2 text-sm"
+              className="admin-toolbar-control w-full"
               placeholder={t.reference}
               value={outboundForm.reference}
               onChange={(event) => setOutboundForm((prev) => ({ ...prev, reference: event.target.value }))}
@@ -307,9 +307,9 @@ export function StockConsole({ warehouses, products, lowStock, lang }: StockCons
       </div>
 
       <div className="grid gap-6 lg:grid-cols-2">
-        <div className="rounded-xl border border-zinc-200 bg-white p-6 shadow-sm">
-          <h2 className="text-lg font-semibold text-zinc-900">{t.adjustment}</h2>
-          <p className="mb-4 text-sm text-zinc-500">{t.adjustmentHelp}</p>
+        <div className="liquid-surface rounded-xl p-6">
+          <h2 className="text-lg font-semibold text-[var(--admin-text)]">{t.adjustment}</h2>
+          <p className="mb-4 text-sm text-[var(--admin-muted)]">{t.adjustmentHelp}</p>
           <form
             className="space-y-3"
             onSubmit={(event) =>
@@ -328,7 +328,7 @@ export function StockConsole({ warehouses, products, lowStock, lang }: StockCons
           >
             <select
               required
-              className="w-full rounded-md border border-zinc-300 px-3 py-2 text-sm"
+              className="admin-toolbar-control w-full"
               value={adjustForm.productId}
               onChange={(event) => setAdjustForm((prev) => ({ ...prev, productId: event.target.value }))}
             >
@@ -337,7 +337,7 @@ export function StockConsole({ warehouses, products, lowStock, lang }: StockCons
             </select>
             <select
               required
-              className="w-full rounded-md border border-zinc-300 px-3 py-2 text-sm"
+              className="admin-toolbar-control w-full"
               value={adjustForm.warehouseId}
               onChange={(event) => setAdjustForm((prev) => ({ ...prev, warehouseId: event.target.value }))}
             >
@@ -347,14 +347,14 @@ export function StockConsole({ warehouses, products, lowStock, lang }: StockCons
             <input
               type="number"
               step="0.01"
-              className="w-full rounded-md border border-zinc-300 px-3 py-2 text-sm"
+              className="admin-toolbar-control w-full"
               placeholder={t.quantityAdjust}
               value={adjustForm.quantity}
               onChange={(event) => setAdjustForm((prev) => ({ ...prev, quantity: event.target.value }))}
               required
             />
             <input
-              className="w-full rounded-md border border-zinc-300 px-3 py-2 text-sm"
+              className="admin-toolbar-control w-full"
               placeholder={t.reference}
               value={adjustForm.reference}
               onChange={(event) => setAdjustForm((prev) => ({ ...prev, reference: event.target.value }))}
@@ -363,9 +363,9 @@ export function StockConsole({ warehouses, products, lowStock, lang }: StockCons
           </form>
         </div>
 
-        <div className="rounded-xl border border-zinc-200 bg-white p-6 shadow-sm">
-          <h2 className="text-lg font-semibold text-zinc-900">{t.transfer}</h2>
-          <p className="mb-4 text-sm text-zinc-500">{t.transferHelp}</p>
+        <div className="liquid-surface rounded-xl p-6">
+          <h2 className="text-lg font-semibold text-[var(--admin-text)]">{t.transfer}</h2>
+          <p className="mb-4 text-sm text-[var(--admin-muted)]">{t.transferHelp}</p>
           <form
             className="space-y-3"
             onSubmit={(event) =>
@@ -386,7 +386,7 @@ export function StockConsole({ warehouses, products, lowStock, lang }: StockCons
           >
             <select
               required
-              className="w-full rounded-md border border-zinc-300 px-3 py-2 text-sm"
+              className="admin-toolbar-control w-full"
               value={transferForm.productId}
               onChange={(event) => setTransferForm((prev) => ({ ...prev, productId: event.target.value }))}
             >
@@ -396,7 +396,7 @@ export function StockConsole({ warehouses, products, lowStock, lang }: StockCons
             <div className="grid gap-3 md:grid-cols-2">
               <select
                 required
-                className="rounded-md border border-zinc-300 px-3 py-2 text-sm"
+                className="admin-toolbar-control"
                 value={transferForm.fromWarehouseId}
                 onChange={(event) => setTransferForm((prev) => ({ ...prev, fromWarehouseId: event.target.value }))}
               >
@@ -405,7 +405,7 @@ export function StockConsole({ warehouses, products, lowStock, lang }: StockCons
               </select>
               <select
                 required
-                className="rounded-md border border-zinc-300 px-3 py-2 text-sm"
+                className="admin-toolbar-control"
                 value={transferForm.toWarehouseId}
                 onChange={(event) => setTransferForm((prev) => ({ ...prev, toWarehouseId: event.target.value }))}
               >
@@ -418,13 +418,13 @@ export function StockConsole({ warehouses, products, lowStock, lang }: StockCons
               step="0.01"
               min="0"
               required
-              className="w-full rounded-md border border-zinc-300 px-3 py-2 text-sm"
+              className="admin-toolbar-control w-full"
               placeholder={t.quantity}
               value={transferForm.quantity}
               onChange={(event) => setTransferForm((prev) => ({ ...prev, quantity: event.target.value }))}
             />
             <input
-              className="w-full rounded-md border border-zinc-300 px-3 py-2 text-sm"
+              className="admin-toolbar-control w-full"
               placeholder={t.reference}
               value={transferForm.reference}
               onChange={(event) => setTransferForm((prev) => ({ ...prev, reference: event.target.value }))}
@@ -434,11 +434,11 @@ export function StockConsole({ warehouses, products, lowStock, lang }: StockCons
         </div>
       </div>
 
-      <div className="rounded-xl border border-zinc-200 bg-white p-6 shadow-sm">
+      <div className="liquid-surface rounded-xl p-6">
         <div className="mb-4 flex items-center justify-between">
           <div>
-            <h2 className="text-lg font-semibold text-zinc-900">{t.lowStockTitle}</h2>
-            <p className="text-sm text-zinc-500">{t.lowStockHelp}</p>
+            <h2 className="text-lg font-semibold text-[var(--admin-text)]">{t.lowStockTitle}</h2>
+            <p className="text-sm text-[var(--admin-muted)]">{t.lowStockHelp}</p>
           </div>
           <ActionButton
             type="button"
@@ -451,9 +451,9 @@ export function StockConsole({ warehouses, products, lowStock, lang }: StockCons
         {lowStockItems.length ? (
           <div className="space-y-3">
             {lowStockItems.map((item) => (
-              <div key={item.id} className="rounded-2xl border border-zinc-100 p-4">
-                <p className="font-mono text-xs text-zinc-500">{item.sku}</p>
-                <p className="mt-1 text-base font-semibold text-zinc-900">{item.name}</p>
+              <div key={item.id} className="liquid-surface rounded-2xl p-4">
+                <p className="font-mono text-xs text-[var(--admin-muted)]">{item.sku}</p>
+                <p className="mt-1 text-base font-semibold text-[var(--admin-text)]">{item.name}</p>
                 <div className="mt-2 flex flex-wrap gap-2 text-xs">
                   <span className="rounded-full bg-zinc-100 px-2 py-1">
                     {t.stock}: <span className="font-semibold text-red-600">{withUnit(item.currentStock, item.unitOfMeasure)}</span>
@@ -475,27 +475,27 @@ export function StockConsole({ warehouses, products, lowStock, lang }: StockCons
             ))}
           </div>
         ) : (
-          <p className="text-sm text-zinc-500">{t.allAbove}</p>
+          <p className="text-sm text-[var(--admin-muted)]">{t.allAbove}</p>
         )}
       </div>
 
-      <div className="rounded-xl border border-zinc-200 bg-white p-6 shadow-sm">
+      <div className="liquid-surface rounded-xl p-6">
         <div className="mb-4 flex items-center justify-between">
           <div>
-            <h2 className="text-lg font-semibold text-zinc-900">{t.stockByProduct}</h2>
-            <p className="text-sm text-zinc-500">{t.stockByProductHelp}</p>
+            <h2 className="text-lg font-semibold text-[var(--admin-text)]">{t.stockByProduct}</h2>
+            <p className="text-sm text-[var(--admin-muted)]">{t.stockByProductHelp}</p>
           </div>
           <ActionButton type="button" icon="refresh" onClick={() => window.location.reload()} label={t.refreshPage} />
         </div>
         <div className="space-y-3">
           {products.map((item) => (
-            <div key={item.productId} className="rounded-2xl border border-zinc-100 p-4">
+            <div key={item.productId} className="liquid-surface rounded-2xl p-4">
               <div className="flex flex-wrap items-start justify-between gap-2">
                 <div>
-                  <p className="font-mono text-xs text-zinc-500">{item.sku}</p>
-                  <p className="mt-1 text-base font-semibold text-zinc-900">{item.name}</p>
+                  <p className="font-mono text-xs text-[var(--admin-muted)]">{item.sku}</p>
+                  <p className="mt-1 text-base font-semibold text-[var(--admin-text)]">{item.name}</p>
                   {item.lowStockThreshold ? (
-                    <p className="text-xs text-zinc-500">
+                    <p className="text-xs text-[var(--admin-muted)]">
                       {t.threshold}: {withUnit(item.lowStockThreshold, item.unitOfMeasure)}
                     </p>
                   ) : null}
@@ -504,7 +504,7 @@ export function StockConsole({ warehouses, products, lowStock, lang }: StockCons
                   {t.total}: {withUnit(item.totalQuantity, item.unitOfMeasure)}
                 </span>
               </div>
-              <div className="mt-3 flex flex-wrap gap-2 text-xs text-zinc-600">
+              <div className="mt-3 flex flex-wrap gap-2 text-xs text-[var(--admin-muted)]">
                 {item.warehouses.length ? (
                   item.warehouses.map((warehouse) => (
                     <span key={warehouse.warehouseId} className="rounded-full bg-zinc-100 px-2 py-0.5">
@@ -512,7 +512,7 @@ export function StockConsole({ warehouses, products, lowStock, lang }: StockCons
                     </span>
                   ))
                 ) : (
-                  <span className="text-zinc-400">{t.noMovements}</span>
+                  <span className="text-[var(--admin-muted)]">{t.noMovements}</span>
                 )}
               </div>
               <div className="mt-3 flex flex-wrap gap-2">
