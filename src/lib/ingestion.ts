@@ -261,14 +261,14 @@ function inferDocTypeByHeaders(fileName: string | undefined, headers: string[]):
   const has = (...keys: string[]) => keys.some((key) => h.has(key));
   const file = normalizeKey(fileName ?? "");
 
-  if (has("sku", "product_sku") && has("name", "product_name", "unit_price")) return IngestionDocType.PRODUCTS;
-  if (has("client", "client_name") && !has("supplier", "supplier_name") && !has("po_number")) return IngestionDocType.CLIENTS;
-  if (has("supplier", "supplier_name") && !has("client", "client_name")) return IngestionDocType.SUPPLIERS;
   if (has("quote_number", "devis", "valid_until") || file.includes("quote") || file.includes("devis")) return IngestionDocType.SALES_QUOTE;
   if (has("order_number", "sales_order") || file.includes("sales_order") || file.includes("commande")) return IngestionDocType.SALES_ORDER;
   if (has("po_number", "purchase_order") || file.includes("purchase") || file.includes("achat")) return IngestionDocType.PURCHASE_ORDER;
   if (has("receipt_number", "goods_receipt") || file.includes("receipt") || file.includes("reception")) return IngestionDocType.GOODS_RECEIPT;
   if (has("warehouse", "warehouse_name") && has("adjustment", "quantity_change", "stock_adjustment")) return IngestionDocType.STOCK_ADJUSTMENT;
+  if (has("sku", "product_sku") && has("name", "product_name", "unit_price")) return IngestionDocType.PRODUCTS;
+  if (has("client", "client_name") && !has("supplier", "supplier_name") && !has("po_number")) return IngestionDocType.CLIENTS;
+  if (has("supplier", "supplier_name") && !has("client", "client_name")) return IngestionDocType.SUPPLIERS;
 
   return IngestionDocType.UNKNOWN;
 }

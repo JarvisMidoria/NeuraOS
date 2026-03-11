@@ -7,6 +7,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
+    "beta:gate": "tsx scripts/beta-gate.ts",
+    "beta:gate:quick": "tsx scripts/beta-gate.ts --quick",
     "postinstall": "prisma generate",
     "db:migrate": "prisma migrate dev",
     "db:migrate:deploy": "prisma migrate resolve --rolled-back 20260308201000_fix_product_unit_mode_enum || true && prisma migrate deploy",
