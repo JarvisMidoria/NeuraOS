@@ -251,6 +251,9 @@ export function ImportCenter({ lang }: { lang: "en" | "fr" }) {
                 onClick={fetchJobs}
                 disabled={loading}
                 label={text.refresh}
+                iconOnly
+                size="icon"
+                title={text.refresh}
               />
             </AdminToolbarGroup>
           </AdminToolbar>

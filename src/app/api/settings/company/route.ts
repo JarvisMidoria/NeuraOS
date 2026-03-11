@@ -164,8 +164,19 @@ export async function PATCH(req: NextRequest) {
       return handleApiError(new ApiError(400, "Database validation failed", { code: error.code, meta: error.meta }));
     }
     if (error instanceof Error) {
+      const message = error.message ?? "";
+      if (
+        message.includes("ProductUnitMode") ||
+        message.includes("cannot be cast automatically") ||
+        message.includes("does not exist")
+      ) {
+        return handleApiError(
+          new ApiError(503, "Company settings are temporarily unavailable while the database schema is updating."),
+        );
+      }
+      console.error("company settings update failed", error);
       return handleApiError(
-        new ApiError(500, `Company settings save failed: ${error.message}`, {
+        new ApiError(500, "Unable to save company settings right now. Please retry.", {
           name: error.name,
         }),
       );
