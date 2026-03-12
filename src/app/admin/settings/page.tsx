@@ -25,8 +25,8 @@ export default async function SettingsPage() {
         </h1>
         <p className="text-sm text-[var(--admin-muted)]">
           {lang === "fr"
-            ? "Gerez l'entreprise, les utilisateurs, les roles, les taxes, les regles de stock et les champs personnalises."
-            : "Manage company, users, roles, taxes, stock rules, and custom fields."}
+            ? "Pilotez les reglages essentiels, les acces et les canaux de votre espace."
+            : "Control workspace defaults, access, and channels from one place."}
         </p>
       </div>
       <SettingsConsole lang={lang} />

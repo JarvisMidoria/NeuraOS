@@ -6,30 +6,30 @@ import { useEffect, useMemo, useState } from "react";
 
 const SIDEBAR_TRACK_WIDTH = "w-[196px]";
 
-type NavSectionKey = "workspace" | "sales" | "purchases" | "inventory" | "masterData" | "control";
+type NavSectionKey = "home" | "sales" | "operations" | "admin";
 
-const SECTION_ORDER: NavSectionKey[] = ["workspace", "sales", "purchases", "inventory", "masterData", "control"];
+const SECTION_ORDER: NavSectionKey[] = ["home", "sales", "operations", "admin"];
 
 const NAV_ITEMS = [
-  { key: "overview", href: "/admin", en: "Overview", fr: "Apercu", section: "workspace" as const, core: true },
-  { key: "analytics", href: "/admin/analytics", en: "Analytics", fr: "Analytics", section: "workspace" as const, core: true },
-  { key: "notifications", href: "/admin/notifications", en: "Notifications", fr: "Notifications", section: "workspace" as const, core: true },
+  { key: "overview", href: "/admin", en: "Overview", fr: "Apercu", section: "home" as const, core: true },
+  { key: "analytics", href: "/admin/analytics", en: "Performance", fr: "Performance", section: "home" as const, core: true },
+  { key: "notifications", href: "/admin/notifications", en: "Alerts", fr: "Alertes", section: "home" as const, core: true },
   { key: "quotes", href: "/admin/sales/quotes", en: "Quotes", fr: "Devis", section: "sales" as const, core: true },
   { key: "orders", href: "/admin/sales/orders", en: "Orders", fr: "Commandes", section: "sales" as const, core: true },
+  { key: "clients", href: "/admin/clients", en: "Clients", fr: "Clients", section: "sales" as const, core: false },
   { key: "documents", href: "/admin/documents", en: "Documents", fr: "Documents", section: "sales" as const, core: false },
-  { key: "purchases", href: "/admin/purchases/orders", en: "Purchases", fr: "Achats", section: "purchases" as const, core: true },
-  { key: "receipts", href: "/admin/purchases/receipts", en: "Receipts", fr: "Receptions", section: "purchases" as const, core: true },
-  { key: "replenishment", href: "/admin/purchases/replenishment", en: "Replenishment", fr: "Reappro", section: "purchases" as const, core: false },
-  { key: "stock", href: "/admin/stock", en: "Inventory", fr: "Stock", section: "inventory" as const, core: true },
-  { key: "products", href: "/admin/products", en: "Products", fr: "Produits", section: "inventory" as const, core: true },
-  { key: "clients", href: "/admin/clients", en: "Clients", fr: "Clients", section: "masterData" as const, core: true },
-  { key: "suppliers", href: "/admin/suppliers", en: "Suppliers", fr: "Fournisseurs", section: "masterData" as const, core: true },
-  { key: "warehouses", href: "/admin/warehouses", en: "Warehouses", fr: "Entrepots", section: "masterData" as const, core: false },
-  { key: "imports", href: "/admin/imports", en: "Imports", fr: "Imports", section: "control" as const, core: true },
-  { key: "audit", href: "/admin/audit", en: "Audit Log", fr: "Journal audit", section: "control" as const, core: false },
-  { key: "onboarding", href: "/admin/onboarding", en: "Onboarding", fr: "Onboarding", section: "control" as const, core: false },
-  { key: "billing", href: "/admin/billing", en: "Billing", fr: "Facturation", section: "control" as const, core: true },
-  { key: "settings", href: "/admin/settings", en: "Settings", fr: "Parametres", section: "control" as const, core: true },
+  { key: "stock", href: "/admin/stock", en: "Stock", fr: "Stock", section: "operations" as const, core: true },
+  { key: "products", href: "/admin/products", en: "Products", fr: "Produits", section: "operations" as const, core: true },
+  { key: "purchases", href: "/admin/purchases/orders", en: "Purchases", fr: "Achats", section: "operations" as const, core: true },
+  { key: "receipts", href: "/admin/purchases/receipts", en: "Receipts", fr: "Receptions", section: "operations" as const, core: true },
+  { key: "suppliers", href: "/admin/suppliers", en: "Suppliers", fr: "Fournisseurs", section: "operations" as const, core: false },
+  { key: "warehouses", href: "/admin/warehouses", en: "Warehouses", fr: "Entrepots", section: "operations" as const, core: false },
+  { key: "replenishment", href: "/admin/purchases/replenishment", en: "Restock", fr: "Reappro", section: "operations" as const, core: false },
+  { key: "imports", href: "/admin/imports", en: "Import center", fr: "Centre import", section: "admin" as const, core: true },
+  { key: "billing", href: "/admin/billing", en: "Subscription", fr: "Abonnement", section: "admin" as const, core: true },
+  { key: "settings", href: "/admin/settings", en: "Company", fr: "Entreprise", section: "admin" as const, core: true },
+  { key: "audit", href: "/admin/audit", en: "Activity log", fr: "Historique", section: "admin" as const, core: false },
+  { key: "onboarding", href: "/admin/onboarding", en: "Setup", fr: "Mise en place", section: "admin" as const, core: false },
 ] as const;
 
 const SIMULATION_NAV_KEYS = new Set([
@@ -91,12 +91,10 @@ export function AdminNav({ onNavigate }: AdminNavProps) {
       darkLabel: lang === "fr" ? "Mode nuit" : "Dark mode",
       lightLabel: lang === "fr" ? "Mode jour" : "Light mode",
       groups: {
-        workspace: lang === "fr" ? "Pilotage" : "Workspace",
+        home: lang === "fr" ? "Essentiel" : "Home",
         sales: lang === "fr" ? "Ventes" : "Sales",
-        purchases: lang === "fr" ? "Achats" : "Purchases",
-        inventory: lang === "fr" ? "Stock" : "Inventory",
-        masterData: lang === "fr" ? "Donnees maitres" : "Master Data",
-        control: lang === "fr" ? "Controle" : "Control",
+        operations: lang === "fr" ? "Operations" : "Operations",
+        admin: lang === "fr" ? "Administration" : "Admin",
       } as Record<NavSectionKey, string>,
       showMore: lang === "fr" ? "Plus" : "More",
       showLess: lang === "fr" ? "Moins" : "Less",
@@ -168,18 +166,11 @@ export function AdminNav({ onNavigate }: AdminNavProps) {
   useEffect(() => {
     setExpandedSections((prev) => {
       const allowed = new Set(navSections.map((group) => group.section));
-      const filtered = prev.filter((section) => allowed.has(section));
       const currentSection = navSections.find((group) => group.items.some((item) => isActive(pathname, item.href)))?.section;
 
-      if (currentSection) {
-        if (filtered.includes(currentSection)) return filtered;
-        if (filtered.length === 0) return [currentSection];
-        return [...filtered, currentSection];
-      }
-
-      if (filtered.length > 0) return filtered;
+      if (currentSection && allowed.has(currentSection)) return [currentSection];
       const firstSection = navSections[0]?.section;
-      return firstSection ? [firstSection] : [];
+      return firstSection ? [firstSection] : prev.filter((section) => allowed.has(section)).slice(0, 1);
     });
   }, [navSections, pathname]);
 
@@ -239,7 +230,7 @@ export function AdminNav({ onNavigate }: AdminNavProps) {
   };
 
   const toggleSection = (section: NavSectionKey) => {
-    setExpandedSections((prev) => (prev.includes(section) ? prev.filter((item) => item !== section) : [...prev, section]));
+    setExpandedSections((prev) => (prev.includes(section) ? [] : [section]));
   };
 
   const toggleShowAll = (section: NavSectionKey) => {

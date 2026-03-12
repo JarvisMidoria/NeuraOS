@@ -99,8 +99,9 @@ export function ImportCenter({ lang }: { lang: "en" | "fr" }) {
     () => ({
       subtitle:
         lang === "fr"
-          ? "Importez vos fichiers (CSV, XLSX, PDF, JSON, TXT, PNG, JPG), previsualisez, puis appliquez avec IA."
-          : "Upload CSV, XLSX, PDF, JSON, TXT, PNG or JPG, preview parsed actions, then apply with AI.",
+          ? "1. Deposez un fichier. 2. Verifiez la detection. 3. Confirmez l'import."
+          : "1. Drop a file. 2. Review the detection. 3. Confirm the import.",
+      intakeTitle: lang === "fr" ? "Nouvel import" : "New import",
       chooseFile: lang === "fr" ? "Choisir un fichier" : "Choose file",
       dropHint:
         lang === "fr"
@@ -114,7 +115,12 @@ export function ImportCenter({ lang }: { lang: "en" | "fr" }) {
       loading: lang === "fr" ? "Chargement..." : "Loading...",
       noData: lang === "fr" ? "Aucun import" : "No imports yet",
       selectedFile: lang === "fr" ? "Fichier selectionne" : "Selected file",
+      fileReady:
+        lang === "fr"
+          ? "Le fichier est pret. Verifiez-le puis confirmez l'import."
+          : "The file is ready. Review it, then confirm the import.",
       actions: lang === "fr" ? "Actions" : "Actions",
+      detected: lang === "fr" ? "Detection" : "Detected",
       warnings: lang === "fr" ? "Avertissements" : "Warnings",
       confidence: lang === "fr" ? "Confiance" : "Confidence",
       createdAt: lang === "fr" ? "Cree" : "Created",
@@ -226,7 +232,10 @@ export function ImportCenter({ lang }: { lang: "en" | "fr" }) {
   return (
     <div className="space-y-5">
       <section className="liquid-surface rounded-2xl p-4 sm:p-5">
-        <p className="text-sm text-[var(--admin-muted)]">{text.subtitle}</p>
+        <div className="flex flex-col gap-1">
+          <p className="text-sm uppercase tracking-wide text-[var(--admin-muted)]">{text.intakeTitle}</p>
+          <p className="text-sm text-[var(--admin-muted)]">{text.subtitle}</p>
+        </div>
         <div className="mt-4">
           <AdminToolbar>
             <div
@@ -260,27 +269,37 @@ export function ImportCenter({ lang }: { lang: "en" | "fr" }) {
         </div>
 
         {pendingFile ? (
-          <div className="mt-3 flex flex-wrap items-center gap-2 text-xs text-[var(--admin-muted)]">
-            <span className="liquid-surface rounded-full px-3 py-1 text-[var(--admin-text)]">
-              {text.selectedFile}: {pendingFile.name} ({Math.max(1, Math.round(pendingFile.size / 1024))} KB)
-            </span>
-            <ActionButton
-              type="button"
-              icon="apply"
-              tone="primary"
-              size="sm"
-              onClick={onConfirmImport}
-              disabled={uploading}
-              label={uploading ? text.loading : text.confirmImport}
-            />
-            <ActionButton
-              type="button"
-              icon="close"
-              size="sm"
-              onClick={() => setPendingFile(null)}
-              disabled={uploading}
-              label={text.clearSelection}
-            />
+          <div className="liquid-surface mt-3 rounded-xl p-3">
+            <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+              <div className="space-y-1">
+                <p className="text-xs uppercase tracking-wide text-[var(--admin-muted)]">{text.selectedFile}</p>
+                <p className="break-all text-sm font-medium text-[var(--admin-text)]">
+                  {pendingFile.name}
+                </p>
+                <p className="text-xs text-[var(--admin-muted)]">
+                  {text.fileReady} · {Math.max(1, Math.round(pendingFile.size / 1024))} KB
+                </p>
+              </div>
+              <div className="flex flex-wrap gap-2">
+                <ActionButton
+                  type="button"
+                  icon="apply"
+                  tone="primary"
+                  size="sm"
+                  onClick={onConfirmImport}
+                  disabled={uploading}
+                  label={uploading ? text.loading : text.confirmImport}
+                />
+                <ActionButton
+                  type="button"
+                  icon="close"
+                  size="sm"
+                  onClick={() => setPendingFile(null)}
+                  disabled={uploading}
+                  label={text.clearSelection}
+                />
+              </div>
+            </div>
           </div>
         ) : null}
 
@@ -320,6 +339,10 @@ export function ImportCenter({ lang }: { lang: "en" | "fr" }) {
         {jobs.map((job) => {
           const warnings = Array.isArray(job.analysis?.warnings) ? job.analysis?.warnings : [];
           const confidence = typeof job.analysis?.confidence === "number" ? job.analysis.confidence : null;
+          const detectedSummary =
+            confidence !== null
+              ? `${job.actions.length} ${text.actions.toLowerCase()} · ${(confidence * 100).toFixed(0)}%`
+              : `${job.actions.length} ${text.actions.toLowerCase()}`;
           const canApply = job.status === "READY_APPLY" || job.status === "ANALYZED";
           const statusClass =
             STATUS_BADGE_CLASS[job.status] ??
@@ -330,21 +353,19 @@ export function ImportCenter({ lang }: { lang: "en" | "fr" }) {
               key={job.id}
               className="liquid-surface rounded-2xl p-4 transition hover:-translate-y-0.5 hover:border-[var(--accent)] hover:bg-[color-mix(in_srgb,var(--accent)_8%,var(--admin-soft-bg))]"
             >
-              <div className="flex flex-wrap items-start justify-between gap-3">
+              <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
                 <div className="min-w-0 flex-1">
                   <p className="text-[11px] uppercase tracking-wide text-[var(--admin-muted)]">{text.file}</p>
                   <p
-                    className="mt-1 break-all text-sm font-medium text-[var(--admin-text)]"
+                    className="mt-1 break-all text-base font-medium text-[var(--admin-text)]"
                     title={job.fileName ?? "-"}
                   >
                     {job.fileName || "-"}
                   </p>
                 </div>
-                <div className="flex items-center gap-2">
-                  <span className={`${STATUS_BADGE_BASE} ${statusClass}`}>
-                    {job.status}
-                  </span>
-                </div>
+                <span className={`${STATUS_BADGE_BASE} ${statusClass}`}>
+                  {job.status}
+                </span>
               </div>
 
               <div className="mt-3 grid gap-2 sm:grid-cols-2 xl:grid-cols-4">
@@ -357,19 +378,9 @@ export function ImportCenter({ lang }: { lang: "en" | "fr" }) {
                   <p className="mt-1 text-xs font-medium text-[var(--admin-text)]">{job.source}</p>
                 </div>
                 <div className={META_CELL_CLASS}>
-                  <p className="text-[10px] uppercase tracking-wide text-[var(--admin-muted)]">{text.actions}</p>
-                  <p className="mt-1 text-xs font-medium text-[var(--admin-text)]">{job.actions.length}</p>
+                  <p className="text-[10px] uppercase tracking-wide text-[var(--admin-muted)]">{text.detected}</p>
+                  <p className="mt-1 text-xs font-medium text-[var(--admin-text)]">{detectedSummary}</p>
                 </div>
-                {confidence !== null ? (
-                  <div className={META_CELL_CLASS}>
-                    <p className="text-[10px] uppercase tracking-wide text-[var(--admin-muted)]">
-                      {text.confidence}
-                    </p>
-                    <p className="mt-1 text-xs font-medium text-[var(--admin-text)]">
-                      {(confidence * 100).toFixed(0)}%
-                    </p>
-                  </div>
-                ) : null}
                 <div className={META_CELL_CLASS}>
                   <p className="text-[10px] uppercase tracking-wide text-[var(--admin-muted)]">{text.createdAt}</p>
                   <p className="mt-1 text-xs font-medium text-[var(--admin-text)] break-words">

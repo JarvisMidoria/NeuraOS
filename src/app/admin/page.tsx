@@ -60,9 +60,6 @@ const TYPE_LABELS: Record<string, { en: string; fr: string }> = {
   "Purchase Order": { en: "Purchase Order", fr: "Commande achat" },
 };
 
-const PERIOD_FILTER_CLASS =
-  "liquid-pill px-3 py-1 text-sm transition hover:-translate-y-0.5";
-
 const INTERACTIVE_CARD_CLASS =
   "group relative liquid-surface rounded-2xl p-5 transition duration-200 hover:-translate-y-0.5 hover:border-[color-mix(in_srgb,var(--accent)_44%,var(--admin-border))] hover:bg-[color-mix(in_srgb,var(--admin-soft-bg)_88%,white_4%)]";
 
@@ -131,17 +128,28 @@ export default async function AdminDashboard({ searchParams }: AdminDashboardPro
     getDashboardSnapshotCached(user.companyId, months),
     prisma.company.findUnique({
       where: { id: user.companyId },
-      select: { currencyCode: true },
+      select: { currencyCode: true, name: true },
     }),
   ]);
   const currencyCode = company?.currencyCode ?? "USD";
+  const companyName = company?.name?.trim() || (lang === "fr" ? "Votre societe" : "Your company");
   const maxMonthlyValue = Math.max(...snapshot.monthlySales.map((entry) => entry.total), 1);
   const recentLowStock = snapshot.lowStock.slice(0, 6);
-  const displayName = lang === "fr" ? "Ghali" : user.name ?? "Admin";
+  const displayName = user.name?.trim().split(/\s+/)[0] || "Admin";
   const text = {
-    dashboard: lang === "fr" ? "Tableau de bord" : "Dashboard",
+    dashboard: lang === "fr" ? "Aujourd'hui" : "Today",
     welcome: lang === "fr" ? "Bonjour" : "Welcome back",
-    company: lang === "fr" ? "Societe" : "Company",
+    summary:
+      lang === "fr"
+        ? "Commencez par ce qui demande votre attention, puis verifiez la performance."
+        : "Start with what needs attention, then review business performance.",
+    companyContext: lang === "fr" ? "Espace actif" : "Active workspace",
+    prioritySection: lang === "fr" ? "Priorites du jour" : "Today’s priorities",
+    priorityHint:
+      lang === "fr"
+        ? "Les actions les plus urgentes sont en haut. Chaque carte mene directement a la bonne file."
+        : "Most urgent work is surfaced first. Each card jumps straight to the right queue.",
+    openQueue: lang === "fr" ? "Ouvrir la file" : "Open queue",
     keyMetrics: lang === "fr" ? "Indicateurs cles" : "Key metrics",
     salesTrend: lang === "fr" ? "Tendance ventes et stock" : "Sales trend and inventory",
     revenue: lang === "fr" ? "Chiffre d'affaires" : "Revenue",
@@ -164,7 +172,6 @@ export default async function AdminDashboard({ searchParams }: AdminDashboardPro
     noTransactions:
       lang === "fr" ? "Aucune transaction enregistree." : "No transactions recorded yet.",
     operations: lang === "fr" ? "Operations" : "Operations",
-    todo: lang === "fr" ? "A faire" : "To-do",
   };
 
   return (
@@ -174,25 +181,69 @@ export default async function AdminDashboard({ searchParams }: AdminDashboardPro
         <h1 className="text-3xl font-semibold tracking-tight text-[var(--admin-text)]">
           {text.welcome}, {displayName}
         </h1>
-        <p className="text-sm text-[var(--admin-muted)]">
-          {text.company}: {user.companyId}
+        <p className="max-w-3xl text-sm text-[var(--admin-muted)]">
+          {text.companyContext}: {companyName}. {text.summary}
         </p>
-        <div className="mt-2 flex flex-wrap items-center gap-2">
-          {[3, 6, 12].map((value) => (
-            <Link
-              key={value}
-              href={`/admin?months=${value}`}
-              className={`${PERIOD_FILTER_CLASS} ${
-                months === value
-                  ? "liquid-selected"
-                  : "text-[var(--admin-muted)]"
-              }`}
-            >
-              {value}m
+      </div>
+
+      <section className="perf-section liquid-surface rounded-2xl p-5" aria-label={text.prioritySection}>
+        <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+          <div>
+            <p className="text-sm uppercase tracking-wide text-[var(--admin-muted)]">{text.operations}</p>
+            <h2 className="text-xl font-semibold text-[var(--admin-text)]">{text.prioritySection}</h2>
+          </div>
+          <p className="max-w-2xl text-sm text-[var(--admin-muted)]">{text.priorityHint}</p>
+        </div>
+
+        <div className="mt-5 grid gap-4 xl:grid-cols-3">
+          {snapshot.operationalTodo.map((task) => (
+            <Link key={task.id} href={task.href} className={INTERACTIVE_CARD_CLASS}>
+              <div className="flex items-start justify-between gap-3">
+                <div>
+                  <p className="text-sm font-semibold text-[var(--admin-text)]">
+                    {lang === "fr"
+                      ? task.label
+                          .replace("Quotes expiring in 7 days", "Devis expirant sous 7 jours")
+                          .replace("Orders awaiting confirmation", "Commandes en attente de confirmation")
+                          .replace("Receipts overdue", "Receptions en retard")
+                      : task.label}
+                  </p>
+                  <p className="mt-2 text-sm text-[var(--admin-muted)]">
+                    {lang === "fr"
+                      ? task.description
+                          .replace("Send reminders or close out quotes before validity lapses.", "Relancer ou cloturer les devis avant expiration.")
+                          .replace("Confirm approved orders to release fulfillment tasks.", "Confirmer les commandes approuvees pour lancer la preparation.")
+                          .replace("Follow up with suppliers on late inbound shipments.", "Relancer les fournisseurs sur les livraisons en retard.")
+                      : task.description}
+                  </p>
+                </div>
+                <span
+                  className={`${STATUS_BADGE_BASE} ${
+                    task.severity === "high"
+                      ? TASK_SEVERITY_BADGE_CLASSES.high
+                      : task.severity === "medium"
+                        ? TASK_SEVERITY_BADGE_CLASSES.medium
+                        : TASK_SEVERITY_BADGE_CLASSES.low
+                  }`}
+                >
+                  {formatMetric(task.count, "number", locale, currencyCode)}
+                </span>
+              </div>
+              <div className="mt-4 flex items-center justify-between">
+                <span className="text-xs uppercase tracking-[0.16em] text-[var(--admin-muted)]">
+                  {text.openQueue}
+                </span>
+                <span className="inline-flex h-7 w-7 items-center justify-center rounded-full border border-[var(--admin-border)] text-[var(--admin-muted)] transition group-hover:border-[color-mix(in_srgb,var(--accent)_48%,var(--admin-border))] group-hover:text-[color-mix(in_srgb,var(--accent)_74%,var(--admin-text))]">
+                  <svg aria-hidden viewBox="0 0 24 24" className="h-3.5 w-3.5 fill-none stroke-current" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M9 5H19V15" />
+                    <path d="M19 5L5 19" />
+                  </svg>
+                </span>
+              </div>
             </Link>
           ))}
         </div>
-      </div>
+      </section>
 
       <section aria-label={text.keyMetrics} className="perf-section grid gap-4 md:grid-cols-2 xl:grid-cols-4">
         {snapshot.kpis.map((kpi) => (
@@ -335,8 +386,8 @@ export default async function AdminDashboard({ searchParams }: AdminDashboardPro
         </div>
       </section>
 
-      <section className="perf-section grid gap-6 lg:grid-cols-3" aria-label={text.docsAndTasks}>
-        <div className="liquid-surface rounded-2xl p-5 lg:col-span-2">
+      <section className="perf-section" aria-label={text.docsAndTasks}>
+        <div className="liquid-surface rounded-2xl p-5">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm uppercase tracking-wide text-[var(--admin-muted)]">{text.latest}</p>
@@ -383,56 +434,6 @@ export default async function AdminDashboard({ searchParams }: AdminDashboardPro
             )}
           </div>
         </div>
-
-        <div className="liquid-surface rounded-2xl p-5">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm uppercase tracking-wide text-[var(--admin-muted)]">{text.operations}</p>
-              <h2 className="text-xl font-semibold text-[var(--admin-text)]">{text.todo}</h2>
-            </div>
-          </div>
-          <div className="mt-4 space-y-4">
-            {snapshot.operationalTodo.map((task) => (
-              <Link key={task.id} href={task.href} className={INTERACTIVE_ROW_CLASS}>
-                <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-                  <p className="font-semibold text-[var(--admin-text)]">
-                    {lang === "fr"
-                      ? task.label
-                          .replace("Quotes expiring in 7 days", "Devis expirant sous 7 jours")
-                          .replace("Orders awaiting confirmation", "Commandes en attente de confirmation")
-                          .replace("Receipts overdue", "Receptions en retard")
-                      : task.label}
-                  </p>
-                  <span
-                    className={`${STATUS_BADGE_BASE} ${
-                      task.severity === "high"
-                        ? TASK_SEVERITY_BADGE_CLASSES.high
-                        : task.severity === "medium"
-                          ? TASK_SEVERITY_BADGE_CLASSES.medium
-                          : TASK_SEVERITY_BADGE_CLASSES.low
-                    }`}
-                  >
-                    {formatMetric(task.count, "number", locale, currencyCode)}
-                  </span>
-                </div>
-                <p className="mt-1 text-sm text-[var(--admin-muted)]">
-                  {lang === "fr"
-                    ? task.description
-                        .replace("Send reminders or close out quotes before validity lapses.", "Relancer ou cloturer les devis avant expiration.")
-                        .replace("Confirm approved orders to release fulfillment tasks.", "Confirmer les commandes approuvees pour lancer la preparation.")
-                        .replace("Follow up with suppliers on late inbound shipments.", "Relancer les fournisseurs sur les livraisons en retard.")
-                    : task.description}
-                </p>
-                <div className="mt-2 flex justify-end text-[color-mix(in_srgb,var(--accent)_74%,var(--admin-text))] opacity-0 transition group-hover:opacity-100">
-                  <svg aria-hidden viewBox="0 0 24 24" className="h-4 w-4 fill-none stroke-current" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M9 5H19V15" />
-                    <path d="M19 5L5 19" />
-                  </svg>
-                </div>
-              </Link>
-            ))}
-            </div>
-          </div>
       </section>
     </div>
   );
