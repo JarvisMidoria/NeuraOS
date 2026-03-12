@@ -1,35 +1,35 @@
 "use client";
 
 import Link from "next/link";
+import { signOut } from "next-auth/react";
 import { usePathname } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
-
-const SIDEBAR_TRACK_WIDTH = "w-[196px]";
+import { WorkspaceModeToggle } from "@/components/admin/workspace-mode-toggle";
 
 type NavSectionKey = "home" | "sales" | "operations" | "admin";
 
 const SECTION_ORDER: NavSectionKey[] = ["home", "sales", "operations", "admin"];
 
 const NAV_ITEMS = [
-  { key: "overview", href: "/admin", en: "Overview", fr: "Apercu", section: "home" as const, core: true },
-  { key: "analytics", href: "/admin/analytics", en: "Performance", fr: "Performance", section: "home" as const, core: true },
-  { key: "notifications", href: "/admin/notifications", en: "Alerts", fr: "Alertes", section: "home" as const, core: true },
-  { key: "quotes", href: "/admin/sales/quotes", en: "Quotes", fr: "Devis", section: "sales" as const, core: true },
-  { key: "orders", href: "/admin/sales/orders", en: "Orders", fr: "Commandes", section: "sales" as const, core: true },
-  { key: "clients", href: "/admin/clients", en: "Clients", fr: "Clients", section: "sales" as const, core: false },
-  { key: "documents", href: "/admin/documents", en: "Documents", fr: "Documents", section: "sales" as const, core: false },
-  { key: "stock", href: "/admin/stock", en: "Stock", fr: "Stock", section: "operations" as const, core: true },
-  { key: "products", href: "/admin/products", en: "Products", fr: "Produits", section: "operations" as const, core: true },
-  { key: "purchases", href: "/admin/purchases/orders", en: "Purchases", fr: "Achats", section: "operations" as const, core: true },
-  { key: "receipts", href: "/admin/purchases/receipts", en: "Receipts", fr: "Receptions", section: "operations" as const, core: true },
-  { key: "suppliers", href: "/admin/suppliers", en: "Suppliers", fr: "Fournisseurs", section: "operations" as const, core: false },
-  { key: "warehouses", href: "/admin/warehouses", en: "Warehouses", fr: "Entrepots", section: "operations" as const, core: false },
-  { key: "replenishment", href: "/admin/purchases/replenishment", en: "Restock", fr: "Reappro", section: "operations" as const, core: false },
-  { key: "imports", href: "/admin/imports", en: "Import center", fr: "Centre import", section: "admin" as const, core: true },
-  { key: "billing", href: "/admin/billing", en: "Subscription", fr: "Abonnement", section: "admin" as const, core: true },
-  { key: "settings", href: "/admin/settings", en: "Company", fr: "Entreprise", section: "admin" as const, core: true },
-  { key: "audit", href: "/admin/audit", en: "Activity log", fr: "Historique", section: "admin" as const, core: false },
-  { key: "onboarding", href: "/admin/onboarding", en: "Setup", fr: "Mise en place", section: "admin" as const, core: false },
+  { key: "overview", href: "/admin", en: "Overview", fr: "Apercu", section: "home" as const },
+  { key: "analytics", href: "/admin/analytics", en: "Performance", fr: "Performance", section: "home" as const },
+  { key: "notifications", href: "/admin/notifications", en: "Alerts", fr: "Alertes", section: "home" as const },
+  { key: "quotes", href: "/admin/sales/quotes", en: "Quotes", fr: "Devis", section: "sales" as const },
+  { key: "orders", href: "/admin/sales/orders", en: "Orders", fr: "Commandes", section: "sales" as const },
+  { key: "clients", href: "/admin/clients", en: "Clients", fr: "Clients", section: "sales" as const },
+  { key: "documents", href: "/admin/documents", en: "Documents", fr: "Documents", section: "sales" as const },
+  { key: "stock", href: "/admin/stock", en: "Stock", fr: "Stock", section: "operations" as const },
+  { key: "products", href: "/admin/products", en: "Products", fr: "Produits", section: "operations" as const },
+  { key: "purchases", href: "/admin/purchases/orders", en: "Purchases", fr: "Achats", section: "operations" as const },
+  { key: "receipts", href: "/admin/purchases/receipts", en: "Receipts", fr: "Receptions", section: "operations" as const },
+  { key: "suppliers", href: "/admin/suppliers", en: "Suppliers", fr: "Fournisseurs", section: "operations" as const },
+  { key: "warehouses", href: "/admin/warehouses", en: "Warehouses", fr: "Entrepots", section: "operations" as const },
+  { key: "replenishment", href: "/admin/purchases/replenishment", en: "Restock", fr: "Reappro", section: "operations" as const },
+  { key: "imports", href: "/admin/imports", en: "Import center", fr: "Centre import", section: "admin" as const },
+  { key: "billing", href: "/admin/billing", en: "Subscription", fr: "Abonnement", section: "admin" as const },
+  { key: "settings", href: "/admin/settings", en: "Company", fr: "Entreprise", section: "admin" as const },
+  { key: "audit", href: "/admin/audit", en: "Activity log", fr: "Historique", section: "admin" as const },
+  { key: "onboarding", href: "/admin/onboarding", en: "Setup", fr: "Mise en place", section: "admin" as const },
 ] as const;
 
 const SIMULATION_NAV_KEYS = new Set([
@@ -90,14 +90,13 @@ export function AdminNav({ onNavigate }: AdminNavProps) {
       french: "FR",
       darkLabel: lang === "fr" ? "Mode nuit" : "Dark mode",
       lightLabel: lang === "fr" ? "Mode jour" : "Light mode",
+      logout: lang === "fr" ? "Deconnexion" : "Log out",
       groups: {
         home: lang === "fr" ? "Essentiel" : "Home",
         sales: lang === "fr" ? "Ventes" : "Sales",
         operations: lang === "fr" ? "Operations" : "Operations",
         admin: lang === "fr" ? "Administration" : "Admin",
       } as Record<NavSectionKey, string>,
-      showMore: lang === "fr" ? "Plus" : "More",
-      showLess: lang === "fr" ? "Moins" : "Less",
     }),
     [lang],
   );
@@ -160,26 +159,16 @@ export function AdminNav({ onNavigate }: AdminNavProps) {
     [navItems],
   );
 
-  const [expandedSections, setExpandedSections] = useState<NavSectionKey[]>([]);
-  const [showAllBySection, setShowAllBySection] = useState<NavSectionKey[]>([]);
+  const [expandedSection, setExpandedSection] = useState<NavSectionKey | null>(null);
 
   useEffect(() => {
-    setExpandedSections((prev) => {
-      const allowed = new Set(navSections.map((group) => group.section));
-      const currentSection = navSections.find((group) => group.items.some((item) => isActive(pathname, item.href)))?.section;
-
-      if (currentSection && allowed.has(currentSection)) return [currentSection];
-      const firstSection = navSections[0]?.section;
-      return firstSection ? [firstSection] : prev.filter((section) => allowed.has(section)).slice(0, 1);
+    const sectionWithActive = navSections.find((group) => group.items.some((item) => isActive(pathname, item.href)))?.section ?? null;
+    setExpandedSection((current) => {
+      if (sectionWithActive) return sectionWithActive;
+      if (current && navSections.some((group) => group.section === current)) return current;
+      return navSections[0]?.section ?? null;
     });
   }, [navSections, pathname]);
-
-  useEffect(() => {
-    setShowAllBySection((prev) => {
-      const allowed = new Set(navSections.map((group) => group.section));
-      return prev.filter((section) => allowed.has(section));
-    });
-  }, [navSections]);
 
   useEffect(() => {
     const normalized = query.trim();
@@ -229,24 +218,15 @@ export function AdminNav({ onNavigate }: AdminNavProps) {
     savePreference("neura_theme", value);
   };
 
-  const toggleSection = (section: NavSectionKey) => {
-    setExpandedSections((prev) => (prev.includes(section) ? [] : [section]));
-  };
-
-  const toggleShowAll = (section: NavSectionKey) => {
-    setShowAllBySection((prev) => (prev.includes(section) ? prev.filter((item) => item !== section) : [...prev, section]));
-  };
-
   return (
-    <>
-      <div className="admin-nav-sticky z-20 mb-4 pb-2">
-        <div className="mb-4 text-center">
+    <div className="admin-nav-layout flex h-full min-h-0 flex-col">
+      <div className="admin-nav-header">
+        <div className="text-center">
           <p className="break-words text-3xl font-semibold tracking-tight text-[var(--admin-text)]">{companyName}</p>
           <p className="mt-1 text-[11px] text-[var(--admin-muted)]">Powered by NeuraOS</p>
         </div>
 
-        <div className={`mx-auto space-y-3 ${SIDEBAR_TRACK_WIDTH}`}>
-          <div className="relative">
+        <div className="relative mt-4">
           <input
             value={query}
             onChange={(event) => setQuery(event.target.value)}
@@ -254,7 +234,7 @@ export function AdminNav({ onNavigate }: AdminNavProps) {
             className="liquid-input w-full px-3 py-2 text-sm text-[var(--admin-text)] placeholder:text-[var(--admin-muted)]"
           />
           {(query.trim().length >= 1 || loading) && (
-            <div className="liquid-surface-strong absolute left-0 right-0 top-[calc(100%+0.4rem)] z-30 max-h-72 overflow-auto p-2">
+            <div className="liquid-surface-strong absolute left-0 right-0 top-[calc(100%+0.4rem)] z-40 max-h-72 overflow-auto p-2">
               {loading && <p className="px-2 py-1.5 text-xs text-[var(--admin-muted)]">{text.loading}</p>}
               {!loading && results.length === 0 && <p className="px-2 py-1.5 text-xs text-[var(--admin-muted)]">{text.noResults}</p>}
               {!loading &&
@@ -277,19 +257,68 @@ export function AdminNav({ onNavigate }: AdminNavProps) {
                 ))}
             </div>
           )}
-          </div>
+        </div>
+      </div>
 
-          <div className="flex items-center justify-between">
+      <nav className="admin-nav-scroll mt-5 flex-1 space-y-3 overflow-y-auto pr-1">
+        {navSections.map((group) => {
+          const open = expandedSection === group.section;
+          const hasActive = group.items.some((item) => isActive(pathname, item.href));
+          return (
+            <section key={group.section} className="admin-nav-group">
+              <button
+                type="button"
+                className={`admin-nav-group-toggle ${hasActive ? "is-active" : ""}`}
+                onClick={() => setExpandedSection((current) => (current === group.section ? null : group.section))}
+                aria-expanded={open}
+              >
+                <span>{text.groups[group.section]}</span>
+                <svg aria-hidden viewBox="0 0 20 20" className={`h-4 w-4 transition ${open ? "rotate-180" : ""}`} fill="none" stroke="currentColor" strokeWidth="1.8">
+                  <path d="m5 8 5 5 5-5" />
+                </svg>
+              </button>
+
+              {open ? (
+                <div className="mt-1 space-y-1">
+                  {group.items.map((item) => {
+                    const active = isActive(pathname, item.href);
+                    return (
+                      <Link
+                        key={item.href}
+                        href={item.href}
+                        onClick={onNavigate}
+                        className={`admin-nav-item ${active ? "is-active" : ""}`}
+                      >
+                        {lang === "fr" ? item.fr : item.en}
+                      </Link>
+                    );
+                  })}
+                </div>
+              ) : null}
+            </section>
+          );
+        })}
+      </nav>
+
+      <div className="admin-nav-footer mt-5 border-t border-[var(--admin-border)] pt-4">
+        <div className="flex items-center gap-2">
+          <WorkspaceModeToggle lang={lang} />
+          <button
+            type="button"
+            onClick={() => void signOut({ callbackUrl: "/login" })}
+            className="admin-nav-logout-btn"
+          >
+            {text.logout}
+          </button>
+        </div>
+
+        <div className="mt-3 flex items-center gap-2">
           <button
             type="button"
             onClick={() => setLanguage("en")}
             aria-label={text.english}
             title={text.english}
-            className={`liquid-pill inline-flex h-9 w-9 items-center justify-center p-0 text-[10px] ${
-              lang === "en"
-                ? "liquid-selected"
-                : "text-[var(--admin-muted)] hover:text-[var(--admin-text)]"
-            }`}
+            className={`admin-nav-circle-btn ${lang === "en" ? "is-active" : ""}`}
           >
             {text.english}
           </button>
@@ -298,11 +327,7 @@ export function AdminNav({ onNavigate }: AdminNavProps) {
             onClick={() => setLanguage("fr")}
             aria-label={text.french}
             title={text.french}
-            className={`liquid-pill inline-flex h-9 w-9 items-center justify-center p-0 text-[10px] ${
-              lang === "fr"
-                ? "liquid-selected"
-                : "text-[var(--admin-muted)] hover:text-[var(--admin-text)]"
-            }`}
+            className={`admin-nav-circle-btn ${lang === "fr" ? "is-active" : ""}`}
           >
             {text.french}
           </button>
@@ -311,13 +336,9 @@ export function AdminNav({ onNavigate }: AdminNavProps) {
             onClick={() => setColorMode("dark")}
             aria-label={text.darkLabel}
             title={text.darkLabel}
-            className={`liquid-pill inline-flex h-9 w-9 items-center justify-center p-0 text-[10px] ${
-              theme === "dark"
-                ? "liquid-selected"
-                : "text-[var(--admin-muted)] hover:text-[var(--admin-text)]"
-            }`}
+            className={`admin-nav-circle-btn ${theme === "dark" ? "is-active" : ""}`}
           >
-            <svg aria-hidden viewBox="0 0 24 24" className="h-3.5 w-3.5 fill-none stroke-current" strokeWidth="1.8">
+            <svg aria-hidden viewBox="0 0 24 24" className="h-4 w-4 fill-none stroke-current" strokeWidth="1.8">
               <path d="M18 15.5A7.5 7.5 0 1 1 8.5 6a6.5 6.5 0 1 0 9.5 9.5Z" />
             </svg>
           </button>
@@ -326,13 +347,9 @@ export function AdminNav({ onNavigate }: AdminNavProps) {
             onClick={() => setColorMode("light")}
             aria-label={text.lightLabel}
             title={text.lightLabel}
-            className={`liquid-pill inline-flex h-9 w-9 items-center justify-center p-0 text-[10px] ${
-              theme === "light"
-                ? "liquid-selected"
-                : "text-[var(--admin-muted)] hover:text-[var(--admin-text)]"
-            }`}
+            className={`admin-nav-circle-btn ${theme === "light" ? "is-active" : ""}`}
           >
-            <svg aria-hidden viewBox="0 0 24 24" className="h-3.5 w-3.5 fill-none stroke-current" strokeWidth="1.8">
+            <svg aria-hidden viewBox="0 0 24 24" className="h-4 w-4 fill-none stroke-current" strokeWidth="1.8">
               <circle cx="12" cy="12" r="4" />
               <path d="M12 2.5V5" />
               <path d="M12 19V21.5" />
@@ -344,75 +361,8 @@ export function AdminNav({ onNavigate }: AdminNavProps) {
               <path d="m4.9 19.1 1.8-1.8" />
             </svg>
           </button>
-          </div>
         </div>
       </div>
-
-      <nav className={`mx-auto flex flex-col items-start gap-2 pb-4 ${SIDEBAR_TRACK_WIDTH}`}>
-        {navSections.map((group) => {
-          const sectionActive = group.items.some((item) => isActive(pathname, item.href));
-          const sectionExpanded = expandedSections.includes(group.section);
-          const activeExtraItem = group.items.some((item) => !item.core && isActive(pathname, item.href));
-          const showAllItems = showAllBySection.includes(group.section) || activeExtraItem;
-          const visibleItems = showAllItems ? group.items : group.items.filter((item) => item.core || isActive(pathname, item.href));
-          const hiddenCount = group.items.length - visibleItems.length;
-          return (
-            <div key={group.section} className="w-full">
-              <button
-                type="button"
-                onClick={() => toggleSection(group.section)}
-                className={`liquid-pill flex w-full items-center justify-between px-3 py-1.5 text-xs font-medium uppercase tracking-[0.16em] transition ${
-                  sectionActive
-                    ? "liquid-selected"
-                    : "text-[var(--admin-muted)] hover:border-[var(--accent)] hover:bg-[color-mix(in_srgb,var(--accent)_12%,var(--admin-soft-bg))] hover:text-[var(--admin-text)]"
-                }`}
-                aria-expanded={sectionExpanded}
-              >
-                <span>{text.groups[group.section]}</span>
-                <svg
-                  aria-hidden
-                  viewBox="0 0 20 20"
-                  className={`h-3.5 w-3.5 fill-none stroke-current transition ${sectionExpanded ? "rotate-180" : ""}`}
-                  strokeWidth="1.9"
-                >
-                  <path d="m4 7 6 6 6-6" />
-                </svg>
-              </button>
-
-              {sectionExpanded ? (
-                <div className="mt-1 space-y-1 pl-2">
-                  {visibleItems.map((item) => {
-                    const active = isActive(pathname, item.href);
-                    return (
-                      <Link
-                        key={item.href}
-                        href={item.href}
-                        onClick={onNavigate}
-                        className={`liquid-pill flex w-full items-center px-3 py-1.5 text-sm transition ${
-                          active
-                            ? "liquid-selected"
-                            : "text-[var(--admin-muted)] hover:border-[var(--accent)] hover:bg-[color-mix(in_srgb,var(--accent)_12%,var(--admin-soft-bg))] hover:text-[var(--admin-text)]"
-                        }`}
-                      >
-                        {lang === "fr" ? item.fr : item.en}
-                      </Link>
-                    );
-                  })}
-                  {hiddenCount > 0 ? (
-                    <button
-                      type="button"
-                      onClick={() => toggleShowAll(group.section)}
-                      className="liquid-pill flex w-full items-center justify-center px-3 py-1.5 text-xs text-[var(--admin-muted)] transition hover:text-[var(--admin-text)]"
-                    >
-                      {showAllItems ? text.showLess : `${text.showMore} (${hiddenCount})`}
-                    </button>
-                  ) : null}
-                </div>
-              ) : null}
-            </div>
-          );
-        })}
-      </nav>
-    </>
+    </div>
   );
 }

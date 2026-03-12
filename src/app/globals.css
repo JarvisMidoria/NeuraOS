@@ -23,8 +23,8 @@
   --admin-elevated: rgba(10, 18, 34, 0.96);
   --admin-elevated-soft: rgba(20, 30, 54, 0.7);
   --admin-shadow: none;
-  --admin-topbar-bg: rgba(10, 18, 36, 0.72);
-  --admin-drawer-bg: #1a2236;
+  --admin-topbar-bg: rgba(10, 18, 36, 0.86);
+  --admin-drawer-bg: rgba(10, 18, 36, 0.9);
   --admin-modal-bg: rgba(10, 18, 34, 0.94);
   --admin-modal-border: rgba(255, 255, 255, 0.2);
   --admin-warning-bg: rgba(255, 185, 67, 0.14);
@@ -118,8 +118,8 @@ body {
   --admin-elevated: rgba(255, 255, 255, 0.9);
   --admin-elevated-soft: rgba(245, 248, 255, 0.92);
   --admin-shadow: none;
-  --admin-topbar-bg: rgba(245, 249, 255, 0.7);
-  --admin-drawer-bg: #f3f7ff;
+  --admin-topbar-bg: rgba(245, 249, 255, 0.86);
+  --admin-drawer-bg: rgba(245, 249, 255, 0.92);
   --admin-modal-bg: rgba(248, 251, 255, 0.97);
   --admin-modal-border: rgba(15, 23, 42, 0.16);
   --admin-warning-bg: rgba(255, 245, 222, 0.98);
@@ -261,9 +261,177 @@ html[data-admin-bg-preset="FROZEN_ROSE"] {
 }
 
 .admin-shell .admin-mobile-drawer {
-  background: var(--admin-drawer-bg);
-  backdrop-filter: none;
-  -webkit-backdrop-filter: none;
+  background:
+    linear-gradient(145deg, rgba(255, 255, 255, 0.14), rgba(255, 255, 255, 0.03)),
+    var(--admin-drawer-bg);
+  box-shadow: var(--admin-shadow);
+  backdrop-filter: blur(calc(var(--liquid-blur) + 8px)) saturate(142%);
+  -webkit-backdrop-filter: blur(calc(var(--liquid-blur) + 8px)) saturate(142%);
+}
+
+.admin-shell .admin-nav-layout {
+  width: 100%;
+  max-width: 218px;
+  margin: 0 auto;
+}
+
+.admin-shell .admin-nav-header {
+  width: 100%;
+  padding: 0 2px;
+}
+
+.admin-shell .admin-nav-scroll {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(156, 172, 208, 0.35) transparent;
+}
+
+.admin-shell .admin-nav-scroll::-webkit-scrollbar {
+  width: 5px;
+}
+
+.admin-shell .admin-nav-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.admin-shell .admin-nav-scroll::-webkit-scrollbar-thumb {
+  border-radius: 999px;
+  background: rgba(156, 172, 208, 0.35);
+}
+
+.admin-shell .admin-nav-group {
+  border-bottom: 1px solid color-mix(in srgb, var(--admin-border) 85%, transparent);
+  padding-bottom: 0.35rem;
+}
+
+.admin-shell .admin-nav-group:last-child {
+  border-bottom: 0;
+}
+
+.admin-shell .admin-nav-group-toggle {
+  width: 100%;
+  border: 1px solid transparent;
+  border-radius: 0.75rem;
+  background: transparent;
+  color: var(--admin-muted);
+  min-height: 2rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 0.72rem;
+  line-height: 1rem;
+  font-weight: 600;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+  padding: 0 0.7rem;
+  transition: background-color 160ms ease, border-color 160ms ease, color 160ms ease;
+}
+
+.admin-shell .admin-nav-group-toggle:hover {
+  color: var(--admin-text);
+  border-color: color-mix(in srgb, var(--accent) 36%, transparent);
+  background: color-mix(in srgb, var(--admin-soft-bg) 78%, transparent);
+}
+
+.admin-shell .admin-nav-group-toggle.is-active {
+  color: var(--admin-text);
+}
+
+.admin-shell .admin-nav-item {
+  width: 100%;
+  border: 1px solid transparent;
+  border-radius: 0.7rem;
+  min-height: 2.1rem;
+  display: inline-flex;
+  align-items: center;
+  padding: 0 0.7rem;
+  font-size: 0.9rem;
+  color: var(--admin-muted);
+  transition: background-color 160ms ease, border-color 160ms ease, color 160ms ease;
+}
+
+.admin-shell .admin-nav-item:hover {
+  color: var(--admin-text);
+  border-color: color-mix(in srgb, var(--accent) 34%, transparent);
+  background: color-mix(in srgb, var(--admin-soft-bg) 88%, transparent);
+}
+
+.admin-shell .admin-nav-item.is-active {
+  color: var(--admin-text);
+  border-color: color-mix(in srgb, var(--accent) 75%, white);
+  background:
+    linear-gradient(135deg, rgba(102, 167, 255, 0.3), rgba(84, 210, 255, 0.22)),
+    var(--admin-soft-bg);
+}
+
+[data-admin-theme="light"] .admin-shell .admin-nav-item.is-active {
+  border-color: color-mix(in srgb, var(--accent) 60%, #2f4f8f);
+  background:
+    linear-gradient(135deg, rgba(102, 167, 255, 0.22), rgba(84, 210, 255, 0.18)),
+    var(--admin-soft-bg);
+}
+
+.admin-shell .admin-nav-footer {
+  margin-top: 1rem;
+  padding: 0 2px 2px;
+}
+
+.admin-shell .admin-nav-circle-btn {
+  border-radius: 999px;
+  width: 2.35rem;
+  height: 2.35rem;
+  border: 1px solid var(--admin-border);
+  background:
+    linear-gradient(145deg, rgba(255, 255, 255, 0.12), rgba(255, 255, 255, 0.03)),
+    var(--admin-soft-bg);
+  color: var(--admin-muted);
+  font-size: 0.72rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 160ms ease, border-color 160ms ease, color 160ms ease;
+}
+
+.admin-shell .admin-nav-circle-btn:hover {
+  color: var(--admin-text);
+  border-color: color-mix(in srgb, var(--accent) 55%, var(--admin-border));
+  background:
+    linear-gradient(135deg, rgba(102, 167, 255, 0.36), rgba(84, 210, 255, 0.2)),
+    var(--admin-soft-bg);
+}
+
+.admin-shell .admin-nav-circle-btn.is-active {
+  color: var(--admin-text);
+  border-color: color-mix(in srgb, var(--accent) 78%, white);
+  background:
+    linear-gradient(135deg, rgba(102, 167, 255, 0.44), rgba(84, 210, 255, 0.26)),
+    var(--admin-soft-bg);
+}
+
+[data-admin-theme="light"] .admin-shell .admin-nav-circle-btn.is-active {
+  border-color: color-mix(in srgb, var(--accent) 62%, #2f4f8f);
+  background:
+    linear-gradient(135deg, rgba(102, 167, 255, 0.24), rgba(84, 210, 255, 0.18)),
+    var(--admin-soft-bg);
+}
+
+.admin-shell .admin-nav-logout-btn {
+  border-radius: 999px;
+  min-height: 2.2rem;
+  padding: 0 0.95rem;
+  border: 1px solid var(--admin-border);
+  background:
+    linear-gradient(145deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.03)),
+    var(--admin-soft-bg);
+  color: var(--admin-text);
+  font-size: 0.82rem;
+  transition: background-color 160ms ease, border-color 160ms ease, color 160ms ease;
+}
+
+.admin-shell .admin-nav-logout-btn:hover {
+  border-color: color-mix(in srgb, var(--accent) 50%, var(--admin-border));
+  background:
+    linear-gradient(135deg, rgba(102, 167, 255, 0.3), rgba(84, 210, 255, 0.2)),
+    var(--admin-soft-bg);
 }
 
 .admin-shell .bg-white {

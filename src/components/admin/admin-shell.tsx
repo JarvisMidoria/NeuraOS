@@ -2,12 +2,10 @@
 
 import type { ReactNode } from "react";
 import { useEffect, useMemo, useState } from "react";
-import { signOut } from "next-auth/react";
 import { NeuraLogo } from "@/components/brand/neura-logo";
 import { AdminNav } from "@/components/admin/admin-nav";
 import { NotificationCenter } from "@/components/admin/notification-center";
 import { AiAssistantPopover } from "@/components/admin/ai-assistant-popover";
-import { WorkspaceModeToggle } from "@/components/admin/workspace-mode-toggle";
 
 export function AdminShell({ children }: { children: ReactNode }) {
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -54,7 +52,6 @@ export function AdminShell({ children }: { children: ReactNode }) {
     () => ({
       menu: lang === "fr" ? "Menu" : "Menu",
       close: lang === "fr" ? "Fermer" : "Close",
-      logout: lang === "fr" ? "Deconnexion" : "Log out",
     }),
     [lang],
   );
@@ -63,14 +60,6 @@ export function AdminShell({ children }: { children: ReactNode }) {
     <div className="admin-shell min-h-screen overflow-x-hidden text-[var(--admin-text)]">
       <div className="fixed right-4 top-[calc(0.75rem+env(safe-area-inset-top))] z-40 hidden lg:flex">
         <div className="flex items-center gap-2">
-          <WorkspaceModeToggle lang={lang} />
-          <button
-            type="button"
-            className="liquid-pill px-3 py-1.5 text-xs text-[var(--admin-text)]"
-            onClick={() => void signOut({ callbackUrl: "/login" })}
-          >
-            {text.logout}
-          </button>
           <AiAssistantPopover lang={lang} />
           <NotificationCenter lang={lang} />
         </div>
@@ -97,7 +86,7 @@ export function AdminShell({ children }: { children: ReactNode }) {
         </div>
       </header>
 
-      <div className="mx-auto grid min-h-[calc(100vh-57px)] w-full max-w-[1400px] grid-cols-1 pt-[calc(57px+env(safe-area-inset-top))] lg:min-h-screen lg:grid-cols-[240px_1fr] lg:pt-0">
+      <div className="mx-auto grid min-h-[calc(100vh-57px)] w-full max-w-[1460px] grid-cols-1 pt-[calc(57px+env(safe-area-inset-top))] lg:min-h-screen lg:grid-cols-[264px_1fr] lg:pt-0">
         <aside className="admin-sidebar hidden self-start border-r border-[var(--admin-border)] px-5 py-6 lg:block">
           <AdminNav />
         </aside>
@@ -112,7 +101,7 @@ export function AdminShell({ children }: { children: ReactNode }) {
         onClick={() => setMobileOpen(false)}
       />
       <aside
-        className={`admin-mobile-drawer fixed inset-y-0 left-0 z-50 w-[73%] max-w-[266px] overflow-y-auto border-r px-4 py-5 transition-transform duration-200 will-change-transform lg:hidden ${
+        className={`admin-mobile-drawer fixed inset-y-0 left-0 z-50 w-[84vw] max-w-[340px] overflow-y-auto border-r px-4 py-5 transition-transform duration-200 will-change-transform lg:hidden ${
           mobileOpen ? "translate-x-0" : "-translate-x-full"
         }`}
       >
@@ -125,16 +114,6 @@ export function AdminShell({ children }: { children: ReactNode }) {
             title={text.close}
           >
             ×
-          </button>
-        </div>
-        <div className="mb-3 flex items-center justify-center gap-2">
-          <WorkspaceModeToggle lang={lang} />
-          <button
-            type="button"
-            className="inline-flex items-center gap-1 rounded-full border border-[var(--admin-border)] bg-[var(--admin-elevated-soft)] px-3 py-1 text-[10px] text-[var(--admin-text)]"
-            onClick={() => void signOut({ callbackUrl: "/login" })}
-          >
-            {text.logout}
           </button>
         </div>
         <AdminNav onNavigate={() => setMobileOpen(false)} />
